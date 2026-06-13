@@ -13,7 +13,7 @@ import com.badlogic.gdx.scenes.scene2d.utils.ClickListener;
 import com.badlogic.gdx.utils.Align;
 import com.hollow.HollowKnight;
 
-public class MainMenuButtonController {
+public class ButtonController {
     private final HollowKnight game;
     private final Stage stage;
     private final TextButton[] menuItems;
@@ -23,7 +23,7 @@ public class MainMenuButtonController {
     private final Vector2 vec = new Vector2();
     private float stateTime = 0f;
 
-    public MainMenuButtonController(HollowKnight game, Stage stage, TextButton[] menuItems) {
+    public ButtonController(HollowKnight game, Stage stage, TextButton[] menuItems) {
         this.game = game;
         this.stage = stage;
         this.menuItems = menuItems;

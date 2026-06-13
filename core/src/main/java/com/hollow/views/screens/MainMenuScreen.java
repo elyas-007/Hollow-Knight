@@ -11,14 +11,14 @@ import com.badlogic.gdx.scenes.scene2d.ui.TextButton;
 import com.badlogic.gdx.scenes.scene2d.ui.TextButton.TextButtonStyle;
 import com.badlogic.gdx.utils.viewport.FitViewport;
 import com.hollow.HollowKnight;
-import com.hollow.controllers.MainMenuButtonController;
+import com.hollow.controllers.ButtonController;
 
 public class MainMenuScreen implements Screen {
     private final HollowKnight game;
     private Stage stage;
     private FitViewport viewport;
     private TextButton[] menuButtons;
-    private MainMenuButtonController controller;
+    private ButtonController controller;
 
     public MainMenuScreen(HollowKnight game) {
         this.game = game;
@@ -62,7 +62,7 @@ public class MainMenuScreen implements Screen {
         rootTable.add(quitBtn).padBottom(20).row();
 
         menuButtons = new TextButton[]{startBtn, settingsBtn, guideBtn, achievementsBtn, quitBtn};
-        controller = new MainMenuButtonController(game, stage, menuButtons);
+        controller = new ButtonController(game, stage, menuButtons);
 
         if (game.assetLoader.titleTheme != null && !game.assetLoader.titleTheme.isPlaying()) {
             game.assetLoader.titleTheme.setLooping(true);

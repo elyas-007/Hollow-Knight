@@ -19,7 +19,8 @@ public class AssetLoader {
     public TextureRegion pointerR;
     public TextureRegion pointerL;
     public Texture hollowKnightLogo;
-
+    public Texture titleBottom;
+    public Texture settingBottom;
     // Audio
     public  Music titleTheme;
     public Sound buttonHover;
@@ -40,6 +41,9 @@ public class AssetLoader {
         pointerL.flip(true, false);
 
         hollowKnightLogo = new Texture("ui/mainMenu/logo.png");
+
+        titleBottom = new Texture("ui/mainMenu/titleBottom.png");
+        settingBottom = new Texture("ui/mainMenu/settingBottom.png");
 
         titleTheme = Gdx.audio.newMusic(Gdx.files.internal("audio/bgm/Title.wav"));
         buttonHover = Gdx.audio.newSound(Gdx.files.internal("audio/sound-effect/button-hover.wav"));
