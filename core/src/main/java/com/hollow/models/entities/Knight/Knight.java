@@ -10,19 +10,26 @@ import com.hollow.utils.Constants;
 public class Knight {
     // constants
     public static final float G = -30f;
-    public static final float JUMP_SPEED = 16f;
-    public static final float MOVE_SPEED = 6f;
+    public static final float MAX_FALL_SPEED = -20f;
+    public static final float WALL_SLIDE_SPEED = -4f;
+    public static final float JUMP_SPEED = 20f;
+    public static final float MOVE_SPEED = 2f;
+    public static final float WALL_JUMP_X   = 6f;
+    public static final float WALL_JUMP_Y   = 13f;
     public static final float DASH_SPEED = 20f;
     public static final float DASH_DURATION = 0.18f;
     public static final float DASH_COOLDOWN = 0.6f;
     public static final float FORCE_NAIL_X = 8f;
     public static final float FORCE_NAIL_Y = 6f;
     public static final float INVINCIBLE_DURATION = 1.2f;
+    public static final float HEAL_DURATION = 1.4f;
     public static final float HIT_WIDTH = 0.8f;
     public static final float HIT_HEIGHT = 1.2f;
     public static KnightState state = KnightState.IDLE;
     public static KnightState preState;
     public float stateTimer = 0f;
+    public float stateLockTimer = 0f;
+
     public final Vector2 position = new Vector2();
     public final Vector2 velocity = new Vector2();
     public final Rectangle hitbox = new Rectangle();
@@ -44,17 +51,32 @@ public class Knight {
     private float dashCooldown = 0f;
     private float dashDirection = 1f;  //left -> -1 right -> 1
 
+    private float moveDirection = 0f; // -1, 0, +1
+    private int touchingWallSide = 0; //+1 -> right -1 -> left 0 -> nothing
+    private boolean healing = false;
+    private float healTimer = 0f;
 
-
+    private int lookDirection = 0; // +1 -> up -1 -> down 0-> nothing
+    private boolean altSlash = false;
     //Animations
 
-    public Animation<TextureRegion> idleAnimation;
-    public Animation<TextureRegion> attackingAnimation;
-    public Animation<TextureRegion> runningAnimation;
-    public Animation<TextureRegion> hurtAnimation;
-    public Animation<TextureRegion> dashAnimation;
-    public Animation<TextureRegion> fallAnimation;
-    public Animation<TextureRegion> jumpAnimation;
+    public Animation<TextureRegion> idleAnim;
+    public Animation<TextureRegion> runAnim;
+    public Animation<TextureRegion> airborneAnim;
+    public Animation<TextureRegion> doubleJumpAnim;
+    public Animation<TextureRegion> landingAnim;
+    public Animation<TextureRegion> dashAnim;
+    public Animation<TextureRegion> wallSlideAnim;
+    public Animation<TextureRegion> wallJumpAnim;
+    public Animation<TextureRegion> slashAnim;
+    public Animation<TextureRegion> slashAltAnim;
+    public Animation<TextureRegion> upSlashAnim;
+    public Animation<TextureRegion> downSlashAnim;
+    public Animation<TextureRegion> focusAnim;
+    public Animation<TextureRegion> lookUpAnim;
+    public Animation<TextureRegion> lookDownAnim;
+    public Animation<TextureRegion> hurtAnim;
+    public Animation<TextureRegion> deathAnim;
 
 
 
@@ -72,10 +94,13 @@ public class Knight {
         // update
         updateTimers(delta);
         updateDash(delta);
-        updateHitbox(delta);
-        updatePosition(delta);
+
         applyG(delta);
-        updateState();
+        updatePosition(delta);
+        updateHitbox();
+
+        updateState(delta);
+        updateHealing(delta);
     }
 
     private void updateTimers(float delta) {
@@ -89,12 +114,22 @@ public class Knight {
         }
     }
 
+    private void updateHealing(float delta) {
+        if (!healing) return;
+        healTimer += delta;
+        if (healTimer >= HEAL_DURATION) {
+            currentSoul = Math.max(0, currentSoul - 33);
+            currentMasks = Math.min(maxMasks, currentMasks + 1);
+            healing = false;
+        }
+    }
+
     private void updatePosition(float delta) {
         position.x += velocity.x * delta;
         position.y += velocity.y  * delta;
     }
 
-    private void updateHitbox(float delta) {
+    private void updateHitbox() {
         hitbox.setPosition(position.x, position.y);
     }
 
@@ -117,61 +152,123 @@ public class Knight {
         }
     }
 
-    private void updateState() {
+    private void updateState(float delta) {
         preState = state;
 
-        if (state == KnightState.DEAD || state == KnightState.HURT)
+        if (currentMasks <= 0) {
+            if (state != KnightState.DEAD) {
+                state = KnightState.DEAD;
+                stateTimer = 0f;
+                stateLockTimer = animDuration(deathAnim);
+            }
             return;
+        }
+
+        if (healing) {
+            state = KnightState.FOCUSING;
+            return;
+        }
+
+        if (stateLockTimer > 0) {
+            stateLockTimer -= delta;
+            return;
+        }
 
         if (isDashing) {
             state = KnightState.DASHING;
+        } else if (!isGrounded && touchingWallSide != 0 && velocity.y < 0 && wallSideAllowed()) {
+            state = KnightState.WALL_SLIDE;
         } else if (!isGrounded) {
-            state = velocity.y > 0 ? KnightState.JUMPING : KnightState.FALLING;
-        } else if (velocity.x != 0f) {
+            state = KnightState.AIRBORNE;
+        } else if (velocity.x != 0) {
             state = KnightState.RUNNING;
         } else {
-            state = KnightState.IDLE;
+            if (lookDirection > 0) state = KnightState.LOOK_UP;
+            else if (lookDirection < 0) state = KnightState.LOOK_DOWN;
+            else state = KnightState.IDLE;
         }
 
         if (state != preState) stateTimer = 0f;
+    }
+
+    private boolean wallSideAllowed() {
+        return (touchingWallSide > 0 && moveDirection > 0) ||
+            (touchingWallSide < 0 && moveDirection < 0);
+    }
+
+    private boolean isLocked() {
+        return stateLockTimer > 0 || state == KnightState.DEAD || healing;
+    }
+
+    private boolean movementLocked() {
+        return state == KnightState.HURT    || state == KnightState.DEAD
+            || state == KnightState.LANDING || state == KnightState.FOCUSING
+            || state == KnightState.WALL_JUMP;
     }
 
     public void updateAnimations(float delta) {
         stateTimer += delta;
     }
 
-    public TextureRegion getCurrentFrame() {
-        Animation<TextureRegion> frame = getCurrentAnimation();
-        if (frame == null)
-            return null;
-
-        boolean loop = (state != KnightState.ATTACKING && state != KnightState.HURT);
-        return frame.getKeyFrame(stateTimer, loop);
+    private float animDuration(Animation<TextureRegion> anim) {
+        return anim != null ? anim.getAnimationDuration() : 0.25f;
     }
 
-    private Animation<TextureRegion> getCurrentAnimation() {
+    public TextureRegion getCurrentFrame() {
+        Animation<TextureRegion> anim = getAnimationForState();
+        if (anim == null) return null;
+        return anim.getKeyFrame(stateTimer, isLoopingState(state));
+    }
+
+    private Animation<TextureRegion> getAnimationForState() {
         return switch (state) {
-            case JUMPING -> jumpAnimation;
-            case FALLING -> fallAnimation;
-            case RUNNING -> runningAnimation;
-            case DASHING -> dashAnimation;
-            case HURT -> hurtAnimation;
-            case ATTACKING -> attackingAnimation;
-            default -> idleAnimation;
+            case RUNNING -> runAnim;
+            case AIRBORNE -> airborneAnim;
+            case DOUBLE_JUMPING -> doubleJumpAnim;
+            case LANDING -> landingAnim;
+            case DASHING -> dashAnim;
+            case WALL_SLIDE -> wallSlideAnim;
+            case WALL_JUMP -> wallJumpAnim;
+            case SLASH -> slashAnim;
+            case SLASH_ALT -> slashAltAnim;
+            case UP_SLASH -> upSlashAnim;
+            case DOWN_SLASH -> downSlashAnim;
+            case FOCUSING -> focusAnim;
+            case LOOK_UP -> lookUpAnim;
+            case LOOK_DOWN -> lookDownAnim;
+            case HURT -> hurtAnim;
+            case DEAD -> deathAnim;
+            default -> idleAnim;
+        };
+    }
+
+    private boolean isLoopingState(KnightState s) {
+        return switch (s) {
+            case IDLE, RUNNING , DASHING, WALL_SLIDE, FOCUSING, LOOK_UP, LOOK_DOWN -> true;
+            default ->
+                false;
         };
     }
 
     public void movingHorizontally(float direction) {
-        if (isDashing) return;
+        if (isDashing || movementLocked()) {
+            moveDirection = 0f;
+            return;
+        }
         velocity.x += direction * MOVE_SPEED;
         isFacingRight = direction > 0;
+        moveDirection = direction;
     }
 
     public void stopMovingHorizontally() {
-        if (!isDashing) velocity.x = 0f;
+        moveDirection = 0f;
+        if (!isDashing && !movementLocked()) velocity.x = 0f;
     }
 
     public void jumping() {
+        if (movementLocked())
+            return;
+
         if (isGrounded) {
             velocity.y = JUMP_SPEED;
             isGrounded = false;
@@ -179,7 +276,27 @@ public class Knight {
         } else if (canDoubleJump) {
             velocity.y = JUMP_SPEED * 0.8f;
             canDoubleJump = false;
+            state = KnightState.DOUBLE_JUMPING;
+            stateTimer = 0f;
+            stateLockTimer = animDuration(doubleJumpAnim);
         }
+    }
+
+    public void wallJump() {
+        if (state != KnightState.WALL_SLIDE)
+            return;
+
+        velocity.x = -touchingWallSide * WALL_JUMP_X;
+        velocity.y = WALL_JUMP_Y;
+        isFacingRight = touchingWallSide < 0;
+        isGrounded = false;
+        canDoubleJump = true;
+        canDash = true;
+        touchingWallSide = 0;
+
+        state = KnightState.WALL_JUMP;
+        stateTimer = 0f;
+        stateLockTimer = animDuration(wallJumpAnim);
     }
 
     public void littleJumping() {
@@ -188,7 +305,8 @@ public class Knight {
     }
 
     public void dashing() {
-        if (!canDash || isDashing) return;
+        if (!canDash || isDashing || isLocked())
+            return;
         isDashing = true;
         canDash = false;
         dashDuration = DASH_DURATION;
@@ -196,18 +314,43 @@ public class Knight {
         dashDirection = (isFacingRight) ? 1f : -1f;
     }
 
-    public void attacking() {
-        state = KnightState.ATTACKING;
+    public void attacking(int direction) {
+        if (isLocked())
+            return;
+        Animation<TextureRegion> anim;
+
+        if (direction > 0) {
+            state = KnightState.UP_SLASH;
+            anim = upSlashAnim;
+        } else if (direction < 0 && !isGrounded) {
+            state = KnightState.DOWN_SLASH;
+            anim = downSlashAnim;
+        } else {
+            altSlash = !altSlash;
+            state = altSlash ? KnightState.SLASH_ALT : KnightState.SLASH;
+            anim = altSlash ? slashAltAnim : slashAnim;
+        }
         stateTimer = 0f;
+        stateLockTimer = animDuration(anim);
     }
 
     public void landing(float top) {
+        boolean wasAirborne = !isGrounded;
+
         position.y = top;
-        velocity.y = 0f;
+        velocity.y = 0;
         isGrounded = true;
         canDash = true;
-        canDoubleJump = true;
-        lastPosition.set(position.x, position.y);
+        canDoubleJump = false;
+        touchingWallSide = 0;
+        lastPosition.set(position);
+
+        if (wasAirborne && stateLockTimer <= 0
+            && state != KnightState.HURT && state != KnightState.DEAD) {
+            state = KnightState.LANDING;
+            stateTimer = 0f;
+            stateLockTimer = animDuration(landingAnim);
+        }
     }
 
     public void hitCeiling(float top) {
@@ -215,23 +358,29 @@ public class Knight {
         velocity.y = 0f;
     }
 
-    public void hitWall(float wallX, boolean fromLeft) {
-        if (fromLeft) position.x = wallX;
-        else position.x = wallX - HIT_WIDTH;
+    public void hitWall(float wallX, int side) {
+        if (side > 0) {
+            position.x = wallX - HIT_WIDTH;
+        } else {
+            position.x = wallX;
+        }
         velocity.x = 0f;
+        touchingWallSide = side;
     }
 
-    public void setOntAir() {
+    public void setAirborne() {
         isGrounded = false;
     }
 
-    public void takeDamage(float damage, boolean fromRight) {
+    public void takeDamage(int damage, boolean fromRight) {
         if (invincibleTimer > 0 || state == KnightState.DEAD) return;
 
         currentMasks -= damage;
         invincibleTimer = INVINCIBLE_DURATION;
-        state = KnightState.HURT;
-        stateTimer = 0f;
+        healing = false;
+        isDashing = false;
+        touchingWallSide = 0;
+//        stateTimer = 0f;
 
         velocity.x = fromRight ? -FORCE_NAIL_X : FORCE_NAIL_X;
         velocity.y = FORCE_NAIL_Y;
@@ -240,6 +389,12 @@ public class Knight {
         if (currentMasks <= 0) {
             currentMasks = 0;
             state = KnightState.DEAD;
+            stateTimer = 0f;
+            stateLockTimer = animDuration(deathAnim);
+        } else {
+            state = KnightState.HURT;
+            stateTimer = 0f;
+            stateLockTimer = animDuration(hurtAnim);
         }
     }
 
@@ -251,12 +406,32 @@ public class Knight {
         position.set(lastPosition.x, lastPosition.y);
         velocity.set(0, 0);
         isGrounded = false;
-        state = KnightState.FALLING;
+        touchingWallSide = 0;
+        healing = false;
+        stateLockTimer = 0f;
+        state = KnightState.AIRBORNE;
         stateTimer = 0f;
     }
 
-    public void gainSoul() {
-        currentSoul = Math.min(maxSoul,  currentSoul + 33);
+    public void gainSoul(int amount) {
+        currentSoul = Math.min(99, currentSoul + amount);
+    }
+
+    public void startFocusing() {
+        if (healing)
+            return;
+
+        if (isLocked() || !isGrounded || velocity.x != 0)
+            return;
+
+        if (currentSoul < 33 || currentMasks >= maxMasks)
+            return;
+
+        healing = true;
+        healTimer = 0f;
+        state = KnightState.FOCUSING;
+        stateTimer = 0f;
+//        currentSoul = Math.min(maxSoul,  currentSoul + 33);
     }
 
     public boolean heal() {
@@ -266,6 +441,10 @@ public class Knight {
             return true;
         }
         return false;
+    }
+
+    public void resetWallTouch() {
+        touchingWallSide = 0;
     }
 
 
@@ -282,6 +461,7 @@ public class Knight {
     public boolean isDashing()    { return isDashing; }
     public boolean isInvincible() { return invincibleTimer > 0; }
     public boolean isDead()       { return state == KnightState.DEAD; }
+    public boolean isBusy() {return isLocked();}
 
     public int getCurrentMasks()     { return currentMasks; }
     public int getMaxMasks()  { return maxMasks; }

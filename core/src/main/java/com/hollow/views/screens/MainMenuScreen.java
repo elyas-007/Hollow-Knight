@@ -1,5 +1,6 @@
 package com.hollow.views.screens;
 
+import com.badlogic.gdx.Game;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Screen;
 import com.badlogic.gdx.graphics.Color;
@@ -47,7 +48,7 @@ public class MainMenuScreen implements Screen {
         TextButton achievementsBtn = new TextButton("achievements", styleBtn);
         TextButton quitBtn = new TextButton("Quit Game", styleBtn);
 
-        startBtn.setUserObject((Runnable) () -> game.setScreen(new StartGameMenuScreen(game)));
+        startBtn.setUserObject((Runnable) () -> game.setScreen(new GameScreen(game)));
         settingsBtn.setUserObject((Runnable) () -> game.setScreen(new SettingsMenuScreen(game)));
         guideBtn.setUserObject((Runnable) () -> game.setScreen(new GuideScreen()));
         achievementsBtn.setUserObject((Runnable) () -> game.setScreen(new AchievementsScreen()));
@@ -107,7 +108,11 @@ public class MainMenuScreen implements Screen {
 
     @Override
     public void hide() {
+        Gdx.input.setInputProcessor(null);
 
+        if (game.assetLoader.titleTheme != null) {
+            game.assetLoader.titleTheme.stop();
+        }
     }
 
     @Override
