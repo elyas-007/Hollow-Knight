@@ -105,15 +105,15 @@ public class ButtonController {
             game.assetLoader.buttonHover.play();
         }
 
-        for (int i = 0; i < menuItems.length; i++) {
-            menuItems[i].clearActions();
-
-            if (i == selectedItem) {
-                menuItems[i].addAction(Actions.scaleTo(1.15f, 1.15f, 0.1f));
-            } else {
-                menuItems[i].addAction(Actions.scaleTo(1f, 1f, 0.1f));
-            }
-        }
+//        for (int i = 0; i < menuItems.length; i++) {
+//            menuItems[i].clearActions();
+//
+//            if (i == selectedItem) {
+//                menuItems[i].addAction(Actions.scaleTo(1.15f, 1.15f, 0.1f));
+//            } else {
+//                menuItems[i].addAction(Actions.scaleTo(1f, 1f, 0.1f));
+//            }
+//        }
 
         stage.setKeyboardFocus(menuItems[selectedItem]);
     }

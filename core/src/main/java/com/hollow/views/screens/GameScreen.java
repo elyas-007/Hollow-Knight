@@ -1,6 +1,7 @@
 package com.hollow.views.screens;
 
 import com.badlogic.gdx.Gdx;
+import com.badlogic.gdx.Input;
 import com.badlogic.gdx.Screen;
 import com.badlogic.gdx.graphics.GL20;
 import com.badlogic.gdx.graphics.OrthographicCamera;
@@ -83,18 +84,17 @@ public class GameScreen implements Screen {
     }
 
     public void render(float delta) {
-        Gdx.gl.glClearColor(0f, 0f, 1f, 0.3f);
-        Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT);
+        if (Gdx.input.isKeyJustPressed(Input.Keys.ESCAPE)) {
+            game.setScreen(new PauseScreen(game, this));
+            return;
+        }
+
 
         updateCamera();
-        renderer.setView(camera);
-        renderer.render();
         controller.update(delta);
-        game.batch.setProjectionMatrix(camera.combined);
-        game.batch.begin();
-        renderKnight(delta);
-        game.batch.end();
+        knight.updateAnimations(delta);
 
+        drawWorld();
     }
 
     @Override public void resize(int width, int height) {
@@ -117,6 +117,19 @@ public class GameScreen implements Screen {
         // dispose animation
     }
 
+    public void drawWorld() {
+        Gdx.gl.glClearColor(0f, 0f, 1f, 0.3f);
+        Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT);
+
+        renderer.setView(camera);
+        renderer.render();
+
+        game.batch.setProjectionMatrix(camera.combined);
+        game.batch.begin();
+        renderKnight();
+        game.batch.end();
+    }
+
     private Vector2 findSpawnPoint() {
         MapLayer layer = map.getLayers().get("logic");
         MapObject spawnPoint = layer.getObjects().get("spwanPoint");
@@ -127,9 +140,7 @@ public class GameScreen implements Screen {
         return new Vector2(x, y);
     }
 
-    private void renderKnight(float delta) {
-        knight.updateAnimations(delta);
-
+    private void renderKnight() {
         var frame = knight.getCurrentFrame();
         if (frame == null)
             return;

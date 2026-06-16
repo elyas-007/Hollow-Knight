@@ -36,6 +36,10 @@ public class AssetLoader {
     public Texture profilePointer;
 
 
+    public Texture pauseTop;
+    public Texture pauseBottom;
+
+
 
     // Audio
     public  Music titleTheme;
@@ -91,8 +95,8 @@ public class AssetLoader {
         profilePointer = new Texture("ui/startGameMenu/main_menu_pointer_anim0010.png");
 
 
-
-
+        pauseTop = new Texture("ui/pauseMenu/pause_top_fleur0006.png");
+        pauseBottom = new Texture("ui/pauseMenu/bottom_fleur0007.png");
 
 
     }

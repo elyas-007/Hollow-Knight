@@ -18,7 +18,6 @@ public class MainMenuScreen implements Screen {
     private final HollowKnight game;
     private Stage stage;
     private FitViewport viewport;
-    private TextButton[] menuButtons;
     private ButtonController controller;
 
     public MainMenuScreen(HollowKnight game) {
@@ -33,8 +32,7 @@ public class MainMenuScreen implements Screen {
 
         TextButtonStyle styleBtn = new TextButtonStyle();
         styleBtn.font = game.assetLoader.font;
-        styleBtn.fontColor = Color.GRAY;
-        styleBtn.overFontColor = Color.WHITE;
+        styleBtn.fontColor = Color.WHITE;
 
         Table rootTable = new Table();
         rootTable.setFillParent(true);
@@ -62,7 +60,7 @@ public class MainMenuScreen implements Screen {
         rootTable.add(achievementsBtn).padBottom(20).row();
         rootTable.add(quitBtn).padBottom(20).row();
 
-        menuButtons = new TextButton[]{startBtn, settingsBtn, guideBtn, achievementsBtn, quitBtn};
+        TextButton[] menuButtons = new TextButton[]{startBtn, settingsBtn, guideBtn, achievementsBtn, quitBtn};
         controller = new ButtonController(game, stage, menuButtons);
 
         if (game.assetLoader.titleTheme != null && !game.assetLoader.titleTheme.isPlaying()) {
