@@ -1,8 +1,137 @@
 {
-    "activeFile": "",
+    "activeFile": "test.tmx",
     "expandedProjectPaths": [
     ],
+    "file.lastUsedOpenFilter": "All Files (*)",
     "fileStates": {
+        "BG_egg_07_0000_Layer-1.tsx": {
+            "scaleInDock": 1
+        },
+        "FG_eggs_04_0001_03.tsx": {
+            "scaleInDock": 1
+        },
+        "Shaman_Hut_Ruin.tsx": {
+            "scaleInDock": 1
+        },
+        "bone_spike_04.tsx": {
+            "scaleInDock": 1
+        },
+        "break0000.tsx": {
+            "scaleInDock": 1,
+            "scaleInEditor": 1
+        },
+        "broken_bench_02.tsx": {
+            "scaleInDock": 1
+        },
+        "cd_archbase_01_long.tsx": {
+            "scaleInDock": 1
+        },
+        "cd_archway_03.tsx": {
+            "scaleInDock": 1
+        },
+        "cd_big_roof_0004_03.tsx": {
+            "scaleInDock": 1
+        },
+        "cd_tollbooth_lamp.tsx": {
+            "scaleInDock": 1
+        },
+        "checkpoint_prompt_simple000.tsx": {
+            "scaleInDock": 1
+        },
+        "collapser_long.tsx": {
+            "scaleInDock": 1
+        },
+        "cr10_break_wall.tsx": {
+            "scaleInDock": 1
+        },
+        "cr10_break_wall1.tsx": {
+            "scaleInDock": 1
+        },
+        "east_wall_break_0000_3.tsx": {
+            "scaleInDock": 1
+        },
+        "elev_room_balcony.tsx": {
+            "scaleInDock": 1
+        },
+        "floor_FG_rock_01_0004_02.tsx": {
+            "scaleInDock": 1
+        },
+        "fungd_corner.tsx": {
+            "scaleInDock": 1
+        },
+        "nailsmith_rag.tsx": {
+            "scaleInDock": 1
+        },
+        "plat_float_02.tsx": {
+            "scaleInDock": 1
+        },
+        "plat_float_05.tsx": {
+            "scaleInDock": 1
+        },
+        "plat_float_07.tsx": {
+            "scaleInDock": 1
+        },
+        "r_floor_01.tsx": {
+            "scaleInDock": 1
+        },
+        "ruins_resting_extra_bits_0039_Layer-141.tsx": {
+            "scaleInDock": 1
+        },
+        "sliding_wall0009.tsx": {
+            "scaleInDock": 1
+        },
+        "small_floor.tsx": {
+            "scaleInDock": 1
+        },
+        "spikes0000.tsx": {
+            "scaleInDock": 1
+        },
+        "station_FG_tunnel_02_royal_garden.tsx": {
+            "scaleInDock": 1
+        },
+        "statue_08.tsx": {
+            "scaleInDock": 1
+        },
+        "temple_ext_01.tsx": {
+            "scaleInDock": 1
+        },
+        "test.tmx": {
+            "expandedObjectLayers": [
+                2
+            ],
+            "scale": 0.416015625,
+            "selectedLayer": 0,
+            "viewCenter": {
+                "x": 12339.68075117371,
+                "y": 7705.239436619719
+            }
+        },
+        "untitled.tmx": {
+            "expandedObjectLayers": [
+                5
+            ],
+            "scale": 0.416015625,
+            "selectedLayer": 0,
+            "viewCenter": {
+                "x": 12000.75117370892,
+                "y": 7409.577464788732
+            }
+        },
+        "vil_floor_01.tsx": {
+            "scaleInDock": 1
+        },
+        "vil_lamp_02.tsx": {
+            "scaleInDock": 1
+        },
+        "wall2_0003_Layer-3.tsx": {
+            "scaleInDock": 1
+        },
+        "wd_BG_skull_01.tsx": {
+            "scaleInDock": 1
+        },
+        "wd_pole_01.tsx": {
+            "scaleInDock": 1
+        }
     },
     "last.imagePath": "P:/Project/HollowKnight/assets/map/source",
     "map.height": 2000,
@@ -11,9 +140,15 @@
     "map.tileWidth": 8,
     "map.width": 3000,
     "openFiles": [
+        "test.tmx",
+        "break0000.tsx",
+        "untitled.tmx"
     ],
     "project": "untitled.tiled-project",
     "recentFiles": [
+        "untitled.tmx",
+        "break0000.tsx",
+        "test.tmx"
     ],
     "tileset.lastUsedFormat": "tsx",
     "tileset.tileSize": {

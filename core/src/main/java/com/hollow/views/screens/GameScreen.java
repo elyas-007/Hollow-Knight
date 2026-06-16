@@ -59,7 +59,7 @@ public class GameScreen implements Screen {
         camera = new OrthographicCamera();
         viewport = new FitViewport(VIEWPORT_WIDTH, VIEWPORT_HEIGHT, camera);
 
-        map = helper.loadMap("map/test.tmx");
+        map = helper.loadMap("map/untitled.tmx");
         renderer = new OrthogonalTiledMapRenderer(map, UNIT_SCALE);
 
         int tileWidth = map.getProperties().get("tilewidth", Integer.class);
@@ -119,7 +119,7 @@ public class GameScreen implements Screen {
 
     private Vector2 findSpawnPoint() {
         MapLayer layer = map.getLayers().get("logic");
-        MapObject spawnPoint = layer.getObjects().get("spwan");
+        MapObject spawnPoint = layer.getObjects().get("spwanPoint");
 
         float x = spawnPoint.getProperties().get("x", Float.class) * UNIT_SCALE;
         float y = spawnPoint.getProperties().get("y", Float.class) * UNIT_SCALE;

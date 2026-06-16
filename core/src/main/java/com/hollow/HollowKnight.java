@@ -2,6 +2,8 @@ package com.hollow;
 
 import com.badlogic.gdx.Game;
 import com.badlogic.gdx.Gdx;
+import com.badlogic.gdx.graphics.Cursor;
+import com.badlogic.gdx.graphics.Pixmap;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.hollow.assets.AssetLoader;
 import com.hollow.models.GameSettings;
@@ -19,6 +21,15 @@ public class HollowKnight extends Game {
         assetLoader = new AssetLoader(this);
         assetLoader.loadMainMenu();
         settings = GameSettings.load();
+
+        Pixmap pixmap = new Pixmap(Gdx.files.internal("icon and cursor/cursor_new_resized.png"));
+
+        int xHotspot = 0;
+        int yHotspot = 0;
+        Cursor customCursor = Gdx.graphics.newCursor(pixmap, xHotspot, yHotspot);
+        Gdx.graphics.setCursor(customCursor);
+        pixmap.dispose();
+
         this.setScreen(new MainMenuScreen(this));
     }
 

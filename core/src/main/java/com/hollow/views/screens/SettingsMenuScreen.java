@@ -252,6 +252,12 @@ public class SettingsMenuScreen implements Screen {
                 return false;
             }
         });
+
+        if (game.assetLoader.titleTheme != null && !game.assetLoader.titleTheme.isPlaying()) {
+            game.assetLoader.titleTheme.setLooping(true);
+            game.assetLoader.titleTheme.setVolume(0.5f);
+            game.assetLoader.titleTheme.play();
+        }
     }
 
     @Override

@@ -5,6 +5,7 @@ import com.badlogic.gdx.audio.Music;
 import com.badlogic.gdx.audio.Sound;
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.BitmapFont;
+import com.badlogic.gdx.graphics.g2d.NinePatch;
 import com.badlogic.gdx.graphics.g2d.TextureRegion;
 import com.badlogic.gdx.graphics.g2d.freetype.FreeTypeFontGenerator;
 import com.badlogic.gdx.graphics.g2d.freetype.FreeTypeFontGenerator.FreeTypeFontParameter;
@@ -24,6 +25,18 @@ public class AssetLoader {
     public Texture hollowKnightLogo;
     public Texture titleBottom;
     public Texture settingBottom;
+
+    public NinePatch saveBackground_greenPath;
+    public NinePatch saveBackground_forgotten;
+    public Texture under_SelectProfile;
+    public Texture geoHud;
+    public Texture healthFrame;
+    public Texture mask;
+    public Texture profile_fleur;
+    public Texture profilePointer;
+
+
+
     // Audio
     public  Music titleTheme;
     public Sound buttonHover;
@@ -63,6 +76,25 @@ public class AssetLoader {
         subFont = generator.generateFont(parameter);
 
         generator.dispose();
+
+
+
+
+
+        saveBackground_greenPath = new NinePatch(new Texture("ui/startGameMenu/Area_Green_Path.png"), 10, 10, 10, 10);
+        saveBackground_forgotten = new NinePatch(new Texture("ui/startGameMenu/Area_Forgotten Crossroads.png"), 10, 10, 10, 10);
+        under_SelectProfile = new Texture("ui/startGameMenu/Warning_Fleur0008.png");;
+        geoHud = new Texture("ui/startGameMenu/select_game_HUD_coin_v020004.png");
+        healthFrame = new Texture("ui/startGameMenu/select_game_HUD_0002_health_frame.png");
+        mask = new Texture("ui/startGameMenu/select_game_HUD_0001_health.png");
+        profile_fleur = new Texture("ui/startGameMenu/profile_fleur0012.png");
+        profilePointer = new Texture("ui/startGameMenu/main_menu_pointer_anim0010.png");
+
+
+
+
+
+
     }
 
     public void dispose() {
