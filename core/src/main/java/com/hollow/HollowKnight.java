@@ -2,6 +2,7 @@ package com.hollow;
 
 import com.badlogic.gdx.Game;
 import com.badlogic.gdx.Gdx;
+import com.badlogic.gdx.audio.Sound;
 import com.badlogic.gdx.graphics.Cursor;
 import com.badlogic.gdx.graphics.Pixmap;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
@@ -48,4 +49,10 @@ public class HollowKnight extends Game {
         batch.dispose();
         assetLoader.dispose();
    }
+
+    public void playSound(Sound sound) {
+        if (settings.isSfxOn && sound != null) {
+            sound.play();
+        }
+    }
 }

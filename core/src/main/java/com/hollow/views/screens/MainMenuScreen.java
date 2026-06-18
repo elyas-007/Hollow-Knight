@@ -63,9 +63,9 @@ public class MainMenuScreen implements Screen {
         TextButton[] menuButtons = new TextButton[]{startBtn, settingsBtn, guideBtn, achievementsBtn, quitBtn};
         controller = new ButtonController(game, stage, menuButtons);
 
-        if (game.assetLoader.titleTheme != null && !game.assetLoader.titleTheme.isPlaying()) {
+        if (game.assetLoader.titleTheme != null && !game.assetLoader.titleTheme.isPlaying() && game.settings.isMusicOn) {
             game.assetLoader.titleTheme.setLooping(true);
-            game.assetLoader.titleTheme.setVolume(0.5f);
+            game.assetLoader.titleTheme.setVolume(game.settings.musicVolume);
             game.assetLoader.titleTheme.play();
         }
     }
@@ -78,6 +78,8 @@ public class MainMenuScreen implements Screen {
         game.batch.setProjectionMatrix(stage.getCamera().combined);
         game.batch.begin();
         game.batch.draw(game.assetLoader.background, 0, 0, 1280, 720);
+        float b = game.settings.brightness;
+        game.batch.setColor(b, b, b, 1f);
         game.batch.end();
 
 

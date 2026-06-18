@@ -53,28 +53,20 @@ public class SettingsMenuScreen implements Screen {
 
         TextButtonStyle styleBtn = new TextButtonStyle();
         styleBtn.font = font;
-        styleBtn.fontColor = Color.LIGHT_GRAY;
-        styleBtn.overFontColor = Color.WHITE;
+        styleBtn.fontColor = Color.WHITE;
 
         Label.LabelStyle labelStyle = new Label.LabelStyle(font, Color.WHITE);
         Label.LabelStyle dimStyle = new Label.LabelStyle(font, Color.GRAY);
 
-        SliderStyle sliderStyle = new SliderStyle();
-        sliderStyle.background = createColorDrawable(new Color(0.3f, 0.3f, 0.3f, 1f), 300, 10);
-        sliderStyle.knob = createColorDrawable(Color.WHITE, 16, 16);
-        sliderStyle.knobOver = createColorDrawable(Color.LIGHT_GRAY, 18, 18);
-
 
         Table contentTable = new Table();
-//        rootTable.setFillParent(true);
         contentTable.top().padTop(20);
-//        stage.addActor(contentTable);
 
         Table mainTable = new Table();
         mainTable.setFillParent(true);
         mainTable.top().left();
 
-        ScrollPane scrollPane = new ScrollPane(contentTable);
+        ScrollPane scrollPane = new ScrollPane(contentTable, game.assetLoader.scrollerSkin);
         scrollPane.setFadeScrollBars(false);
         scrollPane.setScrollingDisabled(true, false);
         stage.addActor(scrollPane);
@@ -87,14 +79,13 @@ public class SettingsMenuScreen implements Screen {
         Image settingBottom = new Image(game.assetLoader.settingBottom);
         settingBottom.setScaling(com.badlogic.gdx.utils.Scaling.fit);
 
-//        contentTable.add(settingBottom).width(titleWidth).height(20);
         Table titleGroup = new Table();
         titleGroup.add(title).row();
         titleGroup.add(settingBottom).width(titleWidth).height(200).padTop(-75f).row();
         contentTable.add(titleGroup).colspan(2).padBottom(30).row();
 
         contentTable.add(new Label("Music Volume", labelStyle)).left().padRight(30).padBottom(18);
-        Slider musicSlider = new Slider(0f, 1f, 0.05f, false, sliderStyle);
+        Slider musicSlider = new Slider(0f, 1f, 0.05f, false, game.assetLoader.sliderSkin, "menuSlider");
         musicSlider.setValue(setting.musicVolume);
         musicSlider.addListener(new ChangeListener() {
             @Override
@@ -105,53 +96,39 @@ public class SettingsMenuScreen implements Screen {
         });
         contentTable.add(musicSlider).width(300).padBottom(18).row();
 
+
         contentTable.add(new Label("Music", labelStyle)).left().padRight(30).padBottom(18);
         TextButton musicToggle = new TextButton(setting.isMusicOn ? "ON" : "OFF", styleBtn);
-        addHoverEffect(musicToggle);
-        musicToggle.addListener(new ClickListener() {
-            @Override
-            public void clicked(InputEvent event, float x, float y) {
-                setting.isMusicOn = !setting.isMusicOn;
-                musicToggle.setText(setting.isMusicOn ? "ON" : "OFF");
-                applyMusicToggle();
-                playSfx();
-            }
+        musicToggle.setUserObject((Runnable) () -> {
+            setting.isMusicOn = !setting.isMusicOn;
+            musicToggle.setText(setting.isMusicOn ? "ON" : "OFF");
+            applyMusicToggle();
         });
         contentTable.add(musicToggle).left().padBottom(18).row();
 
 
         contentTable.add(new Label("Sound Effect", labelStyle)).left().padRight(30).padBottom(18);
         TextButton sfxToggle = new TextButton(setting.isSfxOn ? "ON" : "OFF", styleBtn);
-        addHoverEffect(sfxToggle);
-        sfxToggle.addListener(new ClickListener() {
-            @Override
-            public void clicked(InputEvent event, float x, float y) {
-                setting.isSfxOn = !setting.isSfxOn;
-                sfxToggle.setText(setting.isSfxOn ? "ON" : "OFF");
-                playSfx();
-            }
+        sfxToggle.setUserObject((Runnable) () -> {
+            setting.isSfxOn = !setting.isSfxOn;
+            sfxToggle.setText(setting.isSfxOn ? "ON" : "OFF");
         });
         contentTable.add(sfxToggle).left().padBottom(18).row();
 
         TextButton resetAudio = new TextButton("Reset Audio", styleBtn);
-        addHoverEffect(resetAudio);
-        resetAudio.addListener(new ClickListener() {
-            @Override
-            public void clicked(InputEvent event, float x, float y) {
-                setting.resetAudio();
-                musicSlider.setValue(setting.musicVolume);
-                musicToggle.setText("ON");
-                sfxToggle.setText("ON");
-                applyMusicVolume();
-                applyMusicToggle();
-                playSfx();
-            }
+        resetAudio.setUserObject((Runnable) () -> {
+           setting.resetAudio();
+           musicSlider.setValue(setting.musicVolume);
+           musicToggle.setText("ON");
+           sfxToggle.setText("ON");
+           applyMusicToggle();
+           applyMusicVolume();
         });
         contentTable.add(resetAudio).colspan(2).padBottom(28).row();
 
 
         contentTable.add(new Label("Brightness", labelStyle)).left().padRight(30).padBottom(18);
-        Slider btSlider = new Slider(0.5f, 1.5f, 0.05f, false, sliderStyle);
+        Slider btSlider = new Slider(0.2f, 1f, 0.05f, false, game.assetLoader.sliderSkin, "menuSlider");
         btSlider.setValue(setting.brightness);
         btSlider.addListener(new ChangeListener() {
             @Override
@@ -162,26 +139,17 @@ public class SettingsMenuScreen implements Screen {
         contentTable.add(btSlider).width(300).padBottom(18).row();
 
         TextButton resetBrightness = new TextButton("Reset Brightness", styleBtn);
-        addHoverEffect(resetBrightness);
-        resetBrightness.addListener(new ClickListener() {
-            @Override
-            public void clicked(InputEvent event, float x, float y) {
-                setting.resetBrightness();
-                playSfx();
-            }
+        resetBrightness.setUserObject((Runnable) () -> {
+            setting.resetBrightness();
+            btSlider.setValue(setting.brightness);
         });
         contentTable.add(resetBrightness).colspan(2).padBottom(28).row();
 
         contentTable.add(new Label("Language", labelStyle)).left().padRight(30).padBottom(28);
-        TextButton lanBtn =  new TextButton(setting.lang.toString(), styleBtn);
-        addHoverEffect(lanBtn);
-        lanBtn.addListener(new ClickListener() {
-            @Override
-            public void clicked(InputEvent event, float x, float y) {
-                setting.lang = setting.lang.equals(Language.DE) ? Language.EN : Language.DE;
-                lanBtn.setText(setting.lang.toString());
-                playSfx();
-            }
+        TextButton lanBtn = new TextButton(setting.lang.toString(), styleBtn);
+        lanBtn.setUserObject((Runnable) () -> {
+            setting.lang = setting.lang.equals(Language.DE) ? Language.EN : Language.DE;
+            lanBtn.setText(setting.lang.toString());
         });
         contentTable.add(lanBtn).left().padBottom(28).row();
 
@@ -190,25 +158,21 @@ public class SettingsMenuScreen implements Screen {
         keyTitle.setFontScale(1.1f);
         contentTable.add(keyTitle).colspan(2).padBottom(14).row();
 
-        addNewKey(contentTable, "Up", "up", setting, labelStyle, styleBtn);
-        addNewKey(contentTable, "Down", "down", setting, labelStyle, styleBtn);
-        addNewKey(contentTable, "Right", "right", setting, labelStyle, styleBtn);
-        addNewKey(contentTable, "Left", "left", setting, labelStyle, styleBtn);
-        addNewKey(contentTable, "Jump", "jump", setting, labelStyle, styleBtn);
-        addNewKey(contentTable, "Attack", "attack", setting, labelStyle, styleBtn);
-        addNewKey(contentTable, "Dash", "dash", setting, labelStyle, styleBtn);
-        addNewKey(contentTable, "Focus", "focus", setting, labelStyle, styleBtn);
+
+        TextButton upBtn = addNewKey(contentTable, "Up", "up", setting, labelStyle, styleBtn);
+        TextButton downBtn = addNewKey(contentTable, "Down", "down", setting, labelStyle, styleBtn);
+        TextButton rightBtn = addNewKey(contentTable, "Right", "right", setting, labelStyle, styleBtn);
+        TextButton leftBtn = addNewKey(contentTable, "Left", "left", setting, labelStyle, styleBtn);
+        TextButton jumpBtn = addNewKey(contentTable, "Jump", "jump", setting, labelStyle, styleBtn);
+        TextButton attackBtn = addNewKey(contentTable, "Attack", "attack", setting, labelStyle, styleBtn);
+        TextButton dashBtn = addNewKey(contentTable, "Dash", "dash", setting, labelStyle, styleBtn);
+        TextButton focusBtn = addNewKey(contentTable, "Focus", "focus", setting, labelStyle, styleBtn);
 
 
         TextButton resetKey = new TextButton("Reset Keys", styleBtn);
-        addHoverEffect(resetKey);
-        resetKey.addListener(new ClickListener() {
-            @Override
-            public void clicked(InputEvent event, float x, float y) {
-                setting.resetKey();
-                game.setScreen(new SettingsMenuScreen(game));
-                playSfx();
-            }
+        resetKey.setUserObject((Runnable) () -> {
+            setting.resetKey();
+            game.setScreen(new SettingsMenuScreen(game));
         });
         contentTable.add(resetKey).colspan(2).padBottom(28).row();
 
@@ -216,18 +180,14 @@ public class SettingsMenuScreen implements Screen {
         contentTable.add(rebindLabel).colspan(2).padBottom(14).row();
 
 
-        TextButton backBtn  = new TextButton("Back", styleBtn);
-        addHoverEffect(backBtn);
-        backBtn.addListener(new ClickListener() {
-            @Override
-            public void clicked(InputEvent event, float x, float y) {
-                setting.save();
-                playSfx();
-                game.setScreen(new MainMenuScreen(game)); // add feature later
-            }
+        TextButton backBtn = new TextButton("Back", styleBtn);
+        backBtn.setUserObject((Runnable) () -> {
+            setting.save();
+            game.setScreen(new MainMenuScreen(game));
         });
 
-        mainTable.add(backBtn).left().pad(20).row();
+
+        mainTable.add(backBtn).left().pad(20).padLeft(50).row();
         mainTable.add(scrollPane).expand().fill();
         stage.addActor(mainTable);
 
@@ -248,16 +208,34 @@ public class SettingsMenuScreen implements Screen {
                     game.setScreen(new SettingsMenuScreen(game)); // add feature later
                     return true;
                 }
-
                 return false;
             }
         });
 
-        if (game.assetLoader.titleTheme != null && !game.assetLoader.titleTheme.isPlaying()) {
+        if (game.assetLoader.titleTheme != null && !game.assetLoader.titleTheme.isPlaying() &&  game.settings.isMusicOn) {
             game.assetLoader.titleTheme.setLooping(true);
-            game.assetLoader.titleTheme.setVolume(0.5f);
+            game.assetLoader.titleTheme.setVolume(game.settings.musicVolume);
             game.assetLoader.titleTheme.play();
         }
+
+        menuButtons = new TextButton[]{
+            musicToggle,
+            sfxToggle,
+            resetAudio,
+            resetBrightness,
+            lanBtn,
+            upBtn,
+            downBtn,
+            rightBtn,
+            leftBtn,
+            jumpBtn,
+            attackBtn,
+            dashBtn,
+            focusBtn,
+            resetKey,
+            backBtn,
+        };
+        controller = new ButtonController(game, stage, menuButtons);
     }
 
     @Override
@@ -266,7 +244,6 @@ public class SettingsMenuScreen implements Screen {
         Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT);
 
         game.batch.setProjectionMatrix(stage.getCamera().combined);
-
         game.batch.begin();
         float b = game.settings.brightness;
         game.batch.setColor(b, b, b, 1f);
@@ -275,6 +252,8 @@ public class SettingsMenuScreen implements Screen {
         game.batch.end();
 
         stage.act(delta);
+        if (controller != null)
+            controller.update(delta);
         stage.draw();
     }
 
@@ -304,24 +283,20 @@ public class SettingsMenuScreen implements Screen {
     }
 
 
-    private void addNewKey(Table root, String action, String target, GameSettings setting, Label.LabelStyle labelStyle, TextButtonStyle btnStyle) {
+    private TextButton addNewKey(Table root, String action, String target, GameSettings setting, Label.LabelStyle labelStyle, TextButtonStyle btnStyle) {
         Table r = new Table();
         r.add(new Label(action, labelStyle)).width(120).left();
 
         Label keyName = new Label(Input.Keys.toString(getKey(setting, target)), labelStyle);
         r.add(keyName).width(100).center();
         TextButton changeBtn = new TextButton("Change", btnStyle);
-        addHoverEffect(changeBtn);
-        changeBtn.addListener(new ClickListener() {
-            @Override
-            public void clicked(InputEvent event, float x, float y) {
-                rebind(target, keyName);
-                playSfx();
-            }
+        changeBtn.setUserObject((Runnable) () -> {
+            rebind(target, keyName);
         });
-        r.add(changeBtn).padLeft(16);
+        r.add(changeBtn).padLeft(30);
 
         root.add(r).colspan(2).padBottom(10).row();
+        return changeBtn;
     }
 
     private void rebind(String target, Label keyName) {
@@ -372,24 +347,6 @@ public class SettingsMenuScreen implements Screen {
         rebindLabel.setUserObject(null);
     }
 
-    private Drawable createColorDrawable(Color color, int w, int h) {
-        Pixmap pm = new Pixmap(w, h, Pixmap.Format.RGBA8888);
-        pm.setColor(color);
-        pm.fill();
-        TextureRegionDrawable d = new TextureRegionDrawable(new TextureRegion(new Texture(pm)));
-        pm.dispose();
-        return d;
-    }
-
-
-
-    private void playSfx() {
-        if (game.settings.isSfxOn && game.assetLoader.buttonClick != null) {
-            game.assetLoader.buttonClick.stop();
-            game.assetLoader.buttonClick.play();
-        }
-    }
-
     private void applyMusicToggle() {
         if (game.assetLoader.titleTheme == null)
             return;
@@ -408,33 +365,5 @@ public class SettingsMenuScreen implements Screen {
         if (game.assetLoader.titleTheme != null) {
             game.assetLoader.titleTheme.setVolume(game.settings.musicVolume);
         }
-    }
-
-    private void addHoverEffect(Actor actor) {
-        actor.setOrigin(Align.center);
-
-        if (actor instanceof Group) {
-            ((Group) actor).setTransform(true);
-        }
-
-        actor.addListener(new ClickListener() {
-            @Override
-            public void enter(InputEvent event, float x, float y, int pointer, Actor fromActor) {
-                super.enter(event, x, y, pointer, fromActor);
-                if (pointer == -1) {
-                    actor.clearActions();
-                    actor.addAction(Actions.scaleTo(1.1f, 1.1f, 0.1f));
-                }
-            }
-
-            @Override
-            public void exit(InputEvent event, float x, float y, int pointer, Actor toActor) {
-                super.exit(event, x, y, pointer, toActor);
-                if (pointer == -1) {
-                    actor.clearActions();
-                    actor.addAction(Actions.scaleTo(1f, 1f, 0.1f));
-                }
-            }
-        });
     }
 }

@@ -131,15 +131,26 @@ public class StartGameMenuScreen implements Screen {
             }
         });
         root.add(backBtn).colspan(3).padTop(30);
+
+
+        if (game.assetLoader.titleTheme != null && !game.assetLoader.titleTheme.isPlaying() && game.settings.isMusicOn) {
+            game.assetLoader.titleTheme.setLooping(true);
+            game.assetLoader.titleTheme.setVolume(game.settings.musicVolume);
+            game.assetLoader.titleTheme.play();
+        }
     }
 
     @Override
     public void render(float delta) {
         Gdx.gl.glClearColor(0.05f, 0.05f, 0.05f, 1f);
         Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT);
+
+        game.batch.setProjectionMatrix(stage.getCamera().combined);
          game.batch.begin();
          game.batch.draw(game.assetLoader.background, 0, 0, 1280, 720);
-         game.batch.end();
+        float b = game.settings.brightness;
+        game.batch.setColor(b, b, b, 1f);
+        game.batch.end();
 
          stage.act(delta);
          stage.draw();

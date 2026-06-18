@@ -78,7 +78,7 @@ public class ButtonController {
                 @Override
                 public void enter(InputEvent event, float x, float y, int pointer, Actor fromActor) {
                     if (pointer == -1 && selectedItem != index)
-                        updateSelectionState(index, true);
+                        updateSelectionState(index, game.settings.isSfxOn);
                 }
 
                 @Override
@@ -94,26 +94,16 @@ public class ButtonController {
         if (newIndex < 0) newIndex = menuItems.length - 1;
         else if (newIndex >= menuItems.length) newIndex = 0;
 
-        updateSelectionState(newIndex, true);
+        updateSelectionState(newIndex, game.settings.isSfxOn);
     }
 
     private void updateSelectionState(int newIndex, boolean playSound) {
         this.selectedItem = newIndex;
 
-        if (playSound && game.assetLoader.buttonHover != null) {
+        if (playSound && game.assetLoader.buttonHover != null && game.settings.isSfxOn) {
             game.assetLoader.buttonHover.stop();
             game.assetLoader.buttonHover.play();
         }
-
-//        for (int i = 0; i < menuItems.length; i++) {
-//            menuItems[i].clearActions();
-//
-//            if (i == selectedItem) {
-//                menuItems[i].addAction(Actions.scaleTo(1.15f, 1.15f, 0.1f));
-//            } else {
-//                menuItems[i].addAction(Actions.scaleTo(1f, 1f, 0.1f));
-//            }
-//        }
 
         stage.setKeyboardFocus(menuItems[selectedItem]);
     }
@@ -145,7 +135,7 @@ public class ButtonController {
     }
 
     public void triggerSelection() {
-        if (game.assetLoader.buttonClick != null) {
+        if (game.assetLoader.buttonClick != null && game.settings.isSfxOn) {
             game.assetLoader.buttonClick.stop();
             game.assetLoader.buttonClick.play();
         }

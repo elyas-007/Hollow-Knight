@@ -7,7 +7,7 @@ import com.hollow.models.enums.Language;
 
 public class GameSettings {
     public float musicVolume = 0.5f;
-    public float brightness = 1.0f;
+    public float brightness = 0.6f;
     public boolean isMusicOn = true;
     public boolean isSfxOn = true;
 
@@ -68,6 +68,6 @@ public class GameSettings {
     }
 
     public void resetBrightness() {
-        brightness = 1.0f;
+        brightness = 0.6f;
     }
 }

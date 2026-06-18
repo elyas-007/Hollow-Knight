@@ -13,6 +13,7 @@ import com.badlogic.gdx.graphics.g2d.freetype.FreeTypeFontGenerator.FreeTypeFont
 import com.badlogic.gdx.maps.tiled.TiledMap;
 import com.badlogic.gdx.maps.tiled.TmxMapLoader;
 import com.badlogic.gdx.maps.tiled.renderers.OrthogonalTiledMapRenderer;
+import com.badlogic.gdx.scenes.scene2d.ui.Skin;
 import com.hollow.HollowKnight;
 
 public class AssetLoader {
@@ -34,7 +35,8 @@ public class AssetLoader {
     public Texture mask;
     public Texture profile_fleur;
     public Texture profilePointer;
-
+    public Skin sliderSkin;
+    public Skin scrollerSkin;
 
     public Texture pauseTop;
     public Texture pauseBottom;
@@ -98,6 +100,8 @@ public class AssetLoader {
         pauseTop = new Texture("ui/pauseMenu/pause_top_fleur0006.png");
         pauseBottom = new Texture("ui/pauseMenu/bottom_fleur0007.png");
 
+        scrollerSkin = new Skin(Gdx.files.internal("ui/VerticalScroller/VerticalScroller.json"));
+        sliderSkin = new Skin(Gdx.files.internal("ui/Slider/slider.json"));
 
     }
 
