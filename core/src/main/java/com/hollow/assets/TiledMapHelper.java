@@ -8,6 +8,7 @@ import com.badlogic.gdx.maps.tiled.TmxMapLoader;
 import com.badlogic.gdx.math.Rectangle;
 import com.badlogic.gdx.utils.Array;
 import com.hollow.models.SolidBlock;
+import com.hollow.models.entities.Enemy.Tiktik;
 
 public class TiledMapHelper {
     private TiledMap tiledMap;
@@ -39,5 +40,22 @@ public class TiledMapHelper {
         }
 
         return solidBlocks;
+    }
+
+    public Array<Tiktik> getTiktikSpawns(TiledMap map, float unitScale) {
+        Array<Tiktik> tiktiks = new Array<>();
+
+        MapLayer layer = map.getLayers().get("enemies");
+        if (layer == null) return tiktiks;
+
+        for (MapObject object : layer.getObjects()) {
+            if (object.getName() != null && object.getName().equalsIgnoreCase("Tiktik")) {
+                float x = object.getProperties().get("x", Float.class) * unitScale;
+                float y = object.getProperties().get("y", Float.class) * unitScale;
+
+                tiktiks.add(new Tiktik(x, y));
+            }
+        }
+        return tiktiks;
     }
 }

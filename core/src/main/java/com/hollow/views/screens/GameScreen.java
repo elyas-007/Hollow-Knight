@@ -17,13 +17,16 @@ import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.utils.Array;
 import com.badlogic.gdx.utils.viewport.FitViewport;
 import com.hollow.HollowKnight;
+import com.hollow.assets.EnemyAnimationLoader;
 import com.hollow.assets.KnightAnimationLoader;
 import com.hollow.assets.TiledMapHelper;
 import com.hollow.models.Game;
 import com.hollow.models.SolidBlock;
+import com.hollow.models.entities.Enemy.Tiktik;
 import com.hollow.models.entities.Knight.Knight;
 import com.badlogic.gdx.math.Rectangle;
 import com.badlogic.gdx.graphics.Color;
+import com.hollow.models.enums.KnightState;
 import com.hollow.views.hud.GameHud;
 
 public class GameScreen implements Screen {
@@ -51,6 +54,8 @@ public class GameScreen implements Screen {
     private TiledMapHelper helper;
     private final int[] mainLayer = {1};
 
+    private ShapeRenderer shapeRenderer;
+
     public GameScreen(HollowKnight game) {
         this.game = game;
     }
@@ -77,14 +82,27 @@ public class GameScreen implements Screen {
 
         KnightAnimationLoader.loadAllAnimations(knight);
 
-        camera.position.set(spawnPoint.x, spawnPoint.y, 0);
+        float knightStartX = knight.getX() + knight.getWidth() / 2f;
+        float knightStartY = knight.getY() + knight.getHeight() / 2f;
+        float halfW = VIEWPORT_WIDTH / 2f;
+        float halfH = VIEWPORT_HEIGHT / 2f;
+        float camStartX = Math.max(halfW, Math.min(mapPixelWidth - halfW, knightStartX));
+        float camStartY = Math.max(halfH, Math.min(mapPixelHeight - halfH, knightStartY));
+        camera.position.set(camStartX, camStartY, 0);
         camera.update();
 
         groundRecs = helper.getSolidRectangles();
         spikeRecs = helper.getSolidRectangles();
-        controller = new Game(game, knight, groundRecs, spikeRecs);
+        Array<Tiktik> mapTiktiks = helper.getTiktikSpawns(map, UNIT_SCALE);
+        for (Tiktik t : mapTiktiks) {
+            EnemyAnimationLoader.loadTiktikAnimations(t);
+        }
+
+        controller = new Game(game, knight, groundRecs, spikeRecs, mapTiktiks);
 
         hud = new GameHud(game, knight);
+
+        shapeRenderer = new ShapeRenderer();
     }
 
     public void render(float delta) {
@@ -100,12 +118,14 @@ public class GameScreen implements Screen {
 
         drawWorld();
 
+        renderDebugHitboxes();
+
         hud.update(knight, delta);
         hud.draw();
     }
 
     @Override public void resize(int width, int height) {
-        viewport.update(width, height, true);
+        viewport.update(width, height, false);
         if (hud !=  null)
             hud.resize(width, height);
     }
@@ -136,6 +156,7 @@ public class GameScreen implements Screen {
 
         game.batch.setProjectionMatrix(camera.combined);
         game.batch.begin();
+        renderEnemies();
         renderKnight();
         game.batch.end();
     }
@@ -166,10 +187,19 @@ public class GameScreen implements Screen {
         float spriteH = hitboxH * scaleMultiplier;
 
         float offsetX = (spriteW - hitboxW) / 2f;
-        float offsetY = (spriteH - hitboxH) / 2f;
+        float offsetY = 0.15f;
 
         float drawX = x - offsetX;
         float drawY = y - offsetY;
+
+        if (knight.getState() == KnightState.WALL_SLIDE) {
+            float wallCorrection = 0.4f;
+            if (!facingLeft) {
+                drawX += wallCorrection;
+            } else {
+                drawX -= wallCorrection;
+            }
+        }
 
         if (!facingLeft) {
             game.batch.draw(frame, drawX + spriteW, drawY, -spriteW, spriteH);
@@ -178,12 +208,47 @@ public class GameScreen implements Screen {
         }
     }
 
+    private void renderEnemies() {
+        if (controller.getTiktiks() == null) return;
+
+        for (var enemy : controller.getTiktiks()) {
+            var frame = enemy.getCurrentFrame();
+            if (frame == null) continue;
+
+            float x = enemy.position.x;
+            float y = enemy.position.y;
+            float hitboxW = enemy.hitbox.width;
+
+            float spriteW = 1.4f;
+            float spriteH = 0.9f;
+
+            float offsetX = (spriteW - hitboxW) / 2f;
+            float offsetY = 0.12f;
+
+            float drawX = x - offsetX;
+            float drawY = y - offsetY;
+
+            if (enemy.isFacingRight) {
+                game.batch.draw(frame, drawX + spriteW, drawY, -spriteW, spriteH);
+            } else {
+                game.batch.draw(frame, drawX, drawY, spriteW, spriteH);
+            }
+        }
+    }
+
     private void updateCamera() {
         float knightX = knight.getX() + knight.getWidth()  / 2f;
         float knightY = knight.getY() + knight.getHeight() / 2f;
 
+        float cameraOffsetY = 0f;
+        if (knight.getState() == KnightState.LOOK_UP) {
+            cameraOffsetY = 4f;
+        } else if (knight.getState() == KnightState.LOOK_DOWN) {
+            cameraOffsetY = -4f;
+        }
+
         float targetX = camera.position.x + (knightX - camera.position.x) * CAM_LERP;
-        float targetY = camera.position.y + (knightY - camera.position.y) * CAM_LERP;
+        float targetY = camera.position.y + ((knightY + cameraOffsetY) - camera.position.y) * CAM_LERP;
 
         float halfW = VIEWPORT_WIDTH  / 2f;
         float halfH = VIEWPORT_HEIGHT / 2f;
@@ -192,5 +257,41 @@ public class GameScreen implements Screen {
 
         camera.position.set(targetX, targetY, 0);
         camera.update();
+    }
+
+    private void renderDebugHitboxes() {
+        shapeRenderer.setProjectionMatrix(camera.combined);
+
+        shapeRenderer.begin(ShapeRenderer.ShapeType.Line);
+        shapeRenderer.setColor(Color.GREEN);
+
+        if (knight != null) {
+            Rectangle kBox = knight.getHitbox();
+            shapeRenderer.rect(kBox.x, kBox.y, kBox.width, kBox.height);
+        }
+
+        if (controller.getTiktiks() != null) {
+            for (var enemy : controller.getTiktiks()) {
+                Rectangle eBox = enemy.hitbox;
+                shapeRenderer.rect(eBox.x, eBox.y, eBox.width, eBox.height);
+            }
+        }
+
+        if (groundRecs != null) {
+            for (SolidBlock ground : groundRecs) {
+                Rectangle gBox = ground.bounds;
+                shapeRenderer.rect(gBox.x, gBox.y, gBox.width, gBox.height);
+            }
+        }
+
+        if (spikeRecs != null) {
+            shapeRenderer.setColor(Color.RED);
+            for (SolidBlock spike : spikeRecs) {
+                Rectangle sBox = spike.bounds;
+                shapeRenderer.rect(sBox.x, sBox.y, sBox.width, sBox.height);
+            }
+        }
+
+        shapeRenderer.end();
     }
 }

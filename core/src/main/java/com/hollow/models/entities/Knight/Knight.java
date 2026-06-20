@@ -13,7 +13,7 @@ public class Knight {
     public static final float MAX_FALL_SPEED = -20f;
     public static final float WALL_SLIDE_SPEED = -4f;
     public static final float JUMP_SPEED = 20f;
-    public static final float MOVE_SPEED = 2f;
+    public static final float MOVE_SPEED = 8f;
     public static final float WALL_JUMP_X   = 6f;
     public static final float WALL_JUMP_Y   = 13f;
     public static final float DASH_SPEED = 20f;
@@ -34,6 +34,8 @@ public class Knight {
     public final Vector2 velocity = new Vector2();
     public final Rectangle hitbox = new Rectangle();
 
+    private float lookTimer = 0f;
+    public static final float LOOK_DELAY = 0.6f;
 
     private int currentMasks = 5;
     private int maxMasks = 5;
@@ -92,6 +94,7 @@ public class Knight {
 
     public void update(float delta) {
         // update
+        updateState(delta);
         updateTimers(delta);
         updateDash(delta);
 
@@ -99,7 +102,7 @@ public class Knight {
         updatePosition(delta);
         updateHitbox();
 
-        updateState(delta);
+
         updateHealing(delta);
     }
 
@@ -147,8 +150,16 @@ public class Knight {
     private void applyG(float delta) {
         if (!isDashing) {
             velocity.y += G * delta;
-            if (velocity.y < -20f)
-                velocity.y = -20f;
+
+            if (state == KnightState.WALL_SLIDE) {
+                if (velocity.y < WALL_SLIDE_SPEED) {
+                    velocity.y = WALL_SLIDE_SPEED;
+                }
+            } else {
+                if (velocity.y < MAX_FALL_SPEED) {
+                    velocity.y = MAX_FALL_SPEED;
+                }
+            }
         }
     }
 
@@ -170,22 +181,38 @@ public class Knight {
         }
 
         if (stateLockTimer > 0) {
-            stateLockTimer -= delta;
-            return;
+            if (state == KnightState.WALL_JUMP && (moveDirection != 0 || isDashing)) {
+                stateLockTimer = 0f;
+            } else {
+                stateLockTimer -= delta;
+                return;
+            }
         }
 
         if (isDashing) {
             state = KnightState.DASHING;
+            lookTimer = 0f;
         } else if (!isGrounded && touchingWallSide != 0 && velocity.y < 0 && wallSideAllowed()) {
             state = KnightState.WALL_SLIDE;
+            lookTimer = 0f;
         } else if (!isGrounded) {
             state = KnightState.AIRBORNE;
+            lookTimer = 0f;
         } else if (velocity.x != 0) {
             state = KnightState.RUNNING;
+            lookTimer = 0f;
         } else {
-            if (lookDirection > 0) state = KnightState.LOOK_UP;
-            else if (lookDirection < 0) state = KnightState.LOOK_DOWN;
-            else state = KnightState.IDLE;
+            if (lookDirection != 0) {
+                lookTimer += delta;
+                if (lookTimer >= LOOK_DELAY) {
+                    state = (lookDirection > 0) ? KnightState.LOOK_UP : KnightState.LOOK_DOWN;
+                } else {
+                    state = KnightState.IDLE;
+                }
+            } else {
+                lookTimer = 0f;
+                state = KnightState.IDLE;
+            }
         }
 
         if (state != preState) stateTimer = 0f;
@@ -255,7 +282,7 @@ public class Knight {
             moveDirection = 0f;
             return;
         }
-        velocity.x += direction * MOVE_SPEED;
+        velocity.x = direction * MOVE_SPEED;
         isFacingRight = direction > 0;
         moveDirection = direction;
     }
@@ -269,7 +296,9 @@ public class Knight {
         if (movementLocked())
             return;
 
-        if (isGrounded) {
+        if (state == KnightState.WALL_SLIDE) {
+            wallJump();
+        } else if (isGrounded) {
             velocity.y = JUMP_SPEED;
             isGrounded = false;
             canDoubleJump = true;
@@ -445,6 +474,10 @@ public class Knight {
 
     public void resetWallTouch() {
         touchingWallSide = 0;
+    }
+
+    public void setLookDirection(int dir) {
+        this.lookDirection = dir;
     }
 
 

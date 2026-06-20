@@ -198,12 +198,18 @@ public class StartGameMenuScreen implements Screen {
 
     @Override
     public void hide() {
+        Gdx.input.setInputProcessor(null);
 
+        if (game.assetLoader.titleTheme != null) {
+            game.assetLoader.titleTheme.stop();
+        }
     }
 
     @Override
     public void dispose() {
-
+        if (stage != null) {
+            stage.dispose();
+        }
     }
 
     private void startGame(GameData data) {

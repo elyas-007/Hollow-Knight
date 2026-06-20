@@ -1,5 +1,5 @@
 {
-    "activeFile": "test.tmx",
+    "activeFile": "",
     "expandedProjectPaths": [
     ],
     "file.lastUsedOpenFilter": "All Files (*)",
@@ -140,9 +140,6 @@
     "map.tileWidth": 8,
     "map.width": 3000,
     "openFiles": [
-        "test.tmx",
-        "break0000.tsx",
-        "untitled.tmx"
     ],
     "project": "untitled.tiled-project",
     "recentFiles": [
