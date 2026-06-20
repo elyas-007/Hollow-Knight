@@ -4,6 +4,7 @@ import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.audio.Music;
 import com.badlogic.gdx.audio.Sound;
 import com.badlogic.gdx.graphics.Texture;
+import com.badlogic.gdx.graphics.g2d.Animation;
 import com.badlogic.gdx.graphics.g2d.BitmapFont;
 import com.badlogic.gdx.graphics.g2d.NinePatch;
 import com.badlogic.gdx.graphics.g2d.TextureRegion;
@@ -41,7 +42,11 @@ public class AssetLoader {
     public Texture pauseTop;
     public Texture pauseBottom;
 
-
+    public TextureRegion healthFrameHud;
+    public TextureRegion geoHudGame;
+    public TextureRegion fullMask;
+    public TextureRegion emptyMask;
+    public Animation<TextureRegion> maskShatterAnim;
 
     // Audio
     public  Music titleTheme;
@@ -103,6 +108,11 @@ public class AssetLoader {
         scrollerSkin = new Skin(Gdx.files.internal("ui/VerticalScroller/VerticalScroller.json"));
         sliderSkin = new Skin(Gdx.files.internal("ui/Slider/slider.json"));
 
+        healthFrameHud = new TextureRegion(new Texture("ui/hud/HUD Cln_167.png"));
+        geoHudGame = new TextureRegion(new Texture("ui/hud/HUD Cln_089.png"));
+        fullMask = new TextureRegion(new Texture("ui/hud/FilledHealthShine_004.png"));
+        emptyMask = new TextureRegion(new Texture("ui/hud/EmptyHealth.png"));
+        maskShatterAnim = KnightAnimationLoader.loadAnimation("ui/hud/BreakHealth.png", 6, 0.1f);
     }
 
     public void dispose() {

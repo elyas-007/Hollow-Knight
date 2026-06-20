@@ -24,6 +24,7 @@ import com.hollow.models.SolidBlock;
 import com.hollow.models.entities.Knight.Knight;
 import com.badlogic.gdx.math.Rectangle;
 import com.badlogic.gdx.graphics.Color;
+import com.hollow.views.hud.GameHud;
 
 public class GameScreen implements Screen {
     private static final float VIEWPORT_WIDTH  = 20f;
@@ -34,6 +35,7 @@ public class GameScreen implements Screen {
     private final HollowKnight game;
     private Knight knight;
     private Game controller;
+    private GameHud hud;
 
     private OrthographicCamera camera;
     private FitViewport viewport;
@@ -81,6 +83,8 @@ public class GameScreen implements Screen {
         groundRecs = helper.getSolidRectangles();
         spikeRecs = helper.getSolidRectangles();
         controller = new Game(game, knight, groundRecs, spikeRecs);
+
+        hud = new GameHud(game, knight);
     }
 
     public void render(float delta) {
@@ -95,10 +99,15 @@ public class GameScreen implements Screen {
         knight.updateAnimations(delta);
 
         drawWorld();
+
+        hud.update(knight, delta);
+        hud.draw();
     }
 
     @Override public void resize(int width, int height) {
         viewport.update(width, height, true);
+        if (hud !=  null)
+            hud.resize(width, height);
     }
     @Override public void pause() {
 
@@ -114,6 +123,7 @@ public class GameScreen implements Screen {
     public void dispose() {
         if (map  != null) map.dispose();
         if (renderer != null) renderer.dispose();
+        if (hud != null) hud.dispose();
         // dispose animation
     }
 

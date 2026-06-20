@@ -4,16 +4,14 @@ import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Screen;
 import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.GL20;
-import com.badlogic.gdx.scenes.scene2d.InputEvent;
 import com.badlogic.gdx.scenes.scene2d.Stage;
-import com.badlogic.gdx.scenes.scene2d.ui.Image;
-import com.badlogic.gdx.scenes.scene2d.ui.Label;
+import com.badlogic.gdx.scenes.scene2d.Touchable;
+import com.badlogic.gdx.scenes.scene2d.ui.*;
 import com.badlogic.gdx.scenes.scene2d.ui.Label.LabelStyle;
-import com.badlogic.gdx.scenes.scene2d.ui.Table;
-import com.badlogic.gdx.scenes.scene2d.ui.TextButton;
-import com.badlogic.gdx.scenes.scene2d.utils.ClickListener;
-import com.badlogic.gdx.scenes.scene2d.utils.Cullable;
+import com.badlogic.gdx.scenes.scene2d.ui.TextButton.TextButtonStyle;
 import com.badlogic.gdx.scenes.scene2d.utils.NinePatchDrawable;
+import com.badlogic.gdx.utils.Array;
+import com.badlogic.gdx.utils.Scaling;
 import com.badlogic.gdx.utils.viewport.FitViewport;
 import com.hollow.HollowKnight;
 import com.hollow.controllers.ButtonController;
@@ -24,7 +22,6 @@ public class StartGameMenuScreen implements Screen {
     private final HollowKnight game;
     private Stage stage;
     private FitViewport viewport;
-    private TextButton[] menuButtons;
     private ButtonController controller;
 
     public StartGameMenuScreen(HollowKnight game) {
@@ -39,19 +36,19 @@ public class StartGameMenuScreen implements Screen {
 
         Table root = new Table();
         root.setFillParent(true);
-        Table content = new Table();
         stage.addActor(root);
 
-        TextButton.TextButtonStyle styleBtn = new TextButton.TextButtonStyle();
+        TextButtonStyle styleBtn = new TextButtonStyle();
         styleBtn.font = game.assetLoader.font;
         styleBtn.fontColor = Color.WHITE;
 
         LabelStyle titleStyle = new LabelStyle(game.assetLoader.font, Color.WHITE);
         LabelStyle infoStyle = new LabelStyle(game.assetLoader.subFont, Color.WHITE);
 
-        Label title = new Label("SELECT PROFILE", titleStyle);
-        root.add(title).padBottom(10).colspan(3).row();
-        root.add(new Image(game.assetLoader.under_SelectProfile)).colspan(3).padBottom(30).row();
+        root.add(new Label("SELECT PROFILE", titleStyle)).padBottom(5).row();
+        root.add(new Image(game.assetLoader.under_SelectProfile)).padBottom(40).row();
+
+        Array<TextButton> buttons = new Array<>();
 
         for (int i = 1; i <= 4; i++) {
             final int slotId = i;
@@ -59,79 +56,103 @@ public class StartGameMenuScreen implements Screen {
             GameData data = SaveManager.load(slotId);
 
             Table rowTable = new Table();
-            Table numberBox = new Table();
-            numberBox.add(new Image(game.assetLoader.profile_fleur)).left();
-            Label numberLabel = new Label(slotId + ".", titleStyle);
-            numberBox.add(numberLabel).padRight(15);
-            rowTable.add(numberBox).width(80).right();
 
-            Table profileBox = new Table();
-            profileBox.addListener(new ClickListener() {
-                @Override
-                public void clicked(InputEvent event, float x, float y) {
-                    startGame(data);
-                }
-            });
+            TextButton profileBox = new TextButton("", styleBtn);
+            profileBox.clearChildren();
+            profileBox.setUserObject((Runnable) () -> startGame(data));
+            buttons.add(profileBox);
+
+
+            Stack layerStack = new Stack();
+            layerStack.setFillParent(true);
 
             if (!data.isEmpty) {
-                if (data.location.equals("GREENPATH")) {
-                    rowTable.setBackground(new NinePatchDrawable(game.assetLoader.saveBackground_greenPath));
-                } else if (data.location.equals("CROSSROAD")) {
-                    rowTable.setBackground(new NinePatchDrawable(game.assetLoader.saveBackground_forgotten));
-                }
+                NinePatchDrawable bgDrawable = new NinePatchDrawable(
+                    data.location.equals("GREENPATH") ? game.assetLoader.saveBackground_greenPath : game.assetLoader.saveBackground_forgotten
+                );
+
+                Image bgImage = new Image(bgDrawable);
+                bgImage.setScaling(Scaling.stretch);
+
+                Table bgTable = new Table();
+                bgTable.add(bgImage).expand().fill().padLeft(20);
+                layerStack.add(bgTable);
+            }
+
+            Table content = new Table();
+            content.setTouchable(Touchable.disabled);
+            content.padLeft(90).padRight(20);
+
+            if (!data.isEmpty) {
                 Table leftInfo = new Table();
-                leftInfo.add(new Image(game.assetLoader.healthFrame)).size(64, 64).left();
+                leftInfo.add(new Label(slotId + ".", titleStyle)).left().padLeft(10).padRight(5);
+                leftInfo.add(new Image(game.assetLoader.healthFrame)).size(60, 60).padRight(15);
+
                 Table stateTable = new Table();
                 Table maskRow = new Table();
                 for (int m = 0; m < data.mask; m++)
-                    maskRow.add(new Image(game.assetLoader.mask)).size(24, 24).padRight(2);
+                    maskRow.add(new Image(game.assetLoader.mask)).size(20, 20).padRight(2);
 
                 stateTable.add(maskRow).left().padBottom(5).row();
+
                 Table geoRow = new Table();
-                geoRow.add(new Image(game.assetLoader.geoHud)).size(20, 20).padRight(5);
-                geoRow.add(new Label(String.valueOf(data.geo), infoStyle));
+                geoRow.add(new Image(game.assetLoader.geoHud)).size(18, 18).padRight(5);
+                geoRow.add(new Label(String.valueOf(data.geo), infoStyle)).left();
                 stateTable.add(geoRow).left();
 
-                leftInfo.add(stateTable).padLeft(15);
+                leftInfo.add(stateTable).left();
 
                 Table rightInfo = new Table();
-                rightInfo.add(new Label(data.location.toUpperCase(), infoStyle)).right().top().row();
-
+                rightInfo.add(new Label(data.location.toUpperCase(), infoStyle)).right().padBottom(5).row();
                 String timeStr = formatPlayTime(data.playTime); //evaluateTime
-                rightInfo.add(new Label(timeStr, infoStyle)).right().bottom().padTop(15);
+                rightInfo.add(new Label(timeStr, infoStyle)).right();
 
-                profileBox.add(leftInfo).expand().fill().left().padLeft(20);
-                profileBox.add(rightInfo).expand().fill().right().padRight(20);
+                content.add(leftInfo).left();
+                content.add().expandX().fillX();
+                content.add(rightInfo).right().padRight(20);
 
-                rowTable.add(profileBox).size(650, 90).padLeft(10);
-
-                TextButton clearBtn = new TextButton("CLEAR SAVE", styleBtn);
-                clearBtn.addListener(new ClickListener() {
-                    @Override
-                    public void clicked(InputEvent event, float x, float y) {
-                        SaveManager.clearSave(slotId);
-                        game.setScreen(new StartGameMenuScreen(game));
-                    }
-                });
-                rowTable.add(clearBtn).width(150).padLeft(30).right();
             } else {
-                profileBox.add(new Image(game.assetLoader.profile_fleur)).left();
-                profileBox.add(new Label("NEW GAME", titleStyle)).left().padLeft(30);
-                rowTable.add(profileBox).size(650, 90).padLeft(10);
-                rowTable.add().width(150).padLeft(30);
+                content.add(new Label("NEW GAME", titleStyle)).left().padLeft(15);
+                content.add().expandX().fillX();
             }
-            root.add(rowTable).padBottom(15).row();
+
+            layerStack.add(content);
+
+            Table frameTable = new Table();
+            frameTable.setTouchable(Touchable.disabled);
+            frameTable.add(new Image(game.assetLoader.profile_fleur)).left();
+            frameTable.add().expandX();
+            layerStack.add(frameTable);
+
+            profileBox.add(layerStack).expand().fill();
+            rowTable.add(profileBox).size(650, 95).padLeft(10);
+
+            if (!data.isEmpty) {
+                TextButton clearBtn = new TextButton("CLEAR SAVE", styleBtn);
+
+                clearBtn.setUserObject((Runnable) () -> {
+                    SaveManager.clearSave(slotId);
+                    game.setScreen(new StartGameMenuScreen(game));
+                });
+                buttons.add(clearBtn);
+
+                rowTable.add(clearBtn).width(150).padLeft(50);
+            } else {
+                rowTable.add().width(150).padLeft(50);
+            }
+
+            root.add(rowTable).padBottom(30).row();
         }
 
         TextButton backBtn = new TextButton("BACK", styleBtn);
-        backBtn.addListener(new ClickListener() {
-            @Override
-            public void clicked(InputEvent event, float x, float y) {
-                game.setScreen(new MainMenuScreen(game));
-            }
+        backBtn.setUserObject((Runnable) () -> {
+            game.setScreen(new MainMenuScreen(game));
         });
-        root.add(backBtn).colspan(3).padTop(30);
+        buttons.add(backBtn);
+        root.add(backBtn).padTop(30);
 
+        TextButton[] menuItems = buttons.toArray(TextButton.class);
+        controller = new ButtonController(game, stage, menuItems);
 
         if (game.assetLoader.titleTheme != null && !game.assetLoader.titleTheme.isPlaying() && game.settings.isMusicOn) {
             game.assetLoader.titleTheme.setLooping(true);
@@ -153,6 +174,10 @@ public class StartGameMenuScreen implements Screen {
         game.batch.end();
 
          stage.act(delta);
+
+         if (controller != null)
+             controller.update(delta);
+
          stage.draw();
     }
 

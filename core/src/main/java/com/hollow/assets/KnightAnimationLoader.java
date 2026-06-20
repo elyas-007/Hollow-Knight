@@ -31,7 +31,7 @@ public class KnightAnimationLoader {
         knight.idleAnim = loadAnimation("animation/Idle Hurt.png", 12, 0.1f);
     }
 
-    private static Animation<TextureRegion> loadAnimation(String fileName, int frameCount, float frameDuration) {
+    public static Animation<TextureRegion> loadAnimation(String fileName, int frameCount, float frameDuration) {
         Texture texture = new Texture(Gdx.files.internal(fileName));
 
         int frameWidth = texture.getWidth() / frameCount;
