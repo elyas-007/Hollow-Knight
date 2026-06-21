@@ -25,6 +25,9 @@ public class Game {
     private int keyAttack;
     private int keyFocus;
 
+    private float startX;
+    private float startY;
+
     public Game(HollowKnight game, Knight knight, Array<SolidBlock> groundRects, Array<SolidBlock> spikeRects, Array<Tiktik> tiktiks) {
         this.game = game;
         this.knight = knight;
@@ -42,6 +45,9 @@ public class Game {
         keyDown = game.settings.keyDown;
 
         this.tiktiks = tiktiks;
+
+        this.startX = knight.getX();
+        this.startY = knight.getY();
     }
 
     private boolean jumpPressed = false;
@@ -52,13 +58,29 @@ public class Game {
 
 
     public void update(float delta) {
-//        if (knight.isDead()) {
-//            handleDeath();
-//            return;
-//        }
+        if (knight.isDead()) {
+            knight.update(delta);
+            resolveGroundCollision();
+
+            if (knight.isDeathAnimationFinished()) {
+                handleDeath();
+            }
+            return;
+        }
+
+        if (pendingRespawn) {
+            respawnTimer += delta;
+            if (respawnTimer >= RESPAWN_DELAY) {
+                pendingRespawn = false;
+            }
+            knight.updateAnimations(delta);
+            return;
+        }
+
         handleInput(delta);
         knight.update(delta);
         resolveGroundCollision();
+        resolveSpikeCollision();
         updateEnemies(delta);
     }
 
@@ -142,6 +164,7 @@ public class Game {
             if (Gdx.input.isKeyPressed(keyUp)) dir = 1;
             else if (Gdx.input.isKeyPressed(keyDown) && !knight.isOnGround()) dir = -1;
             knight.attacking(dir);
+            performAttack(dir);
         }
 
         if (Gdx.input.isKeyPressed(keyDash)) {
@@ -150,6 +173,8 @@ public class Game {
 
         if (Gdx.input.isKeyPressed(keyFocus)) {
             knight.startFocusing();
+        } else {
+            knight.stopFocusing();
         }
 
         if (Gdx.input.isKeyPressed(keyUp) && knight.isOnGround() && knight.getVelocity().x == 0) {
@@ -172,6 +197,7 @@ public class Game {
         float prevY = knight.getY() - (knight.getVelocity().y * delta);
 
         for (SolidBlock ground : groundRects) {
+            if (ground.isDeadly) continue;
             if (!knightBox.overlaps(ground.bounds)) continue;
 
             float overlapLeft   = (knightBox.x + knightBox.width) - ground.bounds.x;
@@ -215,10 +241,90 @@ public class Game {
         }
     }
 
+    private void performAttack(int dir) {
+        Rectangle attackBox = new Rectangle();
+        float kx = knight.getX();
+        float ky = knight.getY();
+        float kw = knight.getWidth();
+        float kh = knight.getHeight();
+
+        float range = 1.8f;
+
+        if (dir > 0) {
+            attackBox.set(kx - 0.5f, ky + kh, kw + 1f, range);
+        } else if (dir < 0) {
+            attackBox.set(kx - 0.5f, ky - range, kw + 1f, range);
+        } else {
+            if (knight.isFacingRight()) {
+                attackBox.set(kx + kw, ky, range, kh);
+            } else {
+                attackBox.set(kx - range, ky, range, kh);
+            }
+        }
+
+        boolean hitSomething = false;
+
+        for (Tiktik enemy : tiktiks) {
+            if (enemy.state == Tiktik.EnemyState.WALKING) {
+                if (attackBox.overlaps(enemy.hitbox)) {
+                    boolean hitFromRight = knight.getX() > enemy.position.x;
+                    enemy.takeDamage(1, hitFromRight);
+                    knight.gainSoul(11);
+                    hitSomething = true;
+                }
+            }
+        }
+
+        if (dir < 0) {
+            for (SolidBlock spike : spikeRects) {
+                if (spike.isDeadly) {
+                    if (attackBox.overlaps(spike.bounds)) {
+                        hitSomething = true;
+                        break;
+                    }
+                }
+            }
+        }
+
+        if (hitSomething) {
+            if (dir < 0) {
+                knight.setVelocityY(15f);
+                knight.setOnGround(false);
+                knight.resetWallTouch();
+            } else if (dir == 0) {
+                float recoil = knight.isFacingRight() ? -4f : 4f;
+                knight.getVelocity().x = recoil;
+            }
+        }
+    }
+
+
+    private void resolveSpikeCollision() {
+        if (knight.isInvincible() || knight.isDead() || pendingRespawn) {
+            return;
+        }
+
+        Rectangle knightBox = knight.hitbox;
+
+        for (SolidBlock spike : spikeRects) {
+            if (spike.isDeadly) {
+                if (knightBox.overlaps(spike.bounds)) {
+                    knight.hitSpike();
+                    knight.reSpawn();
+
+                    pendingRespawn = true;
+                    respawnTimer = 0f;
+                    break;
+                }
+            }
+        }
+    }
+
+
 
 
     private void handleDeath() {
-        //TODO : death Animation and setScreen
+        knight.fullRespawn(startX, startY);
     }
 
 

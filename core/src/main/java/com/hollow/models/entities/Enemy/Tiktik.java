@@ -21,7 +21,7 @@ public class Tiktik {
     public static final float HIT_HEIGHT = 0.5f;
 
     public boolean isFacingRight = true;
-    public int health = 2;
+    public int health = 1;
     public float stateTime;
 
     public Animation<TextureRegion> walkAnim;

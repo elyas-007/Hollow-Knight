@@ -30,7 +30,7 @@ public class PauseScreen implements Screen {
 
     @Override
     public void show() {
-        viewport = new FitViewport(1280, 720);
+        viewport = new FitViewport(1920, 1080);
         stage = new Stage(viewport);
         Gdx.input.setInputProcessor(stage);
 
@@ -52,7 +52,7 @@ public class PauseScreen implements Screen {
         TextButton quitBtn = new TextButton("Quit To Menu", styleBtn);
 
         continueBtn.setUserObject((Runnable) this::resumeGame);
-        settingsBtn.setUserObject((Runnable) () -> game.setScreen(new SettingsMenuScreen(game)));
+        settingsBtn.setUserObject((Runnable) () -> game.setScreen(new SettingsMenuScreen(game, this)));
         guideBtn.setUserObject((Runnable) () -> game.setScreen(new GuideScreen()));
         cheatBtn.setUserObject((Runnable) () -> game.setScreen(new AchievementsScreen()));
         quitBtn.setUserObject((Runnable) this::quitGame);
@@ -133,6 +133,10 @@ public class PauseScreen implements Screen {
     }
 
     public void quitGame() {
+        if (game.activeSave != null) {
+            SaveManager.save(game.activeSave);
+            game.activeSave = null;
+        }
         game.setScreen(new MainMenuScreen(game));
     }
 }

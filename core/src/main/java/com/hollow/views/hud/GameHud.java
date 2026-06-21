@@ -35,7 +35,7 @@ public class GameHud implements Disposable {
         root.top().left().padTop(20).padLeft(20);
         stage.addActor(root);
 
-        soulVessel = new SoulVessel(game.assetLoader.healthFrameHud, game.assetLoader.healthFrameHud); // bug
+        soulVessel = new SoulVessel(game.assetLoader.healthFrameHud, game.assetLoader.soul); // bug
 
         maskWidgets = new Array<>();
         Table maskTable = new Table();
@@ -77,23 +77,25 @@ public class GameHud implements Disposable {
 
         int currentMask = knight.getCurrentMasks();
 
-        if (currentMask < lastMasks) {
+        while (currentMask < lastMasks) {
             for (int i = maskWidgets.size - 1; i >= 0; i--) {
                 if (maskWidgets.get(i).getState() == MaskWidget.MaskState.FULL) {
                     maskWidgets.get(i).shatter();
                     break;
                 }
             }
-        } else if (currentMask > lastMasks) {
+            lastMasks--;
+        }
+
+        while (currentMask > lastMasks) {
             for (int i = 0; i < maskWidgets.size; i++) {
                 if (maskWidgets.get(i).getState() != MaskWidget.MaskState.FULL) {
                     maskWidgets.get(i).fill();
                     break;
                 }
             }
+            lastMasks++;
         }
-
-        lastMasks = currentMask;
     }
 
     public void draw() {

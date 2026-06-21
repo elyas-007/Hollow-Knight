@@ -4,6 +4,8 @@ import com.badlogic.gdx.graphics.g2d.Animation;
 import com.badlogic.gdx.graphics.g2d.TextureRegion;
 import com.badlogic.gdx.math.Rectangle;
 import com.badlogic.gdx.math.Vector2;
+import com.badlogic.gdx.utils.Array;
+import com.hollow.models.Effect;
 import com.hollow.models.enums.KnightState;
 import com.hollow.utils.Constants;
 
@@ -62,6 +64,9 @@ public class Knight {
     private boolean altSlash = false;
     //Animations
 
+    public Array<Effect> activeEffects = new Array<>();
+    public Animation<TextureRegion> dashEffectAnim, slashEffectAnim, upSlashEffectAnim, downSlashEffectAnim;
+
     public Animation<TextureRegion> idleAnim;
     public Animation<TextureRegion> runAnim;
     public Animation<TextureRegion> airborneAnim;
@@ -97,13 +102,18 @@ public class Knight {
         updateState(delta);
         updateTimers(delta);
         updateDash(delta);
-
         applyG(delta);
         updatePosition(delta);
         updateHitbox();
-
-
         updateHealing(delta);
+
+        for (int i = activeEffects.size - 1; i >= 0; i--) {
+            Effect effect = activeEffects.get(i);
+            effect.update(delta);
+            if (effect.isFinished()) {
+                activeEffects.removeIndex(i);
+            }
+        }
     }
 
     private void updateTimers(float delta) {
@@ -124,6 +134,7 @@ public class Knight {
             currentSoul = Math.max(0, currentSoul - 33);
             currentMasks = Math.min(maxMasks, currentMasks + 1);
             healing = false;
+            healTimer = 0f;
         }
     }
 
@@ -341,6 +352,9 @@ public class Knight {
         dashDuration = DASH_DURATION;
         dashCooldown = DASH_COOLDOWN;
         dashDirection = (isFacingRight) ? 1f : -1f;
+
+        float offsetX = isFacingRight ? -1.5f : -0.5f;
+        activeEffects.add(new Effect(dashEffectAnim, offsetX, 0f, 2.5f, 1.5f, isFacingRight));
     }
 
     public void attacking(int direction) {
@@ -351,13 +365,17 @@ public class Knight {
         if (direction > 0) {
             state = KnightState.UP_SLASH;
             anim = upSlashAnim;
+            activeEffects.add(new Effect(upSlashEffectAnim, -0.6f, 1.0f, 2f, 2f, isFacingRight));
         } else if (direction < 0 && !isGrounded) {
             state = KnightState.DOWN_SLASH;
             anim = downSlashAnim;
+            activeEffects.add(new Effect(downSlashEffectAnim, -0.6f, -1.2f, 2f, 2f, isFacingRight));
         } else {
             altSlash = !altSlash;
             state = altSlash ? KnightState.SLASH_ALT : KnightState.SLASH;
             anim = altSlash ? slashAltAnim : slashAnim;
+            float offsetX = isFacingRight ? 0.5f : -1.5f;
+            activeEffects.add(new Effect(slashEffectAnim, offsetX, 0f, 2.5f, 2f, isFacingRight));
         }
         stateTimer = 0f;
         stateLockTimer = animDuration(anim);
@@ -427,19 +445,23 @@ public class Knight {
         }
     }
 
+    public void stopFocusing() {
+        if (healing) {
+            healing = false;
+            healTimer = 0f;
+        }
+    }
+
     public void hitSpike() {
         takeDamage(1, false);
     }
 
     public void reSpawn() {
-        position.set(lastPosition.x, lastPosition.y);
+        position.set(lastPosition.x, lastPosition.y + 0.2f);
         velocity.set(0, 0);
         isGrounded = false;
         touchingWallSide = 0;
         healing = false;
-        stateLockTimer = 0f;
-        state = KnightState.AIRBORNE;
-        stateTimer = 0f;
     }
 
     public void gainSoul(int amount) {
@@ -460,7 +482,6 @@ public class Knight {
         healTimer = 0f;
         state = KnightState.FOCUSING;
         stateTimer = 0f;
-//        currentSoul = Math.min(maxSoul,  currentSoul + 33);
     }
 
     public boolean heal() {
@@ -480,6 +501,26 @@ public class Knight {
         this.lookDirection = dir;
     }
 
+    public boolean isDeathAnimationFinished() {
+        return state == KnightState.DEAD && deathAnim != null && deathAnim.isAnimationFinished(stateTimer);
+    }
+
+    public void fullRespawn(float startX, float startY) {
+        position.set(startX, startY);
+        lastPosition.set(startX, startY);
+        velocity.set(0, 0);
+        isGrounded = false;
+        touchingWallSide = 0;
+        healing = false;
+
+        currentMasks = maxMasks;
+        currentSoul = 0;
+
+        state = KnightState.AIRBORNE;
+        stateTimer = 0f;
+        stateLockTimer = 0f;
+        activeEffects.clear();
+    }
 
     public float getX()          { return position.x; }
     public float getY()          { return position.y; }

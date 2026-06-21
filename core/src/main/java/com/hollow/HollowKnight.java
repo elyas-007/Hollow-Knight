@@ -7,13 +7,16 @@ import com.badlogic.gdx.graphics.Cursor;
 import com.badlogic.gdx.graphics.Pixmap;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.hollow.assets.AssetLoader;
+import com.hollow.models.GameData;
 import com.hollow.models.GameSettings;
+import com.hollow.models.SaveManager;
 import com.hollow.views.screens.MainMenuScreen;
 
 public class HollowKnight extends Game {
     public SpriteBatch batch;
     public AssetLoader assetLoader;
     public GameSettings settings;
+    public GameData activeSave;
 
 
     @Override
@@ -46,6 +49,8 @@ public class HollowKnight extends Game {
     @Override
     public void dispose() {
         super.dispose();
+        if (settings != null) settings.save();
+        if (activeSave != null) SaveManager.save(activeSave);
         batch.dispose();
         assetLoader.dispose();
    }

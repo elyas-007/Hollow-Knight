@@ -30,7 +30,7 @@ public class StartGameMenuScreen implements Screen {
 
     @Override
     public void show() {
-        viewport = new  FitViewport(1280, 720);
+        viewport = new  FitViewport(1920, 1080);
         stage = new Stage(viewport, game.batch);
         Gdx.input.setInputProcessor(stage);
 
@@ -168,7 +168,7 @@ public class StartGameMenuScreen implements Screen {
 
         game.batch.setProjectionMatrix(stage.getCamera().combined);
          game.batch.begin();
-         game.batch.draw(game.assetLoader.background, 0, 0, 1280, 720);
+         game.batch.draw(game.assetLoader.background, 0, 0, 1920, 1080);
         float b = game.settings.brightness;
         game.batch.setColor(b, b, b, 1f);
         game.batch.end();
@@ -213,14 +213,15 @@ public class StartGameMenuScreen implements Screen {
     }
 
     private void startGame(GameData data) {
-        if (data.isEmpty) {
-            data.isEmpty = false;
-            data.mask = 5;
-            data.location = "CROSSROAD";
-            data.geo = 0;
-            data.playTime = 0;
-            SaveManager.save(data);
-        }
+//        if (data.isEmpty) {
+//            data.isEmpty = false;
+//            data.mask = 5;
+//            data.location = "CROSSROAD";
+//            data.geo = 0;
+//            data.playTime = 0;
+//            SaveManager.save(data);
+//        }
+        game.activeSave = data;
         game.setScreen(new GameScreen(game));
     }
 

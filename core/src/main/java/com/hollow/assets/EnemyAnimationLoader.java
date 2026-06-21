@@ -12,7 +12,7 @@ public class EnemyAnimationLoader {
 
         tiktik.walkAnim = loadAnimation("animation/enemy/tiktik/Walk.png", 4, 0.1f, Animation.PlayMode.LOOP);
 
-        tiktik.deathAirAnim = loadAnimation("animation/enemy/tiktik/Death Air.png", 4, 0.1f, Animation.PlayMode.LOOP);
+        tiktik.deathAirAnim = loadAnimation("animation/enemy/tiktik/Death Air.png", 4, 0.1f, Animation.PlayMode.NORMAL);
 
         tiktik.deathLandAnim = loadAnimation("animation/enemy/tiktik/Death Land.png", 3, 0.1f, Animation.PlayMode.NORMAL);
 

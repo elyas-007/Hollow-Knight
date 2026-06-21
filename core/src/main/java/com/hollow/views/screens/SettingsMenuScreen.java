@@ -36,14 +36,16 @@ public class SettingsMenuScreen implements Screen {
     private String rebindTarget = null;
     private Label rebindLabel;
 
+    private Screen previousScreen;
 
-    public SettingsMenuScreen(HollowKnight game) {
+    public SettingsMenuScreen(HollowKnight game, Screen screen) {
         this.game = game;
+        this.previousScreen = screen;
     }
 
     @Override
     public void show() {
-        viewport = new FitViewport(1280, 720);
+        viewport = new FitViewport(1920, 1080);
         stage = new Stage(viewport);
         Gdx.input.setInputProcessor(stage);
 
@@ -172,7 +174,7 @@ public class SettingsMenuScreen implements Screen {
         TextButton resetKey = new TextButton("Reset Keys", styleBtn);
         resetKey.setUserObject((Runnable) () -> {
             setting.resetKey();
-            game.setScreen(new SettingsMenuScreen(game));
+            game.setScreen(new SettingsMenuScreen(game, previousScreen));
         });
         contentTable.add(resetKey).colspan(2).padBottom(28).row();
 
@@ -183,7 +185,7 @@ public class SettingsMenuScreen implements Screen {
         TextButton backBtn = new TextButton("Back", styleBtn);
         backBtn.setUserObject((Runnable) () -> {
             setting.save();
-            game.setScreen(new MainMenuScreen(game));
+            game.setScreen(previousScreen != null ? previousScreen : new MainMenuScreen(game));
         });
 
 
@@ -205,7 +207,8 @@ public class SettingsMenuScreen implements Screen {
 
                 if (keycode == Input.Keys.ESCAPE) {
                     setting.save();
-                    game.setScreen(new SettingsMenuScreen(game)); // add feature later
+                    setting.save();
+                    game.setScreen(previousScreen != null ? previousScreen : new MainMenuScreen(game));
                     return true;
                 }
                 return false;
@@ -247,7 +250,7 @@ public class SettingsMenuScreen implements Screen {
         game.batch.begin();
         float b = game.settings.brightness;
         game.batch.setColor(b, b, b, 1f);
-        game.batch.draw(game.assetLoader.background, 0, 0, 1280, 720);
+        game.batch.draw(game.assetLoader.background, 0, 0, 1920, 1080);
         game.batch.setColor(Color.WHITE);
         game.batch.end();
 

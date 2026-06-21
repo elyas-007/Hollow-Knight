@@ -26,7 +26,7 @@ public class MainMenuScreen implements Screen {
 
     @Override
     public void show() {
-        viewport = new FitViewport(1280, 720);
+        viewport = new FitViewport(1920, 1080);
         stage = new Stage(viewport);
         Gdx.input.setInputProcessor(stage);
 
@@ -47,7 +47,7 @@ public class MainMenuScreen implements Screen {
         TextButton quitBtn = new TextButton("Quit Game", styleBtn);
 
         startBtn.setUserObject((Runnable) () -> game.setScreen(new StartGameMenuScreen(game)));
-        settingsBtn.setUserObject((Runnable) () -> game.setScreen(new SettingsMenuScreen(game)));
+        settingsBtn.setUserObject((Runnable) () -> game.setScreen(new SettingsMenuScreen(game, this)));
         guideBtn.setUserObject((Runnable) () -> game.setScreen(new GuideScreen()));
         achievementsBtn.setUserObject((Runnable) () -> game.setScreen(new AchievementsScreen()));
         quitBtn.setUserObject((Runnable) () -> Gdx.app.exit());
@@ -77,7 +77,7 @@ public class MainMenuScreen implements Screen {
 
         game.batch.setProjectionMatrix(stage.getCamera().combined);
         game.batch.begin();
-        game.batch.draw(game.assetLoader.background, 0, 0, 1280, 720);
+        game.batch.draw(game.assetLoader.background, 0, 0, 1920, 1080);
         float b = game.settings.brightness;
         game.batch.setColor(b, b, b, 1f);
         game.batch.end();

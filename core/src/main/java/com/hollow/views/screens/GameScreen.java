@@ -158,6 +158,7 @@ public class GameScreen implements Screen {
         game.batch.begin();
         renderEnemies();
         renderKnight();
+        renderEffects();
         game.batch.end();
     }
 
@@ -279,19 +280,43 @@ public class GameScreen implements Screen {
 
         if (groundRecs != null) {
             for (SolidBlock ground : groundRecs) {
-                Rectangle gBox = ground.bounds;
-                shapeRenderer.rect(gBox.x, gBox.y, gBox.width, gBox.height);
+                if (!ground.isDeadly) {
+                    Rectangle gBox = ground.bounds;
+                    shapeRenderer.rect(gBox.x, gBox.y, gBox.width, gBox.height);
+                }
             }
         }
 
         if (spikeRecs != null) {
             shapeRenderer.setColor(Color.RED);
             for (SolidBlock spike : spikeRecs) {
-                Rectangle sBox = spike.bounds;
-                shapeRenderer.rect(sBox.x, sBox.y, sBox.width, sBox.height);
+                if (spike.isDeadly) {
+                    Rectangle sBox = spike.bounds;
+                    shapeRenderer.rect(sBox.x, sBox.y, sBox.width, sBox.height);
+                }
             }
         }
 
         shapeRenderer.end();
+    }
+
+    private void renderEffects() {
+        for (var effect : knight.activeEffects) {
+            var frame = effect.getCurrentFrame();
+
+            if (frame == null)
+                continue;
+
+            float drawX = knight.getX() + effect.offsetX;
+            float drawY = knight.getY() + effect.offsetY;
+            float w = effect.width;
+            float h = effect.height;
+
+            if (effect.isFacingRight) {
+                game.batch.draw(frame, drawX, drawY, w, h);
+            } else {
+                game.batch.draw(frame, drawX + w, drawY, -w, h);
+            }
+        }
     }
 }

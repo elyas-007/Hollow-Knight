@@ -47,6 +47,7 @@ public class AssetLoader {
     public TextureRegion fullMask;
     public TextureRegion emptyMask;
     public Animation<TextureRegion> maskShatterAnim;
+    public TextureRegion soul;
 
     // Audio
     public  Music titleTheme;
@@ -112,7 +113,8 @@ public class AssetLoader {
         geoHudGame = new TextureRegion(new Texture("ui/hud/HUD Cln_089.png"));
         fullMask = new TextureRegion(new Texture("ui/hud/FilledHealthShine_004.png"));
         emptyMask = new TextureRegion(new Texture("ui/hud/EmptyHealth.png"));
-        maskShatterAnim = KnightAnimationLoader.loadAnimation("ui/hud/BreakHealth.png", 6, 0.1f);
+        maskShatterAnim = KnightAnimationLoader.loadAnimation("ui/hud/BreakHealth.png", 6, 0.1f, Animation.PlayMode.LOOP);
+        soul = new TextureRegion(new Texture("ui/hud/Soft.png"));
     }
 
     public void dispose() {
