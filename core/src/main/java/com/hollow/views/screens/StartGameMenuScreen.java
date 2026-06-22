@@ -23,14 +23,16 @@ public class StartGameMenuScreen implements Screen {
     private Stage stage;
     private FitViewport viewport;
     private ButtonController controller;
+    private Screen lastScreen;
 
-    public StartGameMenuScreen(HollowKnight game) {
+    public StartGameMenuScreen(HollowKnight game, Screen lastScreen) {
         this.game = game;
+        this.lastScreen = lastScreen;
     }
 
     @Override
     public void show() {
-        viewport = new  FitViewport(1920, 1080);
+        viewport = new FitViewport(game.SCREEN_WIDTH, game.SCREEN_HEIGHT);
         stage = new Stage(viewport, game.batch);
         Gdx.input.setInputProcessor(stage);
 
@@ -132,7 +134,7 @@ public class StartGameMenuScreen implements Screen {
 
                 clearBtn.setUserObject((Runnable) () -> {
                     SaveManager.clearSave(slotId);
-                    game.setScreen(new StartGameMenuScreen(game));
+                    game.setScreen(this);
                 });
                 buttons.add(clearBtn);
 
@@ -146,7 +148,7 @@ public class StartGameMenuScreen implements Screen {
 
         TextButton backBtn = new TextButton("BACK", styleBtn);
         backBtn.setUserObject((Runnable) () -> {
-            game.setScreen(new MainMenuScreen(game));
+            game.setScreen(lastScreen);
         });
         buttons.add(backBtn);
         root.add(backBtn).padTop(30);
@@ -181,21 +183,16 @@ public class StartGameMenuScreen implements Screen {
          stage.draw();
     }
 
-    @Override
-    public void resize(int width, int height) {
+
+    @Override public void resize(int width, int height) {
         viewport.update(width, height, true);
     }
-
-    @Override
-    public void pause() {
+    @Override public void pause() {
 
     }
-
-    @Override
-    public void resume() {
+    @Override public void resume() {
 
     }
-
     @Override
     public void hide() {
         Gdx.input.setInputProcessor(null);
@@ -213,16 +210,10 @@ public class StartGameMenuScreen implements Screen {
     }
 
     private void startGame(GameData data) {
-//        if (data.isEmpty) {
-//            data.isEmpty = false;
-//            data.mask = 5;
-//            data.location = "CROSSROAD";
-//            data.geo = 0;
-//            data.playTime = 0;
-//            SaveManager.save(data);
-//        }
+        if (data.isEmpty) data.isEmpty = false;
+
         game.activeSave = data;
-        game.setScreen(new GameScreen(game));
+        game.setScreen(new GameScreen(game, data.location));
     }
 
     private String formatPlayTime(float time) {

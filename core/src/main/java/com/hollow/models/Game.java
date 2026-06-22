@@ -3,16 +3,19 @@ package com.hollow.models;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Input;
 import com.badlogic.gdx.math.Rectangle;
+import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.utils.Array;
 import com.hollow.HollowKnight;
 import com.hollow.models.entities.Enemy.Tiktik;
 import com.hollow.models.entities.Knight.Knight;
+import com.hollow.views.screens.GameScreen;
 
 public class Game {
     private HollowKnight game;
     private final Knight knight;
     private final Array<SolidBlock> groundRects;
     private final Array<SolidBlock> spikeRects;
+    private GameData data;
 
     private Array<Tiktik> tiktiks;
 
@@ -28,7 +31,10 @@ public class Game {
     private float startX;
     private float startY;
 
-    public Game(HollowKnight game, Knight knight, Array<SolidBlock> groundRects, Array<SolidBlock> spikeRects, Array<Tiktik> tiktiks) {
+    private TransitionZone transitionZones;
+    private GameScreen screen;
+
+    public Game(HollowKnight game, Knight knight, Array<SolidBlock> groundRects, Array<SolidBlock> spikeRects, Array<Tiktik> tiktiks, TransitionZone transitionZones, GameScreen screen, GameData data) {
         this.game = game;
         this.knight = knight;
         this.groundRects = groundRects;
@@ -48,6 +54,11 @@ public class Game {
 
         this.startX = knight.getX();
         this.startY = knight.getY();
+
+        this.screen = screen;
+        this.transitionZones = transitionZones;
+
+        this.data = data;
     }
 
     private boolean jumpPressed = false;
@@ -82,6 +93,15 @@ public class Game {
         resolveGroundCollision();
         resolveSpikeCollision();
         updateEnemies(delta);
+        checkMapTransitions();
+    }
+
+    private void checkMapTransitions() {
+        Rectangle knightBox = knight.getHitbox();
+        if (knightBox.overlaps(transitionZones.bounds)) {
+            knight.stopMovingHorizontally();
+            screen.startTransition(transitionZones.targetMap);
+        }
     }
 
     private void updateEnemies(float delta) {
@@ -324,7 +344,8 @@ public class Game {
 
 
     private void handleDeath() {
-        knight.fullRespawn(startX, startY);
+        Vector2 initialPos = screen.findSpawnPoint();
+        knight.fullRespawn(initialPos.x, initialPos.y);
     }
 
 

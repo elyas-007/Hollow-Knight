@@ -1,0 +1,49 @@
+{
+    "activeFile": "",
+    "expandedProjectPaths": [
+    ],
+    "file.lastUsedOpenFilter": "All Files (*)",
+    "fileStates": {
+        "cross_road.tmx": {
+            "expandedObjectLayers": [
+                11
+            ],
+            "scale": 0.416015625,
+            "selectedLayer": 8,
+            "viewCenter": {
+                "x": 12000.75117370892,
+                "y": 7113.915492957747
+            }
+        },
+        "cross_road.tmx#Lance_object": {
+            "scaleInDock": 1
+        },
+        "green_path.tmx": {
+            "expandedObjectLayers": [
+                6
+            ],
+            "scale": 1,
+            "selectedLayer": 6,
+            "viewCenter": {
+                "x": 12546.5,
+                "y": 6197.5
+            }
+        }
+    },
+    "last.imagePath": "P:/Project/HollowKnight/assets/map/source/Area specfic architecture/Greenpath",
+    "map.height": 2000,
+    "map.lastUsedFormat": "tmx",
+    "map.tileHeight": 8,
+    "map.tileWidth": 8,
+    "map.width": 3000,
+    "openFiles": [
+    ],
+    "project": "green_path.tiled-project",
+    "recentFiles": [
+    ],
+    "tileset.lastUsedFormat": "tsx",
+    "tileset.tileSize": {
+        "height": 8,
+        "width": 8
+    }
+}

@@ -17,6 +17,8 @@ public class HollowKnight extends Game {
     public AssetLoader assetLoader;
     public GameSettings settings;
     public GameData activeSave;
+    public final int SCREEN_WIDTH = 1920;
+    public final int SCREEN_HEIGHT = 1080;
 
 
     @Override

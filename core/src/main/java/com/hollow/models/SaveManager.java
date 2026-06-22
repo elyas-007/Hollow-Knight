@@ -21,10 +21,8 @@ public class SaveManager {
         if (file.exists()) {
             return json.fromJson(GameData.class, file.readString());
         }
-
-        GameData empty = new GameData();
-        empty.slot = slot;
-        return empty;
+        GameData data = new GameData(slot);
+        return data;
     }
 
     public static void clearSave(int slot) {

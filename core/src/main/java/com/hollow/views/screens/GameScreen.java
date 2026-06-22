@@ -21,7 +21,9 @@ import com.hollow.assets.EnemyAnimationLoader;
 import com.hollow.assets.KnightAnimationLoader;
 import com.hollow.assets.TiledMapHelper;
 import com.hollow.models.Game;
+import com.hollow.models.GameData;
 import com.hollow.models.SolidBlock;
+import com.hollow.models.TransitionZone;
 import com.hollow.models.entities.Enemy.Tiktik;
 import com.hollow.models.entities.Knight.Knight;
 import com.badlogic.gdx.math.Rectangle;
@@ -56,8 +58,26 @@ public class GameScreen implements Screen {
 
     private ShapeRenderer shapeRenderer;
 
-    public GameScreen(HollowKnight game) {
+    private String mapPath;
+    private Vector2 customSpawn;
+    private boolean isFadingOut = false;
+    private boolean isFadingIn;
+    private float fadeAlpha;
+    private String nextMap;
+    private TransitionZone transitionZone;
+
+
+    public GameScreen(HollowKnight game, String mapPath, float spawnX, float spawnY) {
         this.game = game;
+        this.mapPath = mapPath;
+        this.customSpawn = new Vector2(spawnX, spawnY);
+    }
+
+    public GameScreen(HollowKnight game, String mapPath) {
+        this.game = game;
+        if (mapPath.equals("CROSSROAD")) this.mapPath = "map/cross_road.tmx";
+        else this.mapPath = "map/green_path.tmx";
+        this.customSpawn = null;
     }
 
 
@@ -67,7 +87,11 @@ public class GameScreen implements Screen {
         camera = new OrthographicCamera();
         viewport = new FitViewport(VIEWPORT_WIDTH, VIEWPORT_HEIGHT, camera);
 
-        map = helper.loadMap("map/untitled.tmx");
+        isFadingIn = true;
+        fadeAlpha = 1f;
+        shapeRenderer = new ShapeRenderer();
+
+        map = helper.loadMap(this.mapPath);
         renderer = new OrthogonalTiledMapRenderer(map, UNIT_SCALE);
 
         int tileWidth = map.getProperties().get("tilewidth", Integer.class);
@@ -77,7 +101,12 @@ public class GameScreen implements Screen {
         mapPixelWidth = mapCols * tileWidth * UNIT_SCALE;
         mapPixelHeight = mapRows * tileHeight * UNIT_SCALE;
 
-        Vector2 spawnPoint = findSpawnPoint();
+        Vector2 spawnPoint;
+        if (this.customSpawn != null) {
+            spawnPoint = findCustomSpawnPoint();
+        } else {
+            spawnPoint = findSpawnPoint();
+        }
         knight = new Knight(spawnPoint.x, spawnPoint.y);
 
         KnightAnimationLoader.loadAllAnimations(knight);
@@ -93,16 +122,15 @@ public class GameScreen implements Screen {
 
         groundRecs = helper.getSolidRectangles();
         spikeRecs = helper.getSolidRectangles();
+        transitionZone = helper.getTransitionZone(map, UNIT_SCALE);
         Array<Tiktik> mapTiktiks = helper.getTiktikSpawns(map, UNIT_SCALE);
         for (Tiktik t : mapTiktiks) {
             EnemyAnimationLoader.loadTiktikAnimations(t);
         }
 
-        controller = new Game(game, knight, groundRecs, spikeRecs, mapTiktiks);
+        controller = new Game(game, knight, groundRecs, spikeRecs, mapTiktiks, transitionZone, this, game.activeSave);
 
         hud = new GameHud(game, knight);
-
-        shapeRenderer = new ShapeRenderer();
     }
 
     public void render(float delta) {
@@ -122,6 +150,8 @@ public class GameScreen implements Screen {
 
         hud.update(knight, delta);
         hud.draw();
+
+        handleFadeEffect(delta);
     }
 
     @Override public void resize(int width, int height) {
@@ -162,7 +192,7 @@ public class GameScreen implements Screen {
         game.batch.end();
     }
 
-    private Vector2 findSpawnPoint() {
+    public Vector2 findSpawnPoint() {
         MapLayer layer = map.getLayers().get("logic");
         MapObject spawnPoint = layer.getObjects().get("spwanPoint");
 
@@ -318,5 +348,50 @@ public class GameScreen implements Screen {
                 game.batch.draw(frame, drawX + w, drawY, -w, h);
             }
         }
+    }
+
+
+    public void startTransition(String targetMap) {
+        if (!isFadingOut) {
+            this.nextMap = targetMap;
+            this.isFadingOut = true;
+        }
+    }
+
+    private void handleFadeEffect(float delta) {
+        Gdx.gl.glEnable(GL20.GL_BLEND);
+        Gdx.gl.glBlendFunc(GL20.GL_SRC_ALPHA, GL20.GL_ONE_MINUS_SRC_ALPHA);
+
+        shapeRenderer.begin(ShapeRenderer.ShapeType.Filled);
+
+        if (isFadingIn) {
+            fadeAlpha -= delta * 1.5f;
+            if (fadeAlpha <= 0f) {
+                fadeAlpha = 0f;
+                isFadingIn = false;
+            }
+        } else if (isFadingOut) {
+            fadeAlpha += delta * 1.5f;
+            if (fadeAlpha >= 1f) {
+                fadeAlpha = 1f;
+                game.setScreen(new LoadingScreen(game, nextMap));
+            }
+        }
+
+        shapeRenderer.setColor(new Color(0, 0, 0, fadeAlpha));
+        shapeRenderer.rect(0, 0, Gdx.graphics.getWidth(), Gdx.graphics.getHeight());
+        shapeRenderer.end();
+
+        Gdx.gl.glDisable(GL20.GL_BLEND);
+    }
+
+    private Vector2 findCustomSpawnPoint() {
+        MapLayer layer = map.getLayers().get("transition");
+        MapObject spawnPoint = layer.getObjects().get("custom_spawn");
+
+        float x = spawnPoint.getProperties().get("x", Float.class) * UNIT_SCALE;
+        float y = spawnPoint.getProperties().get("y", Float.class) * UNIT_SCALE;
+
+        return new Vector2(x, y);
     }
 }

@@ -46,7 +46,7 @@ public class MainMenuScreen implements Screen {
         TextButton achievementsBtn = new TextButton("achievements", styleBtn);
         TextButton quitBtn = new TextButton("Quit Game", styleBtn);
 
-        startBtn.setUserObject((Runnable) () -> game.setScreen(new StartGameMenuScreen(game)));
+        startBtn.setUserObject((Runnable) () -> game.setScreen(new StartGameMenuScreen(game, this)));
         settingsBtn.setUserObject((Runnable) () -> game.setScreen(new SettingsMenuScreen(game, this)));
         guideBtn.setUserObject((Runnable) () -> game.setScreen(new GuideScreen()));
         achievementsBtn.setUserObject((Runnable) () -> game.setScreen(new AchievementsScreen()));

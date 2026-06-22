@@ -8,6 +8,7 @@ import com.badlogic.gdx.maps.tiled.TmxMapLoader;
 import com.badlogic.gdx.math.Rectangle;
 import com.badlogic.gdx.utils.Array;
 import com.hollow.models.SolidBlock;
+import com.hollow.models.TransitionZone;
 import com.hollow.models.entities.Enemy.Tiktik;
 
 public class TiledMapHelper {
@@ -58,4 +59,30 @@ public class TiledMapHelper {
         }
         return tiktiks;
     }
+
+    public TransitionZone getTransitionZone(TiledMap map, float unitScale) {
+        MapLayer layer = map.getLayers().get("transition");
+
+        if (layer == null) return null;
+
+        for (MapObject object : layer.getObjects()) {
+            if (object instanceof RectangleMapObject) {
+                Rectangle rect = ((RectangleMapObject) object).getRectangle();
+
+                String targetMap = object.getProperties().get("targetMap", String.class);
+
+                if (targetMap != null) {
+                    return new TransitionZone(
+                        rect.x * unitScale,
+                        rect.y * unitScale,
+                        rect.width * unitScale,
+                        rect.height * unitScale,
+                        targetMap
+                    );
+                }
+            }
+        }
+        return null;
+    }
+
 }
