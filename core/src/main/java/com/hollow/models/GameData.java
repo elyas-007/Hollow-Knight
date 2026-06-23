@@ -9,6 +9,9 @@ public class GameData {
     public int geo = 0;
     public int mask = 0;
     public int playTime = 0; // minute
+    public boolean falseKnightDefeated = false;
+    public float falseKnightDeathX = 0f;
+    public float falseKnightDeathY = 0f;
 
     public GameData() {
     }

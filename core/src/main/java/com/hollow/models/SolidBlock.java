@@ -10,4 +10,8 @@ public class SolidBlock {
         this.bounds = new Rectangle(x, y, width, height);
         this.isDeadly = isDeadly;
     }
+
+    public SolidBlock() {
+        this.isDeadly = false;
+    }
 }

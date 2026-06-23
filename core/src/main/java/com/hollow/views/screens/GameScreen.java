@@ -17,6 +17,7 @@ import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.utils.Array;
 import com.badlogic.gdx.utils.viewport.FitViewport;
 import com.hollow.HollowKnight;
+import com.hollow.assets.BossAnimationLoader;
 import com.hollow.assets.EnemyAnimationLoader;
 import com.hollow.assets.KnightAnimationLoader;
 import com.hollow.assets.TiledMapHelper;
@@ -25,16 +26,19 @@ import com.hollow.models.GameData;
 import com.hollow.models.SolidBlock;
 import com.hollow.models.TransitionZone;
 import com.hollow.models.entities.Enemy.Tiktik;
+import com.hollow.models.entities.FalseKnightBoss.FalseKnight;
+import com.hollow.models.entities.FalseKnightBoss.IdleBehavior;
 import com.hollow.models.entities.Knight.Knight;
 import com.badlogic.gdx.math.Rectangle;
 import com.badlogic.gdx.graphics.Color;
 import com.hollow.models.enums.KnightState;
 import com.hollow.views.hud.GameHud;
+import com.hollow.views.render.BossRenderer;
 
 public class GameScreen implements Screen {
-    private static final float VIEWPORT_WIDTH  = 20f;
+    private static final float VIEWPORT_WIDTH = 20f;
     private static final float VIEWPORT_HEIGHT = 11.25f;
-    private static final float UNIT_SCALE      = 1f / 64f;
+    private static final float UNIT_SCALE = 1f / 64f;
     private static final float CAM_LERP = 0.08f;
 
     private final HollowKnight game;
@@ -65,6 +69,18 @@ public class GameScreen implements Screen {
     private float fadeAlpha;
     private String nextMap;
     private TransitionZone transitionZone;
+
+    private FalseKnight falseKnight;
+    private BossRenderer bossRenderer;
+
+    public float arenaMinX;
+    public float arenaMaxX;
+    public float arenaY;
+    public float arenaHeight;
+    public boolean bossFightActive = false;
+
+    private static float shakeTimer = 0f;
+    private static float shakeIntensity = 0f;
 
 
     public GameScreen(HollowKnight game, String mapPath, float spawnX, float spawnY) {
@@ -128,9 +144,34 @@ public class GameScreen implements Screen {
             EnemyAnimationLoader.loadTiktikAnimations(t);
         }
 
-        controller = new Game(game, knight, groundRecs, spikeRecs, mapTiktiks, transitionZone, this, game.activeSave);
 
         hud = new GameHud(game, knight);
+
+        if (mapPath.equals("map/cross_road.tmx")) {
+            if (game.activeSave.falseKnightDefeated) {
+                falseKnight = new FalseKnight(game.activeSave.falseKnightDeathX, game.activeSave.falseKnightDeathY);
+                BossAnimationLoader.loadAllAnimations(falseKnight);
+                falseKnight.setupAsCorpse();
+            } else {
+                Vector2 boss_pos = findBossSpawnPoint();
+                falseKnight = new FalseKnight(boss_pos.x, boss_pos.y);
+                BossAnimationLoader.loadAllAnimations(falseKnight);
+                falseKnight.changeBehavior(new IdleBehavior());
+            }
+
+            bossRenderer = new BossRenderer(game);
+        }
+
+        Rectangle rect = helper.getBossRoom(map, UNIT_SCALE);
+        if (rect != null) {
+            arenaMinX = rect.x;
+            arenaMaxX = rect.x + rect.width;
+            arenaY = rect.y;
+            arenaHeight = rect.height;
+        }
+
+        controller = new Game(game, knight, groundRecs, spikeRecs, mapTiktiks, transitionZone, this, game.activeSave, falseKnight);
+
     }
 
     public void render(float delta) {
@@ -144,6 +185,7 @@ public class GameScreen implements Screen {
         controller.update(delta);
         knight.updateAnimations(delta);
 
+
         drawWorld();
 
         renderDebugHitboxes();
@@ -154,24 +196,31 @@ public class GameScreen implements Screen {
         handleFadeEffect(delta);
     }
 
-    @Override public void resize(int width, int height) {
+    @Override
+    public void resize(int width, int height) {
         viewport.update(width, height, false);
-        if (hud !=  null)
+        if (hud != null)
             hud.resize(width, height);
     }
-    @Override public void pause() {
+
+    @Override
+    public void pause() {
 
     }
-    @Override public void resume() {
+
+    @Override
+    public void resume() {
 
     }
-    @Override public void hide() {
+
+    @Override
+    public void hide() {
 
     }
 
     @Override
     public void dispose() {
-        if (map  != null) map.dispose();
+        if (map != null) map.dispose();
         if (renderer != null) renderer.dispose();
         if (hud != null) hud.dispose();
         // dispose animation
@@ -188,6 +237,9 @@ public class GameScreen implements Screen {
         game.batch.begin();
         renderEnemies();
         renderKnight();
+        if (falseKnight != null) {
+            bossRenderer.render(falseKnight, Gdx.graphics.getDeltaTime());
+        }
         renderEffects();
         game.batch.end();
     }
@@ -267,29 +319,6 @@ public class GameScreen implements Screen {
         }
     }
 
-    private void updateCamera() {
-        float knightX = knight.getX() + knight.getWidth()  / 2f;
-        float knightY = knight.getY() + knight.getHeight() / 2f;
-
-        float cameraOffsetY = 0f;
-        if (knight.getState() == KnightState.LOOK_UP) {
-            cameraOffsetY = 4f;
-        } else if (knight.getState() == KnightState.LOOK_DOWN) {
-            cameraOffsetY = -4f;
-        }
-
-        float targetX = camera.position.x + (knightX - camera.position.x) * CAM_LERP;
-        float targetY = camera.position.y + ((knightY + cameraOffsetY) - camera.position.y) * CAM_LERP;
-
-        float halfW = VIEWPORT_WIDTH  / 2f;
-        float halfH = VIEWPORT_HEIGHT / 2f;
-        targetX = Math.max(halfW,  Math.min(mapPixelWidth  - halfW,  targetX));
-        targetY = Math.max(halfH,  Math.min(mapPixelHeight - halfH, targetY));
-
-        camera.position.set(targetX, targetY, 0);
-        camera.update();
-    }
-
     private void renderDebugHitboxes() {
         shapeRenderer.setProjectionMatrix(camera.combined);
 
@@ -324,6 +353,15 @@ public class GameScreen implements Screen {
                     Rectangle sBox = spike.bounds;
                     shapeRenderer.rect(sBox.x, sBox.y, sBox.width, sBox.height);
                 }
+            }
+        }
+
+        if (controller.boss != null) {
+            shapeRenderer.setColor(Color.MAGENTA);
+            shapeRenderer.rect(controller.boss.hitbox.x, controller.boss.hitbox.y, controller.boss.hitbox.width, controller.boss.hitbox.height);
+            if (controller.boss.currentState == FalseKnight.state.STUNNED) {
+                shapeRenderer.setColor(Color.CYAN);
+                shapeRenderer.rect(controller.boss.vulnerabilityBox.x, controller.boss.vulnerabilityBox.y, controller.boss.vulnerabilityBox.width, controller.boss.vulnerabilityBox.height);
             }
         }
 
@@ -394,4 +432,83 @@ public class GameScreen implements Screen {
 
         return new Vector2(x, y);
     }
+
+    public Vector2 findBossSpawnPoint() {
+        MapLayer layer = map.getLayers().get("enemies");
+        MapObject spawnPoint = layer.getObjects().get("boss");
+
+        float x = spawnPoint.getProperties().get("x", Float.class) * UNIT_SCALE;
+        float y = spawnPoint.getProperties().get("y", Float.class) * UNIT_SCALE;
+
+        return new Vector2(x, y);
+    }
+
+    private void updateCamera() {
+        float targetX;
+        float targetY;
+        float targetZoom = 1f;
+
+        if (bossFightActive && controller.boss != null && controller.boss.currentState != FalseKnight.state.DEATH) {
+
+            targetX = arenaMinX + (arenaMaxX - arenaMinX) / 2f;
+            targetY = arenaY + (arenaHeight) / 2f;
+
+            float zoomX = (arenaMaxX - arenaMinX) / VIEWPORT_WIDTH;
+            float zoomY = arenaHeight / VIEWPORT_HEIGHT;
+
+            targetZoom = Math.max(1f, Math.max(zoomX, zoomY)) * 1.05f;
+
+        } else {
+            float knightX = knight.getX() + knight.getWidth()  / 2f;
+            float knightY = knight.getY() + knight.getHeight() / 2f;
+
+            float cameraOffsetY = 0f;
+            if (knight.getState() == KnightState.LOOK_UP) {
+                cameraOffsetY = 4f;
+            } else if (knight.getState() == KnightState.LOOK_DOWN) {
+                cameraOffsetY = -4f;
+            }
+
+            targetX = knightX;
+            targetY = knightY + cameraOffsetY;
+
+            float halfW = (VIEWPORT_WIDTH * camera.zoom) / 2f;
+            float halfH = (VIEWPORT_HEIGHT * camera.zoom) / 2f;
+
+            float minCamX = halfW;
+            float maxCamX = mapPixelWidth - halfW;
+
+            targetX = Math.max(minCamX, Math.min(maxCamX, targetX));
+            targetY = Math.max(halfH, Math.min(mapPixelHeight - halfH, targetY));
+        }
+
+        camera.position.x += (targetX - camera.position.x) * CAM_LERP;
+        camera.position.y += (targetY - camera.position.y) * CAM_LERP;
+
+        camera.zoom += (targetZoom - camera.zoom) * CAM_LERP;
+
+        camera.update();
+
+        applyCameraShake(Gdx.graphics.getDeltaTime());
+    }
+
+
+    public static void triggerShake(float duration, float intensity) {
+        shakeTimer = duration;
+        shakeIntensity = intensity;
+    }
+
+    private void applyCameraShake(float delta) {
+        if (shakeTimer > 0) {
+            shakeTimer -= delta;
+
+            float randomX = com.badlogic.gdx.math.MathUtils.random(-shakeIntensity, shakeIntensity);
+            float randomY = com.badlogic.gdx.math.MathUtils.random(-shakeIntensity, shakeIntensity);
+
+            camera.position.add(randomX, randomY, 0);
+            camera.update();
+        }
+    }
+
 }
+

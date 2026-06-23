@@ -1,26 +1,184 @@
 {
-    "activeFile": "",
+    "activeFile": "cross_road.tmx",
     "expandedProjectPaths": [
     ],
     "file.lastUsedOpenFilter": "All Files (*)",
     "fileStates": {
+        "BG_bone_03.tsx": {
+            "scaleInDock": 1
+        },
+        "BG_bone_06.tsx": {
+            "scaleInDock": 1
+        },
+        "BG_egg_07_0000_Layer-1.tsx": {
+            "scaleInDock": 1
+        },
+        "BG_twist.tsx": {
+            "scaleInDock": 1
+        },
+        "Deepnest Vessel Nosk area - mimic_spider_bits_0003_Layer-12.tsx": {
+            "scaleInDock": 1
+        },
+        "FG_eggs_03_0000_04.tsx": {
+            "scaleInDock": 1
+        },
+        "FG_eggs_04_0001_03.tsx": {
+            "scaleInDock": 1
+        },
+        "FG_eggs_10_0001_04.tsx": {
+            "scaleInDock": 1
+        },
+        "FG_rocks_02.tsx": {
+            "scaleInDock": 1
+        },
+        "Fung_FG_Silhouettes_0004_fv5.tsx": {
+            "scaleInDock": 1
+        },
+        "Path of Pain plaque - wp_plaque_new.tsx": {
+            "scaleInDock": 1
+        },
+        "Shaman_Hut_Ruin.tsx": {
+            "scaleInDock": 1
+        },
+        "The Pale King Path of Pain scene - tall_side0003.tsx": {
+            "scaleInDock": 1
+        },
+        "Void Heart - charm_black.tsx": {
+            "scaleInDock": 1
+        },
+        "big_lamp.tsx": {
+            "scaleInDock": 1
+        },
+        "bone_bench.tsx": {
+            "scaleInDock": 1
+        },
+        "bone_spike_04.tsx": {
+            "scaleInDock": 1
+        },
+        "broken_bench_02.tsx": {
+            "scaleInDock": 1
+        },
+        "cd_archbase_01_long.tsx": {
+            "scaleInDock": 1
+        },
+        "cd_archway_03.tsx": {
+            "scaleInDock": 1
+        },
+        "cd_big_roof_0004_03.tsx": {
+            "scaleInDock": 1
+        },
+        "cd_mid_wall_detail_01.tsx": {
+            "scaleInDock": 1
+        },
+        "cd_mid_wall_detail_lamp_r.tsx": {
+            "scaleInDock": 1
+        },
+        "cd_tollbooth_lamp.tsx": {
+            "scaleInDock": 1
+        },
+        "checkpoint_prompt_simple000.tsx": {
+            "scaleInDock": 1
+        },
+        "cliff_roof.tsx": {
+            "scaleInDock": 1
+        },
+        "collapser_long.tsx": {
+            "scaleInDock": 1
+        },
+        "core_extras_0008_wp_02.tsx": {
+            "scaleInDock": 1
+        },
+        "cr10_break_wall.tsx": {
+            "scaleInDock": 1
+        },
+        "cr10_break_wall1.tsx": {
+            "scaleInDock": 1
+        },
         "cross_road.tmx": {
             "expandedObjectLayers": [
-                11
+                11,
+                5
             ],
             "scale": 0.416015625,
-            "selectedLayer": 8,
+            "selectedLayer": 10,
             "viewCenter": {
-                "x": 12000.75117370892,
-                "y": 7113.915492957747
+                "x": 12616.112676056338,
+                "y": 8887.887323943662
             }
         },
         "cross_road.tmx#Lance_object": {
             "scaleInDock": 1
         },
+        "direction_sign_breakable_0003_bank.tsx": {
+            "scaleInDock": 1
+        },
+        "distant villager - _0002_s_royal_02_skull.tsx": {
+            "scaleInDock": 1
+        },
+        "dream_particle_grimm.tsx": {
+            "scaleInDock": 1
+        },
+        "east_wall_break_0000_3.tsx": {
+            "scaleInDock": 1
+        },
+        "elev_room_balcony.tsx": {
+            "scaleInDock": 1
+        },
+        "final_boss_room_0023_left_door_mid.tsx": {
+            "scaleInDock": 1
+        },
+        "floor_FG_rock_01_0004_02.tsx": {
+            "scaleInDock": 1
+        },
+        "floor_FG_rock_04_0001_05.tsx": {
+            "scaleInDock": 1
+        },
+        "floor_FG_rock_06_0001_03.tsx": {
+            "scaleInDock": 1
+        },
+        "floor_stone_02.tsx": {
+            "scaleInDock": 1
+        },
+        "fung_mush_01.tsx": {
+            "scaleInDock": 1
+        },
+        "fung_new_0022_Layer-326.tsx": {
+            "scaleInDock": 1,
+            "scaleInEditor": 1
+        },
+        "fung_roof_mush_02_0001_a.tsx": {
+            "scaleInDock": 1
+        },
+        "fung_root_04.tsx": {
+            "scaleInDock": 1
+        },
+        "fung_station_bits_0005_a #33448.tsx": {
+            "scaleInDock": 1
+        },
+        "fungd_corner.tsx": {
+            "scaleInDock": 1
+        },
+        "fungd_mush_04_0002_a.tsx": {
+            "scaleInDock": 1
+        },
+        "fungd_mush_08_0004_a.tsx": {
+            "scaleInDock": 1
+        },
+        "fungd_wall_rock_03_0002_a.tsx": {
+            "scaleInDock": 1
+        },
+        "fungus_stone_short_wall.tsx": {
+            "scaleInDock": 1
+        },
+        "game_over_flash_round.tsx": {
+            "scaleInDock": 1
+        },
+        "giraffe_camp.tsx": {
+            "scaleInDock": 1
+        },
         "green_path.tmx": {
             "expandedObjectLayers": [
-                6
+                7
             ],
             "scale": 1,
             "selectedLayer": 6,
@@ -28,6 +186,125 @@
                 "x": 12546.5,
                 "y": 6197.5
             }
+        },
+        "grimm_particle_flame.tsx": {
+            "scaleInDock": 1
+        },
+        "guard_table_02.tsx": {
+            "scaleInDock": 1
+        },
+        "lamp_cave_01.tsx": {
+            "scaleInDock": 1
+        },
+        "lid.tsx": {
+            "scaleInDock": 1
+        },
+        "mantis_detail_0007_a.tsx": {
+            "scaleInDock": 1
+        },
+        "mid_wall.tsx": {
+            "scaleInDock": 1
+        },
+        "nailmaster_hut_01_0002_glow.tsx": {
+            "scaleInDock": 1,
+            "scaleInEditor": 1
+        },
+        "nailsmith_light.tsx": {
+            "scaleInDock": 1
+        },
+        "nailsmith_rag.tsx": {
+            "scaleInDock": 1
+        },
+        "plat_float_02.tsx": {
+            "scaleInDock": 1
+        },
+        "plat_float_05.tsx": {
+            "scaleInDock": 1
+        },
+        "plat_float_07.tsx": {
+            "scaleInDock": 1
+        },
+        "r_floor_01.tsx": {
+            "scaleInDock": 1
+        },
+        "roll_rock_02.tsx": {
+            "scaleInDock": 1
+        },
+        "roof_FG_rock_09_0000_02.tsx": {
+            "scaleInDock": 1
+        },
+        "ruind_bridge_roof_01.tsx": {
+            "scaleInDock": 1
+        },
+        "ruind_bridge_roof_02.tsx": {
+            "scaleInDock": 1
+        },
+        "ruind_bridge_roof_02spikes.tsx": {
+            "scaleInDock": 1
+        },
+        "ruins_resting_extra_bits_0039_Layer-141.tsx": {
+            "scaleInDock": 1
+        },
+        "shaman_one_way.tsx": {
+            "scaleInDock": 1
+        },
+        "shop_0003_Color-Balance-1-copy.tsx": {
+            "scaleInDock": 1
+        },
+        "sign_post_02.tsx": {
+            "scaleInDock": 1
+        },
+        "sliding_wall0009.tsx": {
+            "scaleInDock": 1
+        },
+        "small_floor.tsx": {
+            "scaleInDock": 1
+        },
+        "spikes0001.tsx": {
+            "scaleInDock": 1
+        },
+        "station_FG_tunnel_02.tsx": {
+            "scaleInDock": 1
+        },
+        "statue_08.tsx": {
+            "scaleInDock": 1
+        },
+        "sword.tsx": {
+            "scaleInDock": 1
+        },
+        "temple_ext_01.tsx": {
+            "scaleInDock": 1
+        },
+        "vil_floor_01.tsx": {
+            "scaleInDock": 1
+        },
+        "vil_lamp_02.tsx": {
+            "scaleInDock": 1
+        },
+        "vine_platform_01.tsx": {
+            "scaleInDock": 1,
+            "scaleInEditor": 1
+        },
+        "wall2_0003_Layer-3.tsx": {
+            "scaleInDock": 1
+        },
+        "wd_BG_skull_01.tsx": {
+            "scaleInDock": 1
+        },
+        "wd_FG_string_05.tsx": {
+            "scaleInDock": 1
+        },
+        "wd_frond_01.tsx": {
+            "scaleInDock": 1
+        },
+        "wd_pole_01.tsx": {
+            "scaleInDock": 1
+        },
+        "wd_pole_bits_0002_head_mask.tsx": {
+            "scaleInDock": 1
+        },
+        "wd_skull_03_r.tsx": {
+            "scaleInDock": 1
         }
     },
     "last.imagePath": "P:/Project/HollowKnight/assets/map/source/Area specfic architecture/Greenpath",
@@ -37,9 +314,19 @@
     "map.tileWidth": 8,
     "map.width": 3000,
     "openFiles": [
+        "green_path.tmx",
+        "vine_platform_01.tsx",
+        "fung_new_0022_Layer-326.tsx",
+        "nailmaster_hut_01_0002_glow.tsx",
+        "cross_road.tmx"
     ],
     "project": "green_path.tiled-project",
     "recentFiles": [
+        "green_path.tmx",
+        "vine_platform_01.tsx",
+        "fung_new_0022_Layer-326.tsx",
+        "nailmaster_hut_01_0002_glow.tsx",
+        "cross_road.tmx"
     ],
     "tileset.lastUsedFormat": "tsx",
     "tileset.tileSize": {

@@ -85,4 +85,19 @@ public class TiledMapHelper {
         return null;
     }
 
+    public Rectangle getBossRoom(TiledMap map, float unitScale) {
+        MapLayer layer = map.getLayers().get("boss_room");
+
+        if (layer == null) return null;
+
+        for (MapObject object : layer.getObjects()) {
+            if (object instanceof RectangleMapObject) {
+                Rectangle rect = ((RectangleMapObject) object).getRectangle();
+
+                return new Rectangle(rect.x * unitScale, rect.y * unitScale, rect.width * unitScale, rect.height * unitScale);
+            }
+        }
+        return null;
+    }
+
 }
