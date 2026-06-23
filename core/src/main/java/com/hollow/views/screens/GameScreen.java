@@ -29,6 +29,7 @@ import com.hollow.models.entities.FalseKnightBoss.IdleBehavior;
 import com.hollow.models.entities.Knight.Knight;
 import com.badlogic.gdx.math.Rectangle;
 import com.badlogic.gdx.graphics.Color;
+import com.hollow.models.entities.Knight.Projectile;
 import com.hollow.models.entities.zote.Zote;
 import com.hollow.models.enums.KnightState;
 import com.hollow.views.hud.DialogueBox;
@@ -256,6 +257,7 @@ public class GameScreen implements Screen {
         if (falseKnight != null) {
             bossRenderer.render(falseKnight, Gdx.graphics.getDeltaTime());
         }
+        renderProjectiles();
         renderEffects();
         game.batch.end();
     }
@@ -423,6 +425,34 @@ public class GameScreen implements Screen {
                 game.batch.draw(frame, drawX, drawY, w, h);
             } else {
                 game.batch.draw(frame, drawX + w, drawY, -w, h);
+            }
+        }
+    }
+
+    private void renderProjectiles() {
+        if (controller.activeProjectiles == null) return;
+
+        for (Projectile p : controller.activeProjectiles) {
+            TextureRegion frame;
+
+            if (p.isShadow && knight.shadowBallAnim != null) {
+                frame = knight.shadowBallAnim.getKeyFrame(p.stateTime, true);
+            } else if (!p.isShadow && knight.soulBallAnim != null) {
+                frame = knight.soulBallAnim.getKeyFrame(p.stateTime, true);
+            } else {
+                continue;
+            }
+
+            float drawW = p.hitbox.width * 2f;
+            float drawH = p.hitbox.height * 2f;
+
+            float drawX = p.position.x - (drawW - p.hitbox.width) / 2f;
+            float drawY = p.position.y - (drawH - p.hitbox.height) / 2f;
+
+            if (p.isFacingRight) {
+                game.batch.draw(frame, drawX, drawY, drawW, drawH);
+            } else {
+                game.batch.draw(frame, drawX + drawW, drawY, -drawW, drawH);
             }
         }
     }

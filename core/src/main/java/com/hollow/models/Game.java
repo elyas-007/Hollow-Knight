@@ -12,6 +12,7 @@ import com.hollow.models.entities.FalseKnightBoss.FalseKnight;
 import com.hollow.models.entities.FalseKnightBoss.IdleBehavior;
 import com.hollow.models.entities.FalseKnightBoss.Shockwave;
 import com.hollow.models.entities.Knight.Knight;
+import com.hollow.models.entities.Knight.Projectile;
 import com.hollow.models.entities.zote.Zote;
 import com.hollow.models.enums.KnightState;
 import com.hollow.views.screens.GameScreen;
@@ -45,6 +46,9 @@ public class Game {
 
     private SolidBlock leftDoor;
     private SolidBlock rightDoor;
+
+    public Array<Projectile> activeProjectiles = new Array<>();
+    public boolean hasShadowCharm = false; //for now
 
     public Game(HollowKnight game, Knight knight, Array<SolidBlock> groundRects, Array<SolidBlock> spikeRects, Array<Tiktik> tiktiks, TransitionZone transitionZones, GameScreen screen, GameData data, FalseKnight boss) {
         this.game = game;
@@ -108,6 +112,50 @@ public class Game {
         updateEnemies(delta);
 
         checkAndLockArena();
+
+        for (int i = activeProjectiles.size - 1; i >= 0; i--) {
+            Projectile p = activeProjectiles.get(i);
+            p.update(delta);
+
+            if (p.isDestroyed) {
+                activeProjectiles.removeIndex(i);
+                continue;
+            }
+            
+            for (SolidBlock ground : groundRects) {
+                if (!ground.isDeadly && p.hitbox.overlaps(ground.bounds)) {
+                    p.isDestroyed = true;
+                    break;
+                }
+            }
+            if (p.isDestroyed) {
+                activeProjectiles.removeIndex(i);
+                continue;
+            }
+
+            for (Tiktik enemy : tiktiks) {
+                if (enemy.state != Tiktik.EnemyState.CORPSE && p.hitbox.overlaps(enemy.hitbox)) {
+                    enemy.takeDamage(p.isShadow ? 2 : 1, p.isFacingRight);
+                    p.isDestroyed = true;
+                    break;
+                }
+            }
+            if (p.isDestroyed) {
+                activeProjectiles.removeIndex(i);
+                continue;
+            }
+
+            if (boss != null && boss.currentState != FalseKnight.state.DEATH) {
+                Rectangle targetBox = (boss.currentState == FalseKnight.state.STUNNED) ? boss.vulnerabilityBox : boss.hitbox;
+                if (p.hitbox.overlaps(targetBox)) {
+                    boss.takeDamage(p.isShadow ? 15 : 10);
+                    p.isDestroyed = true;
+                }
+            }
+            if (p.isDestroyed) {
+                activeProjectiles.removeIndex(i);
+            }
+        }
 
         if (boss != null) {
             if (boss.currentState == FalseKnight.state.DEATH) {
@@ -296,6 +344,14 @@ public class Game {
             knight.startFocusing();
         } else {
             knight.stopFocusing();
+        }
+
+        if (Gdx.input.isKeyJustPressed(Input.Keys.Q)) {
+            if (knight.consumeSoul(33)) {
+                float spawnX = knight.isFacingRight() ? (knight.getX() + knight.getWidth()) : (knight.getX() - 1.5f);
+                float spawnY = knight.getY() + 0.2f;
+                activeProjectiles.add(new Projectile(spawnX, spawnY, knight.isFacingRight(), hasShadowCharm));
+            }
         }
 
         if (Gdx.input.isKeyPressed(keyUp) && knight.isOnGround() && knight.getVelocity().x == 0) {

@@ -85,6 +85,9 @@ public class Knight {
     public Animation<TextureRegion> hurtAnim;
     public Animation<TextureRegion> deathAnim;
 
+    public Animation<TextureRegion> soulBallAnim;
+    public Animation<TextureRegion> shadowBallAnim;
+
 
 
 
@@ -503,6 +506,14 @@ public class Knight {
 
     public boolean isDeathAnimationFinished() {
         return state == KnightState.DEAD && deathAnim != null && deathAnim.isAnimationFinished(stateTimer);
+    }
+
+    public boolean consumeSoul(int amount) {
+        if (currentSoul >= amount) {
+            currentSoul -= amount;
+            return true;
+        }
+        return false;
     }
 
     public void fullRespawn(float startX, float startY) {
