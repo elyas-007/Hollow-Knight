@@ -12,6 +12,8 @@ import com.hollow.models.entities.FalseKnightBoss.FalseKnight;
 import com.hollow.models.entities.FalseKnightBoss.IdleBehavior;
 import com.hollow.models.entities.FalseKnightBoss.Shockwave;
 import com.hollow.models.entities.Knight.Knight;
+import com.hollow.models.entities.zote.Zote;
+import com.hollow.models.enums.KnightState;
 import com.hollow.views.screens.GameScreen;
 
 public class Game {
@@ -212,6 +214,52 @@ public class Game {
     private void handleInput(float delta) {
         if (pendingRespawn)
             return;
+
+        if (screen.zote != null) {
+            boolean inRange = knight.getHitbox().overlaps(screen.zote.interactionBox);
+            boolean isInteractiveState = (screen.zote.currentState == Zote.State.IDLE || screen.zote.currentState == Zote.State.SLEEPING);
+            boolean canShowPrompt = inRange && isInteractiveState && !screen.dialogueBox.isVisible && !screen.zote.pendingDialogue;
+
+            screen.dialogueBox.setPromptVisible(canShowPrompt);
+
+            if (screen.zote.pendingDialogue && screen.zote.currentState == Zote.State.IDLE) {
+                screen.zote.pendingDialogue = false;
+                screen.dialogueBox.startDialogue(screen.zote.getDialogue());
+            }
+
+            if (screen.zote.currentState == Zote.State.GETTING_UP) {
+                knight.stopMovingHorizontally();
+//                knight.state = KnightState.IDLE;
+                return;
+            }
+
+            if (screen.dialogueBox.isVisible) {
+                knight.stopMovingHorizontally();
+//                knight.state = KnightState.IDLE;
+                screen.zote.currentState = Zote.State.TALKING;
+                return;
+            } else if (screen.zote.currentState == Zote.State.TALKING) {
+                screen.zote.currentState = Zote.State.IDLE;
+            }
+
+            if (Gdx.input.isKeyJustPressed(Input.Keys.E) && knight.isOnGround()) {
+                if (knight.getHitbox().overlaps(screen.zote.interactionBox)) {
+
+                    screen.zote.isFacingRight = knight.getX() > screen.zote.position.x;
+
+                    if (screen.zote.currentState == Zote.State.SLEEPING) {
+                        screen.zote.changeState(Zote.State.GETTING_UP);
+                        screen.zote.pendingDialogue = true;
+                    } else if (screen.zote.currentState == Zote.State.IDLE) {
+                        screen.dialogueBox.startDialogue(screen.zote.getDialogue());
+                    }
+
+                    knight.stopMovingHorizontally();
+                    knight.setLookDirection(0);
+                    return;
+                }
+            }
+        }
 
         boolean isMovingLeft = Gdx.input.isKeyPressed(keyLeft);
         boolean isMovingRight = Gdx.input.isKeyPressed(keyRight);

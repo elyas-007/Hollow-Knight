@@ -5,6 +5,7 @@ import com.badlogic.gdx.Input;
 import com.badlogic.gdx.Screen;
 import com.badlogic.gdx.graphics.GL20;
 import com.badlogic.gdx.graphics.OrthographicCamera;
+import com.badlogic.gdx.graphics.g2d.TextureRegion;
 import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
 import com.badlogic.gdx.maps.MapLayer;
 import com.badlogic.gdx.maps.MapObject;
@@ -17,10 +18,7 @@ import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.utils.Array;
 import com.badlogic.gdx.utils.viewport.FitViewport;
 import com.hollow.HollowKnight;
-import com.hollow.assets.BossAnimationLoader;
-import com.hollow.assets.EnemyAnimationLoader;
-import com.hollow.assets.KnightAnimationLoader;
-import com.hollow.assets.TiledMapHelper;
+import com.hollow.assets.*;
 import com.hollow.models.Game;
 import com.hollow.models.GameData;
 import com.hollow.models.SolidBlock;
@@ -31,7 +29,9 @@ import com.hollow.models.entities.FalseKnightBoss.IdleBehavior;
 import com.hollow.models.entities.Knight.Knight;
 import com.badlogic.gdx.math.Rectangle;
 import com.badlogic.gdx.graphics.Color;
+import com.hollow.models.entities.zote.Zote;
 import com.hollow.models.enums.KnightState;
+import com.hollow.views.hud.DialogueBox;
 import com.hollow.views.hud.GameHud;
 import com.hollow.views.render.BossRenderer;
 
@@ -81,6 +81,9 @@ public class GameScreen implements Screen {
 
     private static float shakeTimer = 0f;
     private static float shakeIntensity = 0f;
+
+    public DialogueBox dialogueBox;
+    public Zote zote;
 
 
     public GameScreen(HollowKnight game, String mapPath, float spawnX, float spawnY) {
@@ -170,6 +173,16 @@ public class GameScreen implements Screen {
             arenaHeight = rect.height;
         }
 
+        dialogueBox = new DialogueBox(game);
+
+        Vector2 vec = findZoteSpawnPoint();
+        if (vec != null) {
+            zote = new Zote(vec.x, vec.y);
+            dialogueBox = new DialogueBox(game);
+            ZoteAnimationLoader.loadZoteAnimations(zote);
+        }
+
+
         controller = new Game(game, knight, groundRecs, spikeRecs, mapTiktiks, transitionZone, this, game.activeSave, falseKnight);
 
     }
@@ -184,7 +197,7 @@ public class GameScreen implements Screen {
         updateCamera();
         controller.update(delta);
         knight.updateAnimations(delta);
-
+        dialogueBox.update(delta);
 
         drawWorld();
 
@@ -192,6 +205,8 @@ public class GameScreen implements Screen {
 
         hud.update(knight, delta);
         hud.draw();
+
+        dialogueBox.draw();
 
         handleFadeEffect(delta);
     }
@@ -236,6 +251,7 @@ public class GameScreen implements Screen {
         game.batch.setProjectionMatrix(camera.combined);
         game.batch.begin();
         renderEnemies();
+        renderZote();
         renderKnight();
         if (falseKnight != null) {
             bossRenderer.render(falseKnight, Gdx.graphics.getDeltaTime());
@@ -316,6 +332,29 @@ public class GameScreen implements Screen {
             } else {
                 game.batch.draw(frame, drawX, drawY, spriteW, spriteH);
             }
+        }
+    }
+
+    private void renderZote() {
+        if (zote == null) return;
+
+        TextureRegion frame = zote.getCurrentFrame(Gdx.graphics.getDeltaTime());
+        if (frame == null) return;
+        boolean facingLeft = !zote.isFacingRight;
+
+        float spriteW = zote.hitbox.width * 2.5f;
+        float spriteH = zote.hitbox.height * 2.5f;
+
+        float offsetX = (spriteW - zote.hitbox.width) / 2f;
+        float offsetY = 0.4f;
+
+        float drawX = zote.position.x - offsetX;
+        float drawY = zote.position.y - offsetY;
+
+        if (!facingLeft) {
+            game.batch.draw(frame, drawX + spriteW, drawY, -spriteW, spriteH);
+        } else {
+            game.batch.draw(frame, drawX, drawY, spriteW, spriteH);
         }
     }
 
@@ -436,6 +475,18 @@ public class GameScreen implements Screen {
     public Vector2 findBossSpawnPoint() {
         MapLayer layer = map.getLayers().get("enemies");
         MapObject spawnPoint = layer.getObjects().get("boss");
+
+        float x = spawnPoint.getProperties().get("x", Float.class) * UNIT_SCALE;
+        float y = spawnPoint.getProperties().get("y", Float.class) * UNIT_SCALE;
+
+        return new Vector2(x, y);
+    }
+
+    public Vector2 findZoteSpawnPoint() {
+        MapLayer layer = map.getLayers().get("zote");
+        if (layer == null)
+            return null;
+        MapObject spawnPoint = layer.getObjects().get("spawn_zote");
 
         float x = spawnPoint.getProperties().get("x", Float.class) * UNIT_SCALE;
         float y = spawnPoint.getProperties().get("y", Float.class) * UNIT_SCALE;

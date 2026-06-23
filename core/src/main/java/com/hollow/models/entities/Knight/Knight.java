@@ -27,8 +27,8 @@ public class Knight {
     public static final float HEAL_DURATION = 1.4f;
     public static final float HIT_WIDTH = 0.8f;
     public static final float HIT_HEIGHT = 1.2f;
-    public static KnightState state = KnightState.IDLE;
-    public static KnightState preState;
+    public KnightState state = KnightState.IDLE;
+    public KnightState preState;
     public float stateTimer = 0f;
     public float stateLockTimer = 0f;
 
