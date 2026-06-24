@@ -32,6 +32,7 @@ import com.hollow.models.enums.KnightState;
 import com.hollow.views.hud.DialogueBox;
 import com.hollow.views.hud.GameHud;
 import com.hollow.views.hud.InventoryUI;
+import com.hollow.views.hud.PauseUI;
 import com.hollow.views.render.BossRenderer;
 
 public class GameScreen implements Screen {
@@ -87,6 +88,9 @@ public class GameScreen implements Screen {
     private boolean isInventoryOpen = false;
     private InventoryUI inventoryUI;
     private InputMultiplexer multiplexer;
+
+    public boolean isPaused = false;
+    private PauseUI pauseUI;
 
 
     public GameScreen(HollowKnight game, String mapPath, float spawnX, float spawnY) {
@@ -201,7 +205,7 @@ public class GameScreen implements Screen {
 
 
         inventoryUI = new InventoryUI(game, game.activeSave);
-
+        pauseUI = new PauseUI(game, this);
         multiplexer = new InputMultiplexer();
         Gdx.input.setInputProcessor(multiplexer);
     }
@@ -209,23 +213,29 @@ public class GameScreen implements Screen {
     public void render(float delta) {
 
         if (Gdx.input.isKeyJustPressed(Input.Keys.I)) {
-            isInventoryOpen = !isInventoryOpen;
-            if (isInventoryOpen) {
-                multiplexer.addProcessor(inventoryUI.stage);
-            } else {
-                multiplexer.removeProcessor(inventoryUI.stage);
+            if (!isPaused) {
+                isInventoryOpen = !isInventoryOpen;
+                if (isInventoryOpen) {
+                    multiplexer.addProcessor(inventoryUI.stage);
+                } else {
+                    multiplexer.removeProcessor(inventoryUI.stage);
+                }
             }
         }
 
         if (Gdx.input.isKeyJustPressed(Input.Keys.ESCAPE)) {
-            game.setScreen(new PauseScreen(game, this));
-            return;
+            if (isInventoryOpen) {
+                isInventoryOpen = false;
+                multiplexer.removeProcessor(inventoryUI.stage);
+            } else {
+                togglePause();
+            }
         }
 
 
         updateCamera();
 
-        if (!isInventoryOpen) {
+        if (!isInventoryOpen && !isPaused) {
             controller.update(delta);
             knight.updateAnimations(delta);
             dialogueBox.update(delta);
@@ -236,11 +246,14 @@ public class GameScreen implements Screen {
         renderDebugHitboxes();
 
         hud.update(knight, delta);
-        hud.draw();
+
+        if (!isInventoryOpen) {
+            hud.draw();
+        }
 
         dialogueBox.draw();
 
-        if (isInventoryOpen) {
+        if (isInventoryOpen || isPaused) {
             Gdx.gl.glEnable(GL20.GL_BLEND);
             shapeRenderer.begin(ShapeRenderer.ShapeType.Filled);
             shapeRenderer.setColor(0, 0, 0, 0.7f);
@@ -248,8 +261,13 @@ public class GameScreen implements Screen {
             shapeRenderer.end();
             Gdx.gl.glDisable(GL20.GL_BLEND);
 
-            inventoryUI.act(delta);
-            inventoryUI.draw();
+            if (isInventoryOpen) {
+                inventoryUI.act(delta);
+                inventoryUI.draw();
+            } else if (isPaused) {
+                pauseUI.act(delta);
+                pauseUI.draw();
+            }
         }
 
         handleFadeEffect(delta);
@@ -258,8 +276,8 @@ public class GameScreen implements Screen {
     @Override
     public void resize(int width, int height) {
         viewport.update(width, height, false);
-        if (hud != null)
-            hud.resize(width, height);
+        if (inventoryUI != null && inventoryUI.stage != null) inventoryUI.stage.getViewport().update(width, height, true);
+        if (pauseUI != null && pauseUI.stage != null) pauseUI.resize(width, height);
     }
 
     @Override
@@ -282,6 +300,8 @@ public class GameScreen implements Screen {
         if (map != null) map.dispose();
         if (renderer != null) renderer.dispose();
         if (hud != null) hud.dispose();
+        if (inventoryUI != null) inventoryUI.dispose();
+        if (pauseUI != null) pauseUI.dispose();
         // dispose animation
     }
 
@@ -652,6 +672,15 @@ public class GameScreen implements Screen {
 
             camera.position.add(randomX, randomY, 0);
             camera.update();
+        }
+    }
+
+    public void togglePause() {
+        isPaused = !isPaused;
+        if (isPaused) {
+            multiplexer.addProcessor(pauseUI.stage);
+        } else {
+            multiplexer.removeProcessor(pauseUI.stage);
         }
     }
 

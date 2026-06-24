@@ -1,48 +1,39 @@
-package com.hollow.views.screens;
+package com.hollow.views.hud;
 
-import com.badlogic.gdx.Gdx;
-import com.badlogic.gdx.Input;
-import com.badlogic.gdx.Screen;
 import com.badlogic.gdx.graphics.Color;
-import com.badlogic.gdx.graphics.GL20;
-import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
 import com.badlogic.gdx.scenes.scene2d.Stage;
 import com.badlogic.gdx.scenes.scene2d.ui.Image;
 import com.badlogic.gdx.scenes.scene2d.ui.Table;
 import com.badlogic.gdx.scenes.scene2d.ui.TextButton;
+import com.badlogic.gdx.scenes.scene2d.ui.TextButton.TextButtonStyle;
 import com.badlogic.gdx.utils.viewport.FitViewport;
 import com.hollow.HollowKnight;
 import com.hollow.controllers.ButtonController;
 import com.hollow.models.SaveManager;
+import com.hollow.views.screens.*;
 
-public class PauseScreen implements Screen {
+public class PauseUI {
+    public Stage stage;
     private HollowKnight game;
     private GameScreen gameScreen;
-    private Stage stage;
-    private FitViewport viewport;
-    private ShapeRenderer shapeRenderer;
     private ButtonController controller;
 
-    public PauseScreen(HollowKnight game, GameScreen gameScreen) {
+    public PauseUI(HollowKnight game, GameScreen gameScreen) {
         this.game = game;
         this.gameScreen = gameScreen;
+        stage = new Stage(new FitViewport(game.SCREEN_WIDTH, game.SCREEN_HEIGHT));
+        setupUI();
     }
 
-    @Override
-    public void show() {
-        viewport = new FitViewport(1920, 1080);
-        stage = new Stage(viewport);
-        Gdx.input.setInputProcessor(stage);
-
-        shapeRenderer = new ShapeRenderer();
-
-        TextButton.TextButtonStyle styleBtn = new TextButton.TextButtonStyle();
+    private void setupUI() {
+        TextButtonStyle styleBtn = new TextButtonStyle();
         styleBtn.font = game.assetLoader.font;
         styleBtn.fontColor = Color.WHITE;
 
         Table root = new Table();
         root.setFillParent(true);
         Table content = new Table();
+
         root.add(new Image(game.assetLoader.pauseTop)).colspan(2).top().padBottom(30).center().row();
 
         TextButton continueBtn = new TextButton("Continue", styleBtn);
@@ -51,13 +42,12 @@ public class PauseScreen implements Screen {
         TextButton cheatBtn = new TextButton("Cheat", styleBtn);
         TextButton quitBtn = new TextButton("Quit To Menu", styleBtn);
 
-        continueBtn.setUserObject((Runnable) this::resumeGame);
-        settingsBtn.setUserObject((Runnable) () -> game.setScreen(new SettingsMenuScreen(game, this)));
+        continueBtn.setUserObject((Runnable) () -> gameScreen.togglePause());
+
+        settingsBtn.setUserObject((Runnable) () -> game.setScreen(new SettingsMenuScreen(game, gameScreen)));
         guideBtn.setUserObject((Runnable) () -> game.setScreen(new GuideScreen()));
         cheatBtn.setUserObject((Runnable) () -> game.setScreen(new AchievementsScreen()));
         quitBtn.setUserObject((Runnable) this::quitGame);
-
-
 
         content.add(continueBtn).center().fillX().uniformX().padTop(10).padLeft(40).row();
         content.add(settingsBtn).center().fillX().uniformX().padTop(10).padLeft(40).row();
@@ -69,67 +59,27 @@ public class PauseScreen implements Screen {
         controller = new ButtonController(game, stage, menuButtons);
 
         root.add(content).center().row();
-
         root.add(new Image(game.assetLoader.pauseBottom)).colspan(2).padTop(30).bottom().center().row();
 
         stage.addActor(root);
-
     }
 
-    @Override
-    public void render(float delta) {
-        gameScreen.drawWorld();
-
-        Gdx.gl.glEnable(GL20.GL_BLEND);
-        Gdx.gl.glBlendFunc(GL20.GL_SRC_ALPHA, GL20.GL_ONE_MINUS_SRC_ALPHA);
-
-        shapeRenderer.begin(ShapeRenderer.ShapeType.Filled);
-        shapeRenderer.setColor(new Color(0, 0, 0, 0.7f));
-        shapeRenderer.rect(0, 0, Gdx.graphics.getWidth(), Gdx.graphics.getHeight());
-        shapeRenderer.end();
-
-        Gdx.gl.glDisable(GL20.GL_BLEND);
-
+    public void act(float delta) {
         stage.act(delta);
-
         if (controller != null)
             controller.update(delta);
-
-        stage.draw();
-
-        if (Gdx.input.isKeyJustPressed(Input.Keys.ESCAPE)) {
-            resumeGame();
-        }
     }
 
-    @Override
+    public void draw() {
+        stage.draw();
+    }
+
     public void resize(int width, int height) {
         stage.getViewport().update(width, height, true);
     }
 
-    @Override
-    public void pause() {
-
-    }
-
-    @Override
-    public void resume() {
-
-    }
-
-    @Override
-    public void hide() {
-
-    }
-
-    @Override
     public void dispose() {
         stage.dispose();
-        shapeRenderer.dispose();
-    }
-
-    private void resumeGame() {
-        game.setScreen(gameScreen);
     }
 
     public void quitGame() {
