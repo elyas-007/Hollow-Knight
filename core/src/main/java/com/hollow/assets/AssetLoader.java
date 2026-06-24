@@ -16,6 +16,9 @@ import com.badlogic.gdx.maps.tiled.TmxMapLoader;
 import com.badlogic.gdx.maps.tiled.renderers.OrthogonalTiledMapRenderer;
 import com.badlogic.gdx.scenes.scene2d.ui.Skin;
 import com.hollow.HollowKnight;
+import com.hollow.models.entities.Knight.Charm;
+
+import java.util.HashMap;
 
 public class AssetLoader {
     public HollowKnight game;
@@ -51,6 +54,23 @@ public class AssetLoader {
 
     public Texture topOrnament;
     public Texture bottomOrnament;
+
+    public Texture emptyNotch;
+    public Texture fullNotch;
+    public Texture charm_place;
+    public HashMap<Charm, Texture> charmTextures;
+    public TextureRegion overScreen_Top_Left;
+    public TextureRegion overScreen_Top_Right;
+    public TextureRegion overScreen_Bottom_Left;
+    public TextureRegion overScreen_Bottom_Right;
+    public TextureRegion charm_selector_Top_Left;
+    public TextureRegion charm_selector_Top_Right;
+    public TextureRegion charm_selector_Bottom_Left;
+    public TextureRegion charm_selector_Bottom_Right;
+    public Texture inventory_divider;
+    public Texture inventory_top;
+    public Texture inventory_bottom;
+
 
     // Audio
     public  Music titleTheme;
@@ -121,6 +141,38 @@ public class AssetLoader {
 
         topOrnament = new Texture("ui/hud/gg_board_UI_top_0004.png");
         bottomOrnament = new Texture("ui/hud/gg_board_UI_bottom_0003.png");
+
+        emptyNotch = new Texture("ui/inventory and charms/charm_cost.png");
+        fullNotch = new Texture("ui/inventory and charms/charm_UI__0000_charm_cost_02_lit.png");
+        charm_place = new Texture("ui/inventory and charms/charm_backboard.png");
+        Texture corner = new Texture("ui/inventory and charms/overscan_corner_fleur009.png");
+        overScreen_Top_Left = new TextureRegion(corner);
+        overScreen_Top_Right = new TextureRegion(corner);
+        overScreen_Bottom_Left = new TextureRegion(corner);
+        overScreen_Bottom_Right = new TextureRegion(corner);
+        overScreen_Top_Right.flip(true, false);
+        overScreen_Bottom_Left.flip(false, true);
+        overScreen_Bottom_Right.flip(true, true);
+        Texture charm_selector = new Texture("ui/inventory and charms/Inv_0014_selection_cursor.png");
+        charm_selector_Top_Left = new TextureRegion(charm_selector);
+        charm_selector_Top_Right = new TextureRegion(charm_selector);
+        charm_selector_Bottom_Left = new TextureRegion(charm_selector);
+        charm_selector_Bottom_Right = new TextureRegion(charm_selector);
+        charm_selector_Top_Right.flip(true, false);
+        charm_selector_Bottom_Right.flip(true, true);
+        charm_selector_Bottom_Left.flip(false, true);
+        inventory_divider = new Texture("ui/inventory and charms/Inv_0017_divider.png");
+        inventory_top =  new Texture("ui/inventory and charms/game_over_fleur.png");
+        inventory_bottom = new Texture("ui/inventory and charms/bottom_fleur0003.png");
+        charmTextures = new HashMap<>();
+        charmTextures.put(Charm.SOUL_CATCHER, new Texture("ui/inventory and charms/Soul Catcher - _0001_charm_more_soul.png"));
+        charmTextures.put(Charm.DASH_MASTER, new Texture("ui/inventory and charms/Dashmaster - _0011_charm_generic_03.png"));
+        charmTextures.put(Charm.UNBREAKABLE_STRENGTH, new Texture("ui/inventory and charms/Unbreakable Strength_0002_charm_glass_attack_up_full.png"));
+        charmTextures.put(Charm.QUICK_SLASH, new Texture("ui/inventory and charms/Quick Slash - _0003_charm_nail_slash_speed_up.png"));
+        charmTextures.put(Charm.QUICK_FOCUS, new Texture("ui/inventory and charms/Quick Focus - _0005_charm_fast_focus.png"));
+        charmTextures.put(Charm.HEAVY_BLOW, new Texture("ui/inventory and charms/Heavy Blow - _0008_charm_nail_damage_up.png"));
+        charmTextures.put(Charm.SHARP_SHADOW, new Texture("ui/inventory and charms/Sharp Shadow - charm_shade_impact.png"));
+        charmTextures.put(Charm.VOID_HEART, new Texture("ui/inventory and charms/Void Heart - charm_black.png"));
     }
 
     public void dispose() {
@@ -133,6 +185,13 @@ public class AssetLoader {
         if (titleTheme != null) titleTheme.dispose();
         if (buttonHover != null) buttonHover.dispose();
         if (buttonClick != null) buttonClick.dispose();
+
+        if (emptyNotch != null) emptyNotch.dispose();
+        if (fullNotch != null) fullNotch.dispose();
+        if (charm_place != null) charm_place.dispose();
+        if (charmTextures != null) {
+            for (Texture t : charmTextures.values()) t.dispose();
+        }
     }
 
 

@@ -2,6 +2,7 @@ package com.hollow.views.screens;
 
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Input;
+import com.badlogic.gdx.InputMultiplexer;
 import com.badlogic.gdx.Screen;
 import com.badlogic.gdx.graphics.GL20;
 import com.badlogic.gdx.graphics.OrthographicCamera;
@@ -34,6 +35,7 @@ import com.hollow.models.entities.zote.Zote;
 import com.hollow.models.enums.KnightState;
 import com.hollow.views.hud.DialogueBox;
 import com.hollow.views.hud.GameHud;
+import com.hollow.views.hud.InventoryUI;
 import com.hollow.views.render.BossRenderer;
 
 public class GameScreen implements Screen {
@@ -85,6 +87,10 @@ public class GameScreen implements Screen {
 
     public DialogueBox dialogueBox;
     public Zote zote;
+
+    private boolean isInventoryOpen = false;
+    private InventoryUI inventoryUI;
+    private InputMultiplexer multiplexer;
 
 
     public GameScreen(HollowKnight game, String mapPath, float spawnX, float spawnY) {
@@ -197,9 +203,24 @@ public class GameScreen implements Screen {
         mapEnemies.addAll(mapMosscreep);
         controller = new Game(game, knight, groundRecs, spikeRecs, mapEnemies, transitionZone, this, game.activeSave, falseKnight);
 
+
+        inventoryUI = new InventoryUI(game, game.activeSave);
+
+        multiplexer = new InputMultiplexer();
+        Gdx.input.setInputProcessor(multiplexer);
     }
 
     public void render(float delta) {
+
+        if (Gdx.input.isKeyJustPressed(Input.Keys.I)) {
+            isInventoryOpen = !isInventoryOpen;
+            if (isInventoryOpen) {
+                multiplexer.addProcessor(inventoryUI.stage);
+            } else {
+                multiplexer.removeProcessor(inventoryUI.stage);
+            }
+        }
+
         if (Gdx.input.isKeyJustPressed(Input.Keys.ESCAPE)) {
             game.setScreen(new PauseScreen(game, this));
             return;
@@ -207,9 +228,12 @@ public class GameScreen implements Screen {
 
 
         updateCamera();
-        controller.update(delta);
-        knight.updateAnimations(delta);
-        dialogueBox.update(delta);
+
+        if (!isInventoryOpen) {
+            controller.update(delta);
+            knight.updateAnimations(delta);
+            dialogueBox.update(delta);
+        }
 
         drawWorld();
 
@@ -219,6 +243,18 @@ public class GameScreen implements Screen {
         hud.draw();
 
         dialogueBox.draw();
+
+        if (isInventoryOpen) {
+            Gdx.gl.glEnable(GL20.GL_BLEND);
+            shapeRenderer.begin(ShapeRenderer.ShapeType.Filled);
+            shapeRenderer.setColor(0, 0, 0, 0.7f);
+            shapeRenderer.rect(0, 0, Gdx.graphics.getWidth(), Gdx.graphics.getHeight());
+            shapeRenderer.end();
+            Gdx.gl.glDisable(GL20.GL_BLEND);
+
+            inventoryUI.act(delta);
+            inventoryUI.draw();
+        }
 
         handleFadeEffect(delta);
     }
