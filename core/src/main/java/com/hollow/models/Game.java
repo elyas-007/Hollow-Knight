@@ -13,6 +13,7 @@ import com.hollow.models.entities.Enemy.Tiktik;
 import com.hollow.models.entities.FalseKnightBoss.FalseKnight;
 import com.hollow.models.entities.FalseKnightBoss.IdleBehavior;
 import com.hollow.models.entities.FalseKnightBoss.Shockwave;
+import com.hollow.models.entities.Knight.Charm;
 import com.hollow.models.entities.Knight.Knight;
 import com.hollow.models.entities.Knight.Projectile;
 import com.hollow.models.entities.zote.Zote;
@@ -50,7 +51,7 @@ public class Game {
     private SolidBlock rightDoor;
 
     public Array<Projectile> activeProjectiles = new Array<>();
-    public boolean hasShadowCharm = false; //for now
+    public boolean hasShadowCharm;
 
     public Game(HollowKnight game, Knight knight, Array<SolidBlock> groundRects,
                 Array<SolidBlock> spikeRects, Array<Enemy> enemies,
@@ -81,6 +82,9 @@ public class Game {
 
         this.data = data;
         this.boss = boss;
+
+        this.hasShadowCharm = data.equippedCharms.contains( // void heart
+            Charm.VOID_HEART, true);
     }
 
     private boolean jumpPressed = false;
@@ -141,7 +145,9 @@ public class Game {
 
             for (Enemy enemy : enemies) {
                 if (enemy.state != Enemy.EnemyState.CORPSE && p.hitbox.overlaps(enemy.hitbox)) {
-                    enemy.takeDamage(p.isShadow ? 2 : 1, p.isFacingRight);
+                    int spellDamage = p.isShadow ? 2 : 1; // void hurt
+                    if (hasShadowCharm) spellDamage = (int)(spellDamage * 1.5f);
+                    enemy.takeDamage(spellDamage, p.isFacingRight);
 //                    p.isDestroyed = true;
                     break;
                 }
@@ -225,8 +231,16 @@ public class Game {
 
             if (enemy.state != Enemy.EnemyState.CORPSE && enemy.state != Enemy.EnemyState.DYING_AIR && enemy.state != Enemy.EnemyState.DYING_LAND) {
                 if (knight.getHitbox().overlaps(enemy.hitbox) && !knight.isInvincible()) {
-                    boolean hitFromRight = knight.getX() < enemy.position.x;
-                    knight.takeDamage(1, hitFromRight);
+
+                    if (knight.isDashing() && data.equippedCharms.contains(Charm.SHARP_SHADOW, true)) {
+                        boolean hitFromRight = knight.getX() > enemy.position.x;
+                        enemy.takeDamage(1, hitFromRight);
+                        int soulAmount = data.equippedCharms.contains(Charm.SOUL_CATCHER, true) ? 22 : 11;
+                        knight.gainSoul(soulAmount);
+                    } else {
+                        boolean hitFromRight = knight.getX() < enemy.position.x;
+                        knight.takeDamage(1, hitFromRight);
+                    }
                 }
             }
         }
@@ -449,13 +463,21 @@ public class Game {
         }
 
         boolean hitSomething = false;
+        int nailDamage = data.equippedCharms.contains(Charm.UNBREAKABLE_STRENGTH, true) ? 2 : 1; // unbreakable_strength
+        int soulAmount = data.equippedCharms.contains(Charm.SOUL_CATCHER, true) ? 22 : 11; // soul catcher
+        boolean hasHeavyBlow = data.equippedCharms.contains(Charm.HEAVY_BLOW, true); // heavy blow
 
         for (Enemy enemy : enemies) {
             if (enemy.state != Enemy.EnemyState.CORPSE && enemy.state != Enemy.EnemyState.DYING_AIR && enemy.state != Enemy.EnemyState.DYING_LAND) {
                 if (attackBox.overlaps(enemy.hitbox)) {
                     boolean hitFromRight = knight.getX() > enemy.position.x;
-                    enemy.takeDamage(1, hitFromRight);
-                    knight.gainSoul(11);
+                    enemy.takeDamage(nailDamage, hitFromRight);
+
+                    if (hasHeavyBlow) {
+                        enemy.velocity.x = hitFromRight ? -12f : 12f;
+                    }
+
+                    knight.gainSoul(soulAmount);
                     hitSomething = true;
                 }
             }

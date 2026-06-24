@@ -10,10 +10,7 @@ import com.badlogic.gdx.graphics.g2d.TextureRegion;
 import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
 import com.badlogic.gdx.maps.MapLayer;
 import com.badlogic.gdx.maps.MapObject;
-import com.badlogic.gdx.maps.objects.PointMapObject;
-import com.badlogic.gdx.maps.objects.RectangleMapObject;
 import com.badlogic.gdx.maps.tiled.TiledMap;
-import com.badlogic.gdx.maps.tiled.TiledMapTileLayer;
 import com.badlogic.gdx.maps.tiled.renderers.OrthogonalTiledMapRenderer;
 import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.utils.Array;
@@ -21,7 +18,6 @@ import com.badlogic.gdx.utils.viewport.FitViewport;
 import com.hollow.HollowKnight;
 import com.hollow.assets.*;
 import com.hollow.models.Game;
-import com.hollow.models.GameData;
 import com.hollow.models.SolidBlock;
 import com.hollow.models.TransitionZone;
 import com.hollow.models.entities.Enemy.*;
@@ -133,7 +129,7 @@ public class GameScreen implements Screen {
         } else {
             spawnPoint = findSpawnPoint();
         }
-        knight = new Knight(spawnPoint.x, spawnPoint.y);
+        knight = new Knight(spawnPoint.x, spawnPoint.y, game.activeSave);
 
         KnightAnimationLoader.loadAllAnimations(knight);
 

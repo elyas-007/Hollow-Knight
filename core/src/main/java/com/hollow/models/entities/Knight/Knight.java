@@ -6,8 +6,8 @@ import com.badlogic.gdx.math.Rectangle;
 import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.utils.Array;
 import com.hollow.models.Effect;
+import com.hollow.models.GameData;
 import com.hollow.models.enums.KnightState;
-import com.hollow.utils.Constants;
 
 public class Knight {
     // constants
@@ -62,6 +62,8 @@ public class Knight {
 
     private int lookDirection = 0; // +1 -> up -1 -> down 0-> nothing
     private boolean altSlash = false;
+
+    private GameData data;
     //Animations
 
     public Array<Effect> activeEffects = new Array<>();
@@ -93,10 +95,11 @@ public class Knight {
 
 
 
-    public Knight(float startX, float startY) {
+    public Knight(float startX, float startY, GameData data) {
         position.set(startX, startY);
         lastPosition.set(startX, startY);
         hitbox.set(startX, startY, HIT_WIDTH, HIT_HEIGHT);
+        this.data = data;
     }
 
 
@@ -133,7 +136,12 @@ public class Knight {
     private void updateHealing(float delta) {
         if (!healing) return;
         healTimer += delta;
-        if (healTimer >= HEAL_DURATION) {
+
+        float currentHealDuration = data.equippedCharms.contains( // quick focus
+            Charm.QUICK_FOCUS, true) ? HEAL_DURATION * 0.6f
+                                                    : HEAL_DURATION;
+
+        if (healTimer >= currentHealDuration) {
             currentSoul = Math.max(0, currentSoul - 33);
             currentMasks = Math.min(maxMasks, currentMasks + 1);
             healing = false;
@@ -153,7 +161,10 @@ public class Knight {
     private void updateDash(float delta) {
         if (isDashing) {
             dashDuration -= delta;
-            velocity.set(DASH_SPEED * dashDirection, 0f);
+            float currentDashSpeed = data.equippedCharms.contains( //sharp shadow
+                Charm.SHARP_SHADOW, true) ?
+                DASH_SPEED * 1.2f : DASH_SPEED;
+            velocity.set(currentDashSpeed * dashDirection, 0f);
             if (dashDuration <= 0) {
                 isDashing = false;
                 velocity.x = MOVE_SPEED * dashDirection * 0.3f;
@@ -350,10 +361,13 @@ public class Knight {
     public void dashing() {
         if (!canDash || isDashing || isLocked())
             return;
+
         isDashing = true;
         canDash = false;
         dashDuration = DASH_DURATION;
-        dashCooldown = DASH_COOLDOWN;
+        dashCooldown = data.equippedCharms.contains( // dash master
+            Charm.DASH_MASTER, true) ?
+            DASH_COOLDOWN * 0.5f : DASH_COOLDOWN;
         dashDirection = (isFacingRight) ? 1f : -1f;
 
         float offsetX = isFacingRight ? -1.5f : -0.5f;
@@ -381,7 +395,9 @@ public class Knight {
             activeEffects.add(new Effect(slashEffectAnim, offsetX, 0f, 2.5f, 2f, isFacingRight));
         }
         stateTimer = 0f;
-        stateLockTimer = animDuration(anim);
+        float speedMultiplier = data.equippedCharms.contains( //quick slash
+            Charm.QUICK_SLASH, true) ? 0.6f : 1f;
+        stateLockTimer = animDuration(anim) * speedMultiplier;
     }
 
     public void landing(float top) {
