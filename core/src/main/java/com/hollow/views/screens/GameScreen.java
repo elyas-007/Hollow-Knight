@@ -205,8 +205,8 @@ public class GameScreen implements Screen {
 
 
         inventoryUI = new InventoryUI(game, game.activeSave);
-        pauseUI = new PauseUI(game, this);
         multiplexer = new InputMultiplexer();
+        pauseUI = new PauseUI(game, this, multiplexer);
         Gdx.input.setInputProcessor(multiplexer);
     }
 
@@ -306,7 +306,7 @@ public class GameScreen implements Screen {
     }
 
     public void drawWorld() {
-        Gdx.gl.glClearColor(0f, 0f, 1f, 0.3f);
+        Gdx.gl.glClearColor(0.04f, 0.07f, 0.15f, 1f);
         Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT);
 
         renderer.setView(camera);
@@ -678,9 +678,10 @@ public class GameScreen implements Screen {
     public void togglePause() {
         isPaused = !isPaused;
         if (isPaused) {
-            multiplexer.addProcessor(pauseUI.stage);
+            multiplexer.addProcessor(pauseUI.isSettingsOpen ? pauseUI.settingsUI.stage : pauseUI.stage);
         } else {
             multiplexer.removeProcessor(pauseUI.stage);
+            if (pauseUI.settingsUI != null) multiplexer.removeProcessor(pauseUI.settingsUI.stage);
         }
     }
 

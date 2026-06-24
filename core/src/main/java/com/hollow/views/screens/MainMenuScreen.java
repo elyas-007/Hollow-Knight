@@ -13,12 +13,16 @@ import com.badlogic.gdx.scenes.scene2d.ui.TextButton.TextButtonStyle;
 import com.badlogic.gdx.utils.viewport.FitViewport;
 import com.hollow.HollowKnight;
 import com.hollow.controllers.ButtonController;
+import com.hollow.views.hud.SettingsUI;
 
 public class MainMenuScreen implements Screen {
     private final HollowKnight game;
     private Stage stage;
     private FitViewport viewport;
     private ButtonController controller;
+
+    private SettingsUI settingsUI;
+    private boolean isSettingsOpen = false;
 
     public MainMenuScreen(HollowKnight game) {
         this.game = game;
@@ -47,7 +51,6 @@ public class MainMenuScreen implements Screen {
         TextButton quitBtn = new TextButton("Quit Game", styleBtn);
 
         startBtn.setUserObject((Runnable) () -> game.setScreen(new StartGameMenuScreen(game, this)));
-        settingsBtn.setUserObject((Runnable) () -> game.setScreen(new SettingsMenuScreen(game, this)));
         guideBtn.setUserObject((Runnable) () -> game.setScreen(new GuideScreen()));
         achievementsBtn.setUserObject((Runnable) () -> game.setScreen(new AchievementsScreen()));
         quitBtn.setUserObject((Runnable) () -> Gdx.app.exit());
@@ -63,6 +66,16 @@ public class MainMenuScreen implements Screen {
         TextButton[] menuButtons = new TextButton[]{startBtn, settingsBtn, guideBtn, achievementsBtn, quitBtn};
         controller = new ButtonController(game, stage, menuButtons);
 
+        settingsUI = new SettingsUI(game, () -> {
+            isSettingsOpen = false;
+            Gdx.input.setInputProcessor(stage);
+        });
+
+        settingsBtn.setUserObject((Runnable) () -> {
+            isSettingsOpen = true;
+            Gdx.input.setInputProcessor(settingsUI.stage);
+        });
+
         if (game.assetLoader.titleTheme != null && !game.assetLoader.titleTheme.isPlaying() && game.settings.isMusicOn) {
             game.assetLoader.titleTheme.setLooping(true);
             game.assetLoader.titleTheme.setVolume(game.settings.musicVolume);
@@ -77,16 +90,18 @@ public class MainMenuScreen implements Screen {
 
         game.batch.setProjectionMatrix(stage.getCamera().combined);
         game.batch.begin();
-        game.menuBackground.updateAndDraw(game.batch, delta, game.settings.brightness, true);
+        game.menuBackground.updateAndDraw(game.batch, delta, game.settings.brightness, !isSettingsOpen);
         game.batch.end();
 
 
-        stage.act(delta);
-
-        if (controller != null)
-            controller.update(delta);
-
-        stage.draw();
+        if (isSettingsOpen) {
+            settingsUI.act(delta);
+            settingsUI.draw();
+        } else {
+            stage.act(delta);
+            if (controller != null) controller.update(delta);
+            stage.draw();
+        }
     }
 
     @Override

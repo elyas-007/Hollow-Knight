@@ -1,65 +1,44 @@
-package com.hollow.views.screens;
+package com.hollow.views.hud;
 
 import com.badlogic.gdx.Input;
-import com.badlogic.gdx.graphics.GL20;
-import com.badlogic.gdx.graphics.Pixmap;
-import com.badlogic.gdx.graphics.Texture;
-import com.badlogic.gdx.graphics.g2d.TextureRegion;
-import com.badlogic.gdx.Screen;
 import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.g2d.BitmapFont;
 import com.badlogic.gdx.scenes.scene2d.*;
-import com.badlogic.gdx.scenes.scene2d.actions.Actions;
 import com.badlogic.gdx.scenes.scene2d.ui.*;
-import com.badlogic.gdx.scenes.scene2d.ui.Slider.*;
-import com.badlogic.gdx.Gdx;
-import com.badlogic.gdx.scenes.scene2d.ui.TextButton.TextButtonStyle;
 import com.badlogic.gdx.scenes.scene2d.utils.ChangeListener;
-import com.badlogic.gdx.scenes.scene2d.utils.ClickListener;
-import com.badlogic.gdx.scenes.scene2d.utils.Drawable;
-import com.badlogic.gdx.scenes.scene2d.utils.TextureRegionDrawable;
-import com.badlogic.gdx.utils.Align;
 import com.badlogic.gdx.utils.viewport.FitViewport;
 import com.hollow.HollowKnight;
 import com.hollow.controllers.ButtonController;
 import com.hollow.models.GameSettings;
 import com.hollow.models.enums.Language;
 
-
-public class SettingsMenuScreen implements Screen {
-    private final HollowKnight game;
-    private Stage stage;
-    private FitViewport viewport;
+public class SettingsUI {
+    public Stage stage;
+    private HollowKnight game;
     private ButtonController controller;
     private TextButton[] menuButtons;
     private boolean wait = false;
     private String rebindTarget = null;
     private Label rebindLabel;
+    private Runnable onClose;
 
-    private Screen previousScreen;
-
-    public SettingsMenuScreen(HollowKnight game, Screen screen) {
+    public SettingsUI(HollowKnight game, Runnable onClose) {
         this.game = game;
-        this.previousScreen = screen;
+        this.onClose = onClose;
+        stage = new Stage(new FitViewport(game.SCREEN_WIDTH, game.SCREEN_HEIGHT));
+        setupUI();
     }
 
-    @Override
-    public void show() {
-        viewport = new FitViewport(1920, 1080);
-        stage = new Stage(viewport);
-        Gdx.input.setInputProcessor(stage);
-
+    private void setupUI() {
         GameSettings setting = game.settings;
         BitmapFont font = game.assetLoader.font;
 
-
-        TextButtonStyle styleBtn = new TextButtonStyle();
+        TextButton.TextButtonStyle styleBtn = new TextButton.TextButtonStyle();
         styleBtn.font = font;
         styleBtn.fontColor = Color.WHITE;
 
         Label.LabelStyle labelStyle = new Label.LabelStyle(font, Color.WHITE);
         Label.LabelStyle dimStyle = new Label.LabelStyle(font, Color.GRAY);
-
 
         Table contentTable = new Table();
         contentTable.top().padTop(20);
@@ -72,7 +51,6 @@ public class SettingsMenuScreen implements Screen {
         scrollPane.setFadeScrollBars(false);
         scrollPane.setScrollingDisabled(true, false);
         stage.addActor(scrollPane);
-
 
         Label title = new Label("SETTINGS", new Label.LabelStyle(font, Color.WHITE));
         title.setFontScale(1.5f);
@@ -98,7 +76,6 @@ public class SettingsMenuScreen implements Screen {
         });
         contentTable.add(musicSlider).width(300).padBottom(18).row();
 
-
         contentTable.add(new Label("Music", labelStyle)).left().padRight(30).padBottom(18);
         TextButton musicToggle = new TextButton(setting.isMusicOn ? "ON" : "OFF", styleBtn);
         musicToggle.setUserObject((Runnable) () -> {
@@ -107,7 +84,6 @@ public class SettingsMenuScreen implements Screen {
             applyMusicToggle();
         });
         contentTable.add(musicToggle).left().padBottom(18).row();
-
 
         contentTable.add(new Label("Sound Effect", labelStyle)).left().padRight(30).padBottom(18);
         TextButton sfxToggle = new TextButton(setting.isSfxOn ? "ON" : "OFF", styleBtn);
@@ -119,15 +95,14 @@ public class SettingsMenuScreen implements Screen {
 
         TextButton resetAudio = new TextButton("Reset Audio", styleBtn);
         resetAudio.setUserObject((Runnable) () -> {
-           setting.resetAudio();
-           musicSlider.setValue(setting.musicVolume);
-           musicToggle.setText("ON");
-           sfxToggle.setText("ON");
-           applyMusicToggle();
-           applyMusicVolume();
+            setting.resetAudio();
+            musicSlider.setValue(setting.musicVolume);
+            musicToggle.setText("ON");
+            sfxToggle.setText("ON");
+            applyMusicToggle();
+            applyMusicVolume();
         });
         contentTable.add(resetAudio).colspan(2).padBottom(28).row();
-
 
         contentTable.add(new Label("Brightness", labelStyle)).left().padRight(30).padBottom(18);
         Slider btSlider = new Slider(0.2f, 1f, 0.05f, false, game.assetLoader.sliderSkin, "menuSlider");
@@ -155,11 +130,9 @@ public class SettingsMenuScreen implements Screen {
         });
         contentTable.add(lanBtn).left().padBottom(28).row();
 
-
         Label keyTitle = new Label("KeyBoard", new Label.LabelStyle(font, Color.WHITE));
         keyTitle.setFontScale(1.1f);
         contentTable.add(keyTitle).colspan(2).padBottom(14).row();
-
 
         TextButton upBtn = addNewKey(contentTable, "Up", "up", setting, labelStyle, styleBtn);
         TextButton downBtn = addNewKey(contentTable, "Down", "down", setting, labelStyle, styleBtn);
@@ -170,24 +143,22 @@ public class SettingsMenuScreen implements Screen {
         TextButton dashBtn = addNewKey(contentTable, "Dash", "dash", setting, labelStyle, styleBtn);
         TextButton focusBtn = addNewKey(contentTable, "Focus", "focus", setting, labelStyle, styleBtn);
 
-
         TextButton resetKey = new TextButton("Reset Keys", styleBtn);
         resetKey.setUserObject((Runnable) () -> {
             setting.resetKey();
-            game.setScreen(new SettingsMenuScreen(game, previousScreen));
+            setting.save();
+            onClose.run();
         });
         contentTable.add(resetKey).colspan(2).padBottom(28).row();
 
         rebindLabel = new Label("", dimStyle);
         contentTable.add(rebindLabel).colspan(2).padBottom(14).row();
 
-
         TextButton backBtn = new TextButton("Back", styleBtn);
         backBtn.setUserObject((Runnable) () -> {
             setting.save();
-            game.setScreen(previousScreen != null ? previousScreen : new MainMenuScreen(game));
+            onClose.run();
         });
-
 
         mainTable.add(backBtn).left().pad(20).padLeft(50).row();
         mainTable.add(scrollPane).expand().fill();
@@ -207,83 +178,39 @@ public class SettingsMenuScreen implements Screen {
 
                 if (keycode == Input.Keys.ESCAPE) {
                     setting.save();
-                    setting.save();
-                    game.setScreen(previousScreen != null ? previousScreen : new MainMenuScreen(game));
+                    onClose.run();
                     return true;
                 }
                 return false;
             }
         });
 
-        if (game.assetLoader.titleTheme != null && !game.assetLoader.titleTheme.isPlaying() &&  game.settings.isMusicOn) {
-            game.assetLoader.titleTheme.setLooping(true);
-            game.assetLoader.titleTheme.setVolume(game.settings.musicVolume);
-            game.assetLoader.titleTheme.play();
-        }
-
         menuButtons = new TextButton[]{
-            musicToggle,
-            sfxToggle,
-            resetAudio,
-            resetBrightness,
-            lanBtn,
-            upBtn,
-            downBtn,
-            rightBtn,
-            leftBtn,
-            jumpBtn,
-            attackBtn,
-            dashBtn,
-            focusBtn,
-            resetKey,
-            backBtn,
+            musicToggle, sfxToggle, resetAudio, resetBrightness,
+            lanBtn, upBtn, downBtn, rightBtn, leftBtn, jumpBtn,
+            attackBtn, dashBtn, focusBtn, resetKey, backBtn
         };
         controller = new ButtonController(game, stage, menuButtons);
     }
 
-    @Override
-    public void render(float delta) {
-        Gdx.gl.glClearColor(0f, 0f, 0f, 1f);
-        Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT);
-
-        game.batch.setProjectionMatrix(stage.getCamera().combined);
-        game.batch.begin();
-        game.menuBackground.updateAndDraw(game.batch, delta, game.settings.brightness, false);
-        game.batch.end();
-
+    public void act(float delta) {
         stage.act(delta);
-        if (controller != null)
-            controller.update(delta);
+        if (controller != null) controller.update(delta);
+    }
+
+    public void draw() {
         stage.draw();
     }
 
-    @Override
     public void resize(int width, int height) {
-        viewport.update(width, height, true);
+        stage.getViewport().update(width, height, true);
     }
 
-    @Override
-    public void pause() {
-
-    }
-
-    @Override
-    public void resume() {
-
-    }
-
-    @Override
-    public void hide() {
-
-    }
-
-    @Override
     public void dispose() {
         if (stage != null) stage.dispose();
     }
 
-
-    private TextButton addNewKey(Table root, String action, String target, GameSettings setting, Label.LabelStyle labelStyle, TextButtonStyle btnStyle) {
+    private TextButton addNewKey(Table root, String action, String target, GameSettings setting, Label.LabelStyle labelStyle, TextButton.TextButtonStyle btnStyle) {
         Table r = new Table();
         r.add(new Label(action, labelStyle)).width(120).left();
 
@@ -302,7 +229,7 @@ public class SettingsMenuScreen implements Screen {
     private void rebind(String target, Label keyName) {
         wait = true;
         rebindTarget = target;
-        rebindLabel.setText("Press any key to set [" + target + "] … (ESC to cancel)");
+        rebindLabel.setText("Press any key to set [" + target + "] ... (ESC to cancel)");
         rebindLabel.setUserObject(keyName);
     }
 
@@ -322,7 +249,6 @@ public class SettingsMenuScreen implements Screen {
 
     private void applyRebind(int keycode) {
         GameSettings s = game.settings;
-
         switch (rebindTarget) {
             case "up" -> s.keyUp = keycode;
             case "down" -> s.keyDown = keycode;
@@ -333,7 +259,6 @@ public class SettingsMenuScreen implements Screen {
             case "attack" -> s.keyAttack = keycode;
             case "dash" -> s.keyDash = keycode;
         }
-
         if (rebindLabel.getUserObject() instanceof Label) {
             ((Label) rebindLabel.getUserObject()).setText(Input.Keys.toString(keycode));
         }
@@ -348,9 +273,7 @@ public class SettingsMenuScreen implements Screen {
     }
 
     private void applyMusicToggle() {
-        if (game.assetLoader.titleTheme == null)
-            return;
-
+        if (game.assetLoader.titleTheme == null) return;
         if (game.settings.isMusicOn) {
             if (!game.assetLoader.titleTheme.isPlaying()) {
                 game.assetLoader.titleTheme.setLooping(true);

@@ -1,5 +1,6 @@
 package com.hollow.views.hud;
 
+import com.badlogic.gdx.InputMultiplexer;
 import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.scenes.scene2d.Stage;
 import com.badlogic.gdx.scenes.scene2d.ui.Image;
@@ -18,11 +19,22 @@ public class PauseUI {
     private GameScreen gameScreen;
     private ButtonController controller;
 
-    public PauseUI(HollowKnight game, GameScreen gameScreen) {
+    public SettingsUI settingsUI;
+    public boolean isSettingsOpen = false;
+    private InputMultiplexer multiplexer;
+
+    public PauseUI(HollowKnight game, GameScreen gameScreen, InputMultiplexer multiplexer) {
         this.game = game;
         this.gameScreen = gameScreen;
+        this.multiplexer = multiplexer;
         stage = new Stage(new FitViewport(game.SCREEN_WIDTH, game.SCREEN_HEIGHT));
         setupUI();
+
+        settingsUI = new SettingsUI(game, () -> {
+            isSettingsOpen = false;
+            multiplexer.removeProcessor(settingsUI.stage);
+            multiplexer.addProcessor(stage);
+        });
     }
 
     private void setupUI() {
@@ -44,7 +56,11 @@ public class PauseUI {
 
         continueBtn.setUserObject((Runnable) () -> gameScreen.togglePause());
 
-        settingsBtn.setUserObject((Runnable) () -> game.setScreen(new SettingsMenuScreen(game, gameScreen)));
+        settingsBtn.setUserObject((Runnable) () -> {
+            isSettingsOpen = true;
+            multiplexer.removeProcessor(stage);
+            multiplexer.addProcessor(settingsUI.stage);
+        });
         guideBtn.setUserObject((Runnable) () -> game.setScreen(new GuideScreen()));
         cheatBtn.setUserObject((Runnable) () -> game.setScreen(new AchievementsScreen()));
         quitBtn.setUserObject((Runnable) this::quitGame);
@@ -65,21 +81,30 @@ public class PauseUI {
     }
 
     public void act(float delta) {
-        stage.act(delta);
-        if (controller != null)
-            controller.update(delta);
+        if (isSettingsOpen) {
+            settingsUI.act(delta);
+        } else {
+            stage.act(delta);
+            if (controller != null) controller.update(delta);
+        }
     }
 
     public void draw() {
-        stage.draw();
+        if (isSettingsOpen) {
+            settingsUI.draw();
+        } else {
+            stage.draw();
+        }
     }
 
     public void resize(int width, int height) {
         stage.getViewport().update(width, height, true);
+        if (settingsUI != null) settingsUI.resize(width, height);
     }
 
     public void dispose() {
         stage.dispose();
+        if (settingsUI != null) settingsUI.dispose();
     }
 
     public void quitGame() {
