@@ -165,14 +165,12 @@ public class StartGameMenuScreen implements Screen {
 
     @Override
     public void render(float delta) {
-        Gdx.gl.glClearColor(0.05f, 0.05f, 0.05f, 1f);
+        Gdx.gl.glClearColor(0f, 0f, 0f, 1f);
         Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT);
 
         game.batch.setProjectionMatrix(stage.getCamera().combined);
-         game.batch.begin();
-         game.batch.draw(game.assetLoader.background, 0, 0, 1920, 1080);
-        float b = game.settings.brightness;
-        game.batch.setColor(b, b, b, 1f);
+        game.batch.begin();
+        game.menuBackground.updateAndDraw(game.batch, delta, game.settings.brightness, false);
         game.batch.end();
 
          stage.act(delta);

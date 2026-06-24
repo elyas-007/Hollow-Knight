@@ -10,6 +10,7 @@ import com.hollow.assets.AssetLoader;
 import com.hollow.models.GameData;
 import com.hollow.models.GameSettings;
 import com.hollow.models.SaveManager;
+import com.hollow.views.hud.MenuBackground;
 import com.hollow.views.screens.MainMenuScreen;
 
 public class HollowKnight extends Game {
@@ -20,6 +21,8 @@ public class HollowKnight extends Game {
     public final int SCREEN_WIDTH = 1920;
     public final int SCREEN_HEIGHT = 1080;
 
+    public MenuBackground menuBackground;
+
 
     @Override
     public void create() {
@@ -27,6 +30,8 @@ public class HollowKnight extends Game {
         assetLoader = new AssetLoader(this);
         assetLoader.loadMainMenu();
         settings = GameSettings.load();
+
+        menuBackground = new MenuBackground(assetLoader, this);
 
         Pixmap pixmap = new Pixmap(Gdx.files.internal("icon and cursor/cursor_new_resized.png"));
 
@@ -55,6 +60,7 @@ public class HollowKnight extends Game {
         if (activeSave != null) SaveManager.save(activeSave);
         batch.dispose();
         assetLoader.dispose();
+        if (menuBackground != null) menuBackground.dispose();
    }
 
     public void playSound(Sound sound) {

@@ -26,7 +26,7 @@ public class MainMenuScreen implements Screen {
 
     @Override
     public void show() {
-        viewport = new FitViewport(1920, 1080);
+        viewport = new FitViewport(game.SCREEN_WIDTH, game.SCREEN_HEIGHT);
         stage = new Stage(viewport);
         Gdx.input.setInputProcessor(stage);
 
@@ -77,9 +77,7 @@ public class MainMenuScreen implements Screen {
 
         game.batch.setProjectionMatrix(stage.getCamera().combined);
         game.batch.begin();
-        game.batch.draw(game.assetLoader.background, 0, 0, 1920, 1080);
-        float b = game.settings.brightness;
-        game.batch.setColor(b, b, b, 1f);
+        game.menuBackground.updateAndDraw(game.batch, delta, game.settings.brightness, true);
         game.batch.end();
 
 

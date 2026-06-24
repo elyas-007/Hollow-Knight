@@ -248,10 +248,7 @@ public class SettingsMenuScreen implements Screen {
 
         game.batch.setProjectionMatrix(stage.getCamera().combined);
         game.batch.begin();
-        float b = game.settings.brightness;
-        game.batch.setColor(b, b, b, 1f);
-        game.batch.draw(game.assetLoader.background, 0, 0, 1920, 1080);
-        game.batch.setColor(Color.WHITE);
+        game.menuBackground.updateAndDraw(game.batch, delta, game.settings.brightness, false);
         game.batch.end();
 
         stage.act(delta);
