@@ -23,7 +23,7 @@ import com.hollow.models.Game;
 import com.hollow.models.GameData;
 import com.hollow.models.SolidBlock;
 import com.hollow.models.TransitionZone;
-import com.hollow.models.entities.Enemy.Tiktik;
+import com.hollow.models.entities.Enemy.*;
 import com.hollow.models.entities.FalseKnightBoss.FalseKnight;
 import com.hollow.models.entities.FalseKnightBoss.IdleBehavior;
 import com.hollow.models.entities.Knight.Knight;
@@ -143,11 +143,17 @@ public class GameScreen implements Screen {
         groundRecs = helper.getSolidRectangles();
         spikeRecs = helper.getSolidRectangles();
         transitionZone = helper.getTransitionZone(map, UNIT_SCALE);
-        Array<Tiktik> mapTiktiks = helper.getTiktikSpawns(map, UNIT_SCALE);
-        for (Tiktik t : mapTiktiks) {
-            EnemyAnimationLoader.loadTiktikAnimations(t);
-        }
 
+        Array<Tiktik> mapTiktiks = helper.getTiktikSpawns(map, UNIT_SCALE);
+        Array<Crawlid> mapCrawlids = helper.getCrawLidSpawn(map, UNIT_SCALE);
+        Array<HuskHornhead> mapHuskHornHeads = helper.getHuskHornHead(map, UNIT_SCALE);
+        Array<Mosquito> mapMosquito = helper.getMosquito(map, UNIT_SCALE);
+        Array<Mosscreep> mapMosscreep = helper.getMosscreep(map, UNIT_SCALE);
+        for (Tiktik t : mapTiktiks) EnemyAnimationLoader.loadTiktikAnimations(t);
+        for (Crawlid c : mapCrawlids) EnemyAnimationLoader.loadCrawlidAnimations(c);
+        for (HuskHornhead h : mapHuskHornHeads) EnemyAnimationLoader.loadHuskHornheadAnimations(h);
+        for (Mosquito m : mapMosquito) EnemyAnimationLoader.loadMosquitoAnimations(m);
+        for (Mosscreep m : mapMosscreep) EnemyAnimationLoader.loadMosscreepAnimations(m);
 
         hud = new GameHud(game, knight);
 
@@ -183,8 +189,13 @@ public class GameScreen implements Screen {
             ZoteAnimationLoader.loadZoteAnimations(zote);
         }
 
-
-        controller = new Game(game, knight, groundRecs, spikeRecs, mapTiktiks, transitionZone, this, game.activeSave, falseKnight);
+        Array<Enemy> mapEnemies = new Array<>();
+        mapEnemies.addAll(mapTiktiks);
+        mapEnemies.addAll(mapCrawlids);
+        mapEnemies.addAll(mapHuskHornHeads);
+        mapEnemies.addAll(mapMosquito);
+        mapEnemies.addAll(mapMosscreep);
+        controller = new Game(game, knight, groundRecs, spikeRecs, mapEnemies, transitionZone, this, game.activeSave, falseKnight);
 
     }
 
@@ -310,21 +321,42 @@ public class GameScreen implements Screen {
     }
 
     private void renderEnemies() {
-        if (controller.getTiktiks() == null) return;
+        if (controller.getEnemies() == null) return;
 
-        for (var enemy : controller.getTiktiks()) {
+        for (var enemy : controller.getEnemies()) {
             var frame = enemy.getCurrentFrame();
             if (frame == null) continue;
 
             float x = enemy.position.x;
             float y = enemy.position.y;
             float hitboxW = enemy.hitbox.width;
+            float hitboxH = enemy.hitbox.height;
+            float spriteW;
+            float spriteH;
+            float offsetY;
 
-            float spriteW = 1.4f;
-            float spriteH = 0.9f;
-
+            if (enemy instanceof Crawlid) {
+                spriteW = hitboxW * 2.2f;
+                spriteH = hitboxH * 2.8f;
+                offsetY = 0.15f;
+            } else if (enemy instanceof HuskHornhead) {
+                spriteW = hitboxW * 2.2f;
+                spriteH = hitboxH * 2.2f;
+                offsetY = 0.3f;
+            } else if (enemy instanceof Mosquito) {
+                spriteW = hitboxW * 1.8f;
+                spriteH = hitboxH * 1.5f;
+                offsetY = 0.6f;
+            } else if (enemy instanceof Mosscreep) {
+                spriteW = hitboxW * 1.6f;
+                spriteH = hitboxH * 1.6f;
+                offsetY = 0.15f;
+            } else {
+                spriteW = 1.4f;
+                spriteH = 0.9f;
+                offsetY = 0.12f;
+            }
             float offsetX = (spriteW - hitboxW) / 2f;
-            float offsetY = 0.12f;
 
             float drawX = x - offsetX;
             float drawY = y - offsetY;
@@ -371,8 +403,8 @@ public class GameScreen implements Screen {
             shapeRenderer.rect(kBox.x, kBox.y, kBox.width, kBox.height);
         }
 
-        if (controller.getTiktiks() != null) {
-            for (var enemy : controller.getTiktiks()) {
+        if (controller.getEnemies() != null) {
+            for (var enemy : controller.getEnemies()) {
                 Rectangle eBox = enemy.hitbox;
                 shapeRenderer.rect(eBox.x, eBox.y, eBox.width, eBox.height);
             }

@@ -96,14 +96,16 @@
         },
         "cross_road.tmx": {
             "expandedObjectLayers": [
+                5,
                 11,
-                5
+                10,
+                13
             ],
             "scale": 0.416015625,
-            "selectedLayer": 10,
+            "selectedLayer": 9,
             "viewCenter": {
-                "x": 12616.112676056338,
-                "y": 8887.887323943662
+                "x": 12700.2441314554,
+                "y": 7705.239436619719
             }
         },
         "cross_road.tmx#Lance_object": {
@@ -178,13 +180,14 @@
         },
         "green_path.tmx": {
             "expandedObjectLayers": [
-                7
+                7,
+                8
             ],
             "scale": 1,
-            "selectedLayer": 6,
+            "selectedLayer": 7,
             "viewCenter": {
-                "x": 12000.5,
-                "y": 7999.5
+                "x": 12546.5,
+                "y": 6197.5
             }
         },
         "grimm_particle_flame.tsx": {

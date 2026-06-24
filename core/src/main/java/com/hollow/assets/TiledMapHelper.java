@@ -8,9 +8,10 @@ import com.badlogic.gdx.maps.tiled.TmxMapLoader;
 import com.badlogic.gdx.math.Rectangle;
 import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.utils.Array;
+import com.hollow.HollowKnight;
 import com.hollow.models.SolidBlock;
 import com.hollow.models.TransitionZone;
-import com.hollow.models.entities.Enemy.Tiktik;
+import com.hollow.models.entities.Enemy.*;
 
 public class TiledMapHelper {
     private TiledMap tiledMap;
@@ -99,6 +100,80 @@ public class TiledMapHelper {
             }
         }
         return null;
+    }
+
+    public Array<Crawlid> getCrawLidSpawn(TiledMap map, float unitScale) {
+        Array<Crawlid> crawlids = new Array<>();
+
+        MapLayer layer = map.getLayers().get("enemies");
+
+        if (layer == null) return crawlids;
+
+        for (MapObject object : layer.getObjects()) {
+            if (object.getName() != null && object.getName().equalsIgnoreCase("Crawlid")) {
+                float x = object.getProperties().get("x", Float.class) * unitScale;
+                float y = object.getProperties().get("y", Float.class) * unitScale;
+
+                crawlids.add(new Crawlid(x, y));
+            }
+        }
+        return crawlids;
+    }
+
+    public Array<HuskHornhead> getHuskHornHead(TiledMap map, float unitScale) {
+        Array<HuskHornhead> huskHornheads = new Array<>();
+
+        MapLayer layer = map.getLayers().get("enemies");
+
+        if (layer == null) return huskHornheads;
+
+        for (MapObject object : layer.getObjects()) {
+            if (object.getName() != null && object.getName().equalsIgnoreCase("HuskHornhead")) {
+                float x = object.getProperties().get("x", Float.class) * unitScale;
+                float y = object.getProperties().get("y", Float.class) * unitScale;
+
+                huskHornheads.add(new HuskHornhead(x, y));
+            }
+        }
+        return huskHornheads;
+    }
+
+    public Array<Mosquito> getMosquito(TiledMap map, float unitScale) {
+        Array<Mosquito> mosquitos = new Array<>();
+
+        MapLayer layer = map.getLayers().get("enemies");
+
+        if (layer == null)
+            return mosquitos;
+
+        for (MapObject object : layer.getObjects()) {
+            if (object.getName() != null && object.getName().equalsIgnoreCase("mosquito")) {
+                float x = object.getProperties().get("x", Float.class) * unitScale;
+                float y = object.getProperties().get("y", Float.class) * unitScale;
+
+                mosquitos.add(new Mosquito(x, y));
+            }
+        }
+        return mosquitos;
+    }
+
+    public Array<Mosscreep> getMosscreep(TiledMap map, float unitScale) {
+        Array<Mosscreep> mosscreeps = new Array<>();
+
+        MapLayer layer = map.getLayers().get("enemies");
+
+        if (layer == null)
+            return mosscreeps;
+
+        for (MapObject object : layer.getObjects()) {
+            if (object.getName() != null && object.getName().equalsIgnoreCase("mosscreep")) {
+                float x = object.getProperties().get("x", Float.class) * unitScale;
+                float y = object.getProperties().get("y", Float.class) * unitScale;
+
+                mosscreeps.add(new Mosscreep(x, y));
+            }
+        }
+        return mosscreeps;
     }
 
 }

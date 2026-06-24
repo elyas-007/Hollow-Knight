@@ -7,6 +7,8 @@ import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.utils.Array;
 import com.hollow.HollowKnight;
 import com.hollow.assets.TiledMapHelper;
+import com.hollow.models.entities.Enemy.Crawlid;
+import com.hollow.models.entities.Enemy.Enemy;
 import com.hollow.models.entities.Enemy.Tiktik;
 import com.hollow.models.entities.FalseKnightBoss.FalseKnight;
 import com.hollow.models.entities.FalseKnightBoss.IdleBehavior;
@@ -27,7 +29,7 @@ public class Game {
 
     private boolean wasOutsideArena = false;
 
-    private Array<Tiktik> tiktiks;
+    private Array<Enemy> enemies;
 
     private int keyLeft;
     private int keyRight;
@@ -50,7 +52,10 @@ public class Game {
     public Array<Projectile> activeProjectiles = new Array<>();
     public boolean hasShadowCharm = false; //for now
 
-    public Game(HollowKnight game, Knight knight, Array<SolidBlock> groundRects, Array<SolidBlock> spikeRects, Array<Tiktik> tiktiks, TransitionZone transitionZones, GameScreen screen, GameData data, FalseKnight boss) {
+    public Game(HollowKnight game, Knight knight, Array<SolidBlock> groundRects,
+                Array<SolidBlock> spikeRects, Array<Enemy> enemies,
+                TransitionZone transitionZones, GameScreen screen,
+                GameData data, FalseKnight boss) {
         this.game = game;
         this.knight = knight;
         this.groundRects = groundRects;
@@ -66,7 +71,7 @@ public class Game {
         keyUp = game.settings.keyUp;
         keyDown = game.settings.keyDown;
 
-        this.tiktiks = tiktiks;
+        this.enemies = enemies;
 
         this.startX = knight.getX();
         this.startY = knight.getY();
@@ -121,25 +126,27 @@ public class Game {
                 activeProjectiles.removeIndex(i);
                 continue;
             }
-            
+
             for (SolidBlock ground : groundRects) {
                 if (!ground.isDeadly && p.hitbox.overlaps(ground.bounds)) {
                     p.isDestroyed = true;
                     break;
                 }
             }
+
             if (p.isDestroyed) {
                 activeProjectiles.removeIndex(i);
                 continue;
             }
 
-            for (Tiktik enemy : tiktiks) {
-                if (enemy.state != Tiktik.EnemyState.CORPSE && p.hitbox.overlaps(enemy.hitbox)) {
+            for (Enemy enemy : enemies) {
+                if (enemy.state != Enemy.EnemyState.CORPSE && p.hitbox.overlaps(enemy.hitbox)) {
                     enemy.takeDamage(p.isShadow ? 2 : 1, p.isFacingRight);
-                    p.isDestroyed = true;
+//                    p.isDestroyed = true;
                     break;
                 }
             }
+
             if (p.isDestroyed) {
                 activeProjectiles.removeIndex(i);
                 continue;
@@ -149,7 +156,7 @@ public class Game {
                 Rectangle targetBox = (boss.currentState == FalseKnight.state.STUNNED) ? boss.vulnerabilityBox : boss.hitbox;
                 if (p.hitbox.overlaps(targetBox)) {
                     boss.takeDamage(p.isShadow ? 15 : 10);
-                    p.isDestroyed = true;
+//                    p.isDestroyed = true;
                 }
             }
             if (p.isDestroyed) {
@@ -208,13 +215,15 @@ public class Game {
     }
 
     private void updateEnemies(float delta) {
-        for (int i = tiktiks.size - 1; i >= 0; i--) {
-            Tiktik enemy = tiktiks.get(i);
+        for (int i = enemies.size - 1; i >= 0; i--) {
+            Enemy enemy = enemies.get(i);
+            enemy.targetX = knight.getX();
+            enemy.targetY = knight.getY();
 
             enemy.update(delta);
             resolveEnemyCollisions(enemy);
 
-            if (enemy.state == Tiktik.EnemyState.WALKING) {
+            if (enemy.state != Enemy.EnemyState.CORPSE && enemy.state != Enemy.EnemyState.DYING_AIR && enemy.state != Enemy.EnemyState.DYING_LAND) {
                 if (knight.getHitbox().overlaps(enemy.hitbox) && !knight.isInvincible()) {
                     boolean hitFromRight = knight.getX() < enemy.position.x;
                     knight.takeDamage(1, hitFromRight);
@@ -223,7 +232,7 @@ public class Game {
         }
     }
 
-    private void resolveEnemyCollisions(Tiktik enemy) {
+    private void resolveEnemyCollisions(Enemy enemy) {
         boolean wasOnGround = false;
 
         for (SolidBlock ground : groundRects) {
@@ -255,8 +264,8 @@ public class Game {
         }
     }
 
-    public Array<Tiktik> getTiktiks() {
-        return tiktiks;
+    public Array<Enemy> getEnemies() {
+        return enemies;
     }
 
     private void handleInput(float delta) {
@@ -441,8 +450,8 @@ public class Game {
 
         boolean hitSomething = false;
 
-        for (Tiktik enemy : tiktiks) {
-            if (enemy.state == Tiktik.EnemyState.WALKING) {
+        for (Enemy enemy : enemies) {
+            if (enemy.state != Enemy.EnemyState.CORPSE && enemy.state != Enemy.EnemyState.DYING_AIR && enemy.state != Enemy.EnemyState.DYING_LAND) {
                 if (attackBox.overlaps(enemy.hitbox)) {
                     boolean hitFromRight = knight.getX() > enemy.position.x;
                     enemy.takeDamage(1, hitFromRight);
