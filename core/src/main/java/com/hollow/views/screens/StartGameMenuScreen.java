@@ -97,10 +97,6 @@ public class StartGameMenuScreen implements Screen {
 
                 stateTable.add(maskRow).left().padBottom(5).row();
 
-                Table geoRow = new Table();
-                geoRow.add(new Image(game.assetLoader.geoHud)).size(18, 18).padRight(5);
-                geoRow.add(new Label(String.valueOf(data.geo), infoStyle)).left();
-                stateTable.add(geoRow).left();
 
                 leftInfo.add(stateTable).left();
 

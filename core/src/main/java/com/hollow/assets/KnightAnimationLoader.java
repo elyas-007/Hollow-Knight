@@ -30,7 +30,7 @@ public class KnightAnimationLoader {
         knight.upSlashAnim = loadAnimation("animation/knight/UpSlash.png", 5, 0.1f, Animation.PlayMode.LOOP);
         knight.wallSlideAnim = loadAnimation("animation/knight/Wall Slide.png", 4, 0.1f, Animation.PlayMode.LOOP);
         knight.wallJumpAnim = loadAnimation("animation/knight/Walljump.png", 9, 0.1f, Animation.PlayMode.LOOP);
-        knight.idleAnim = loadAnimation("animation/knight/Idle Hurt.png", 12, 0.1f, Animation.PlayMode.LOOP);
+        knight.idleAnim = loadAnimation("animation/knight/Idle.png", 9, 0.1f, Animation.PlayMode.LOOP);
 
 
         knight.dashEffectAnim = loadAnimation("effect/Dash Effect.png", 8, 0.05f, Animation.PlayMode.NORMAL);
@@ -40,6 +40,7 @@ public class KnightAnimationLoader {
 
         knight.soulBallAnim = loadAnimation("animation/knight/SoulBall.png", 4, 0.1f, Animation.PlayMode.NORMAL);
         knight.shadowBallAnim = loadAnimation("animation/knight/ShadowBall.png", 6, 0.1f, Animation.PlayMode.NORMAL);
+        knight.blast = loadAnimation("animation/knight/BlastSoul.png", 8, 0.05f, Animation.PlayMode.NORMAL);
     }
 
     public static Animation<TextureRegion> loadAnimation(String fileName, int frameCount, float frameDuration, Animation.PlayMode mode) {

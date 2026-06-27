@@ -124,7 +124,7 @@ public class HuskHornhead extends Enemy {
     public TextureRegion getCurrentFrame() {
         if (state == EnemyState.CORPSE) return corpseFrame;
         if (state == EnemyState.DYING_LAND && deathLandAnim != null) return deathLandAnim.getKeyFrame(stateTime, false);
-        if (state == EnemyState.DYING_AIR && deathLandAnim != null) return deathLandAnim.getKeyFrames()[0];
+        if (state == EnemyState.DYING_AIR && deathAirAnim != null) return deathAirAnim.getKeyFrame(stateTime, false);
         if (state == EnemyState.TURNING && turnAnim != null) return turnAnim.getKeyFrame(stateTime, false);
         if (state == EnemyState.ATTACK_ANTICIPATE && attackAnticipateAnim != null) return attackAnticipateAnim.getKeyFrame(stateTime, false);
         if (state == EnemyState.ATTACK_LUNGE && attackLungeAnim != null) return attackLungeAnim.getKeyFrame(stateTime, true);

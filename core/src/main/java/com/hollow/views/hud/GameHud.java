@@ -23,7 +23,6 @@ public class GameHud implements Disposable {
     private Label geoLabel;
 
     private int lastMasks;
-    private int lastGeo;
 
     public GameHud(HollowKnight game, Knight knight) {
         viewport = new FitViewport(1280, 720, new OrthographicCamera());
@@ -48,23 +47,14 @@ public class GameHud implements Disposable {
                 game.assetLoader.maskShatterAnim
             );
             maskWidgets.add(mask);
-            maskTable.add(mask).size(55, 55).padRight(5);
+            maskTable.add(mask).size(40, 40).padRight(1);
         }
-
-        lastGeo = 0;
-        Label.LabelStyle labelStyle = new Label.LabelStyle(game.assetLoader.font, Color.WHITE);
-        geoLabel = new Label(String.valueOf(lastGeo), labelStyle);
-
-        Table geoTable = new Table();
-        geoTable.add(new Image(game.assetLoader.geoHudGame)).size(40,40).padRight(8);
-        geoTable.add(geoLabel).left();
 
         Table rightStats = new Table();
         rightStats.add(maskTable).left().padBottom(2).row();
-        rightStats.add(geoTable).left().padLeft(25);
 
-        root.add(soulVessel).size(160, 160).padRight(-10);
-        root.add(rightStats).left().top().padTop(45);
+        root.add(soulVessel).size(110, 110).padRight(-45);
+        root.add(rightStats).left().top().padTop(35);
     }
 
     public void update(Knight knight, float delta) {

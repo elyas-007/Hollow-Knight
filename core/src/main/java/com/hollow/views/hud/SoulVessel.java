@@ -39,7 +39,7 @@ public class SoulVessel extends Actor {
         if (percent < 0) percent = 0;
         if (percent > 1) percent = 1;
 
-
+        batch.draw(frame, getX(), getY(), getWidth(), getHeight());
         if (percent > 0) {
             TextureRegion temp = new TextureRegion(liquid);
             int cropHeight = (int) (liquid.getRegionHeight() * percent);
@@ -49,7 +49,5 @@ public class SoulVessel extends Actor {
 
             batch.draw(temp, getX(), getY(), getWidth(), getHeight() * percent);
         }
-
-        batch.draw(frame, getX(), getY(), getWidth(), getHeight());
     }
 }

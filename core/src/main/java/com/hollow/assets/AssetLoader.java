@@ -139,7 +139,7 @@ public class AssetLoader {
         fullMask = new TextureRegion(new Texture("ui/hud/FilledHealthShine_004.png"));
         emptyMask = new TextureRegion(new Texture("ui/hud/EmptyHealth.png"));
         maskShatterAnim = KnightAnimationLoader.loadAnimation("ui/hud/BreakHealth.png", 6, 0.1f, Animation.PlayMode.LOOP);
-        soul = new TextureRegion(new Texture("ui/hud/Soft.png"));
+        soul = new TextureRegion(new Texture("ui/hud/SoulOrb_Full.png"));
 
         topOrnament = new Texture("ui/hud/gg_board_UI_top_0004.png");
         bottomOrnament = new Texture("ui/hud/gg_board_UI_bottom_0003.png");

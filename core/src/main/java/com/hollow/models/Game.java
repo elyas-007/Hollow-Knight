@@ -51,6 +51,7 @@ public class Game {
     private SolidBlock rightDoor;
 
     public Array<Projectile> activeProjectiles = new Array<>();
+    public Array<Effect> activeEffects = new Array<>();
     public boolean hasShadowCharm;
 
     public Game(HollowKnight game, Knight knight, Array<SolidBlock> groundRects,
@@ -126,11 +127,6 @@ public class Game {
             Projectile p = activeProjectiles.get(i);
             p.update(delta);
 
-            if (p.isDestroyed) {
-                activeProjectiles.removeIndex(i);
-                continue;
-            }
-
             for (SolidBlock ground : groundRects) {
                 if (!ground.isDeadly && p.hitbox.overlaps(ground.bounds)) {
                     p.isDestroyed = true;
@@ -138,34 +134,34 @@ public class Game {
                 }
             }
 
-            if (p.isDestroyed) {
-                activeProjectiles.removeIndex(i);
-                continue;
-            }
-
-            for (Enemy enemy : enemies) {
-                if (enemy.state != Enemy.EnemyState.CORPSE && p.hitbox.overlaps(enemy.hitbox)) {
-                    int spellDamage = p.isShadow ? 2 : 1; // void hurt
-                    if (hasShadowCharm) spellDamage = (int)(spellDamage * 1.5f);
-                    enemy.takeDamage(spellDamage, p.isFacingRight);
-//                    p.isDestroyed = true;
-                    break;
+            if (!p.isDestroyed) {
+                for (Enemy enemy : enemies) {
+                    if (enemy.state != Enemy.EnemyState.CORPSE && p.hitbox.overlaps(enemy.hitbox)) {
+                        int spellDamage = p.isShadow ? 2 : 1; // void hurt
+                        if (hasShadowCharm) spellDamage = (int)(spellDamage * 1.5f);
+                        enemy.takeDamage(spellDamage, p.isFacingRight);
+                        p.isDestroyed = true;
+                        break;
+                    }
                 }
             }
 
-            if (p.isDestroyed) {
-                activeProjectiles.removeIndex(i);
-                continue;
-            }
-
-            if (boss != null && boss.currentState != FalseKnight.state.DEATH) {
+            if (!p.isDestroyed && boss != null && boss.currentState != FalseKnight.state.DEATH) {
                 Rectangle targetBox = (boss.currentState == FalseKnight.state.STUNNED) ? boss.vulnerabilityBox : boss.hitbox;
                 if (p.hitbox.overlaps(targetBox)) {
                     boss.takeDamage(p.isShadow ? 15 : 10);
-//                    p.isDestroyed = true;
+                    p.isDestroyed = true;
                 }
             }
+
             if (p.isDestroyed) {
+                activeEffects.add(new Effect(
+                    knight.blast,
+                    p.position.x,
+                    p.position.y,
+                    2f, 2f,
+                    p.isFacingRight
+                ));
                 activeProjectiles.removeIndex(i);
             }
         }
@@ -262,6 +258,13 @@ public class Game {
             if (minOverlap == overlapTop) {
                 enemy.position.y = ground.bounds.y + ground.bounds.height;
                 enemy.velocity.y = 0;
+
+                if (enemy.state == Enemy.EnemyState.DYING_AIR) {
+                    enemy.state = Enemy.EnemyState.DYING_LAND;
+                    enemy.stateTime = 0f;
+                    enemy.velocity.x = 0f;
+                }
+
                 wasOnGround = true;
             } else if (minOverlap == overlapLeft || minOverlap == overlapRight) {
                 if (enemy.state == Tiktik.EnemyState.WALKING) {

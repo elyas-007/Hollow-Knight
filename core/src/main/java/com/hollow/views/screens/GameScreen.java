@@ -17,6 +17,7 @@ import com.badlogic.gdx.utils.Array;
 import com.badlogic.gdx.utils.viewport.FitViewport;
 import com.hollow.HollowKnight;
 import com.hollow.assets.*;
+import com.hollow.models.Effect;
 import com.hollow.models.Game;
 import com.hollow.models.SolidBlock;
 import com.hollow.models.TransitionZone;
@@ -322,6 +323,7 @@ public class GameScreen implements Screen {
         }
         renderProjectiles();
         renderEffects();
+        renderWorldEffects(Gdx.graphics.getDeltaTime());
         game.batch.end();
     }
 
@@ -346,9 +348,10 @@ public class GameScreen implements Screen {
         float hitboxW = knight.getWidth();
         float hitboxH = knight.getHeight();
 
-        float scaleMultiplier = 2.5f;
-        float spriteW = hitboxW * scaleMultiplier;
-        float spriteH = hitboxH * scaleMultiplier;
+        float scaleMultiplierX = 2.9f;
+        float scaleMultiplierY = 2.5f;
+        float spriteW = hitboxW * scaleMultiplierX;
+        float spriteH = hitboxH * scaleMultiplierY;
 
         float offsetX = (spriteW - hitboxW) / 2f;
         float offsetY = 0.15f;
@@ -509,6 +512,27 @@ public class GameScreen implements Screen {
                 game.batch.draw(frame, drawX, drawY, w, h);
             } else {
                 game.batch.draw(frame, drawX + w, drawY, -w, h);
+            }
+        }
+    }
+
+    private void renderWorldEffects(float delta) {
+        for (int i = controller.activeEffects.size - 1; i >= 0; i--) {
+            Effect effect = controller.activeEffects.get(i);
+            effect.update(delta);
+
+            if (effect.isFinished()) {
+                controller.activeEffects.removeIndex(i);
+                continue;
+            }
+
+            TextureRegion frame = effect.getCurrentFrame();
+            if (frame != null) {
+                if (effect.isFacingRight) {
+                    game.batch.draw(frame, effect.offsetX, effect.offsetY, effect.width, effect.height);
+                } else {
+                    game.batch.draw(frame, effect.offsetX + effect.width, effect.offsetY, -effect.width, effect.height);
+                }
             }
         }
     }

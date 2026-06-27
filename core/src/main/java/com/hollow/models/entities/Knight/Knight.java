@@ -25,7 +25,7 @@ public class Knight {
     public static final float FORCE_NAIL_Y = 6f;
     public static final float INVINCIBLE_DURATION = 1.2f;
     public static final float HEAL_DURATION = 1.4f;
-    public static final float HIT_WIDTH = 0.8f;
+    public static final float HIT_WIDTH = 1.0f;
     public static final float HIT_HEIGHT = 1.2f;
     public KnightState state = KnightState.IDLE;
     public KnightState preState;
@@ -89,6 +89,7 @@ public class Knight {
 
     public Animation<TextureRegion> soulBallAnim;
     public Animation<TextureRegion> shadowBallAnim;
+    public Animation<TextureRegion> blast;
 
 
 
@@ -202,14 +203,17 @@ public class Knight {
 
         if (healing) {
             state = KnightState.FOCUSING;
+            if (state != preState) stateTimer = 0f;
             return;
         }
 
         if (stateLockTimer > 0) {
+            stateLockTimer -= delta;
+
             if (state == KnightState.WALL_JUMP && (moveDirection != 0 || isDashing)) {
                 stateLockTimer = 0f;
             } else {
-                stateLockTimer -= delta;
+                if (state != preState) stateTimer = 0f;
                 return;
             }
         }
@@ -253,8 +257,7 @@ public class Knight {
     }
 
     private boolean movementLocked() {
-        return state == KnightState.HURT    || state == KnightState.DEAD
-            || state == KnightState.LANDING || state == KnightState.FOCUSING
+        return state == KnightState.HURT    || state == KnightState.DEAD || state == KnightState.FOCUSING
             || state == KnightState.WALL_JUMP;
     }
 
@@ -401,7 +404,7 @@ public class Knight {
     }
 
     public void landing(float top) {
-        boolean wasAirborne = !isGrounded;
+        boolean wasAirborne = !isGrounded && velocity.y < -3f;
 
         position.y = top;
         velocity.y = 0;
@@ -411,11 +414,17 @@ public class Knight {
         touchingWallSide = 0;
         lastPosition.set(position);
 
-        if (wasAirborne && stateLockTimer <= 0
-            && state != KnightState.HURT && state != KnightState.DEAD) {
-            state = KnightState.LANDING;
-            stateTimer = 0f;
-            stateLockTimer = animDuration(landingAnim);
+        if (wasAirborne) {
+            if (state == KnightState.SLASH || state == KnightState.SLASH_ALT ||
+                state == KnightState.UP_SLASH || state == KnightState.DOWN_SLASH) {
+                stateLockTimer = 0f;
+            }
+
+            if (stateLockTimer <= 0 && state != KnightState.HURT && state != KnightState.DEAD) {
+                state = KnightState.LANDING;
+                stateTimer = 0f;
+                stateLockTimer = animDuration(landingAnim);
+            }
         }
     }
 
