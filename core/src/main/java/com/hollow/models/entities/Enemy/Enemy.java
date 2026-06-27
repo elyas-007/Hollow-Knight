@@ -11,7 +11,7 @@ public abstract class Enemy {
     public Vector2 velocity = new Vector2();
     public Rectangle hitbox = new Rectangle();
 
-    public enum EnemyState {WALKING, DYING_AIR, TURNING, DYING_LAND, CORPSE, IDLE, ATTACK_ANTICIPATE, ATTACK_LUNGE}
+    public enum EnemyState {WALKING, DYING_AIR, TURNING, DYING_LAND, CORPSE, IDLE, ATTACK_ANTICIPATE, ATTACK_LUNGE, EVADING}
 
     public EnemyState state = EnemyState.WALKING;
 

@@ -129,7 +129,7 @@ public class Knight {
 
         if (dashCooldown > 0) {
             dashCooldown -= delta;
-            if (dashCooldown <= 0)
+            if (dashCooldown <= 0 && isGrounded)
                 canDash = true;
         }
     }
@@ -210,7 +210,7 @@ public class Knight {
         if (stateLockTimer > 0) {
             stateLockTimer -= delta;
 
-            if (state == KnightState.WALL_JUMP && (moveDirection != 0 || isDashing)) {
+            if ((state == KnightState.WALL_JUMP || state == KnightState.LANDING) && (moveDirection != 0 || isDashing)) {
                 stateLockTimer = 0f;
             } else {
                 if (state != preState) stateTimer = 0f;
@@ -409,7 +409,9 @@ public class Knight {
         position.y = top;
         velocity.y = 0;
         isGrounded = true;
-        canDash = true;
+        if (dashCooldown <= 0) {
+            canDash = true;
+        }
         canDoubleJump = false;
         touchingWallSide = 0;
         lastPosition.set(position);
@@ -420,11 +422,11 @@ public class Knight {
                 stateLockTimer = 0f;
             }
 
-            if (stateLockTimer <= 0 && state != KnightState.HURT && state != KnightState.DEAD) {
-                state = KnightState.LANDING;
-                stateTimer = 0f;
-                stateLockTimer = animDuration(landingAnim);
-            }
+//            if (stateLockTimer <= 0 && state != KnightState.HURT && state != KnightState.DEAD) {
+//                state = KnightState.LANDING;
+//                stateTimer = 0f;
+//                stateLockTimer = animDuration(landingAnim);
+//            }
         }
     }
 

@@ -7,9 +7,7 @@ import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.utils.Array;
 import com.hollow.HollowKnight;
 import com.hollow.assets.TiledMapHelper;
-import com.hollow.models.entities.Enemy.Crawlid;
-import com.hollow.models.entities.Enemy.Enemy;
-import com.hollow.models.entities.Enemy.Tiktik;
+import com.hollow.models.entities.Enemy.*;
 import com.hollow.models.entities.FalseKnightBoss.FalseKnight;
 import com.hollow.models.entities.FalseKnightBoss.IdleBehavior;
 import com.hollow.models.entities.FalseKnightBoss.Shockwave;
@@ -52,6 +50,7 @@ public class Game {
 
     public Array<Projectile> activeProjectiles = new Array<>();
     public Array<Effect> activeEffects = new Array<>();
+    public Array<InstantLaser> activeInstantLasers = new Array<>();
     public boolean hasShadowCharm;
 
     public Game(HollowKnight game, Knight knight, Array<SolidBlock> groundRects,
@@ -166,6 +165,20 @@ public class Game {
             }
         }
 
+        for (int i = activeInstantLasers.size - 1; i >= 0; i--) {
+            InstantLaser laser = activeInstantLasers.get(i);
+            laser.update(delta);
+
+            if (laser.hitbox.overlaps(knight.getHitbox()) && !knight.isInvincible()) {
+                boolean hitFromRight = knight.getX() < (laser.isFacingRight ? laser.hitbox.x : laser.hitbox.x + laser.hitbox.width);
+                knight.takeDamage(1, hitFromRight);
+            }
+
+            if (laser.isFinished()) {
+                activeInstantLasers.removeIndex(i);
+            }
+        }
+
         if (boss != null) {
             if (boss.currentState == FalseKnight.state.DEATH) {
                 if (!data.falseKnightDefeated) {
@@ -225,6 +238,38 @@ public class Game {
             enemy.update(delta);
             resolveEnemyCollisions(enemy);
 
+            if (enemy instanceof Crystallized crystalEnemy) {
+                if (crystalEnemy.state == Enemy.EnemyState.ATTACK_ANTICIPATE && !crystalEnemy.laserFired) {
+                    if (crystalEnemy.stateTime > 0.3f) {
+                        crystalEnemy.laserFired = true;
+
+                        float startX = crystalEnemy.isFacingRight ? crystalEnemy.position.x + crystalEnemy.hitbox.width : crystalEnemy.position.x;
+                        float startY = crystalEnemy.position.y + 0.6f;
+                        float laserHeight = 1.0f;
+                        float maxDistance = 40f;
+                        float actualWidth = maxDistance;
+
+                        for (SolidBlock ground : groundRects) {
+                            if (!ground.isDeadly) {
+                                boolean yOverlap = (ground.bounds.y < startY + laserHeight) && (ground.bounds.y + ground.bounds.height > startY);
+
+                                if (yOverlap) {
+                                    if (crystalEnemy.isFacingRight && ground.bounds.x > startX) {
+                                        float dist = ground.bounds.x - startX;
+                                        if (dist < actualWidth) actualWidth = dist;
+                                    } else if (!crystalEnemy.isFacingRight && ground.bounds.x + ground.bounds.width < startX) {
+                                        float dist = startX - (ground.bounds.x + ground.bounds.width);
+                                        if (dist < actualWidth) actualWidth = dist;
+                                    }
+                                }
+                            }
+                        }
+                        float finalX = crystalEnemy.isFacingRight ? startX : startX - actualWidth;
+                        activeInstantLasers.add(new InstantLaser(finalX, startY, actualWidth, laserHeight, crystalEnemy.isFacingRight));
+                    }
+                }
+            }
+
             if (enemy.state != Enemy.EnemyState.CORPSE && enemy.state != Enemy.EnemyState.DYING_AIR && enemy.state != Enemy.EnemyState.DYING_LAND) {
                 if (knight.getHitbox().overlaps(enemy.hitbox) && !knight.isInvincible()) {
 
@@ -267,9 +312,7 @@ public class Game {
 
                 wasOnGround = true;
             } else if (minOverlap == overlapLeft || minOverlap == overlapRight) {
-                if (enemy.state == Tiktik.EnemyState.WALKING) {
-                    enemy.turnAround();
-                }
+                enemy.turnAround();
 
                 if (minOverlap == overlapLeft) {
                     enemy.position.x = ground.bounds.x - enemy.hitbox.width;

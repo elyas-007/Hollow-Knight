@@ -73,6 +73,8 @@ public class AssetLoader {
 
     public Texture top_menu;
 
+    public TextureRegion crystalLaserTex;
+
 
     // Audio
     public  Music titleTheme;
@@ -177,6 +179,8 @@ public class AssetLoader {
         charmTextures.put(Charm.VOID_HEART, new Texture("ui/inventory and charms/Void Heart - charm_black.png"));
 
         top_menu = new Texture("ui/hud/prompt_divider.png");
+
+        crystalLaserTex = new TextureRegion(new Texture("animation/enemy/crystallized/CrystalLaser.png"));
     }
 
     public void dispose() {

@@ -176,4 +176,23 @@ public class TiledMapHelper {
         return mosscreeps;
     }
 
+    public Array<Crystallized> getCrystallized(TiledMap map, float unitScale) {
+        Array<Crystallized> crystallizeds = new Array<>();
+
+        MapLayer layer = map.getLayers().get("enemies");
+
+        if (layer == null)
+            return crystallizeds;
+
+        for (MapObject object : layer.getObjects()) {
+            if (object.getName() != null && object.getName().equalsIgnoreCase("crystallized")) {
+                float x = object.getProperties().get("x", Float.class) * unitScale;
+                float y = object.getProperties().get("y", Float.class) * unitScale;
+
+                crystallizeds.add(new Crystallized(x, y));
+            }
+        }
+        return crystallizeds;
+    }
+
 }

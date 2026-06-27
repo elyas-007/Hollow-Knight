@@ -156,11 +156,13 @@ public class GameScreen implements Screen {
         Array<HuskHornhead> mapHuskHornHeads = helper.getHuskHornHead(map, UNIT_SCALE);
         Array<Mosquito> mapMosquito = helper.getMosquito(map, UNIT_SCALE);
         Array<Mosscreep> mapMosscreep = helper.getMosscreep(map, UNIT_SCALE);
+        Array<Crystallized> mapCrystallized = helper.getCrystallized(map, UNIT_SCALE);
         for (Tiktik t : mapTiktiks) EnemyAnimationLoader.loadTiktikAnimations(t);
         for (Crawlid c : mapCrawlids) EnemyAnimationLoader.loadCrawlidAnimations(c);
         for (HuskHornhead h : mapHuskHornHeads) EnemyAnimationLoader.loadHuskHornheadAnimations(h);
         for (Mosquito m : mapMosquito) EnemyAnimationLoader.loadMosquitoAnimations(m);
         for (Mosscreep m : mapMosscreep) EnemyAnimationLoader.loadMosscreepAnimations(m);
+        for (Crystallized c : mapCrystallized) EnemyAnimationLoader.loadCrystallizedAnimations(c);
 
         hud = new GameHud(game, knight);
 
@@ -202,6 +204,7 @@ public class GameScreen implements Screen {
         mapEnemies.addAll(mapHuskHornHeads);
         mapEnemies.addAll(mapMosquito);
         mapEnemies.addAll(mapMosscreep);
+        mapEnemies.addAll(mapCrystallized);
         controller = new Game(game, knight, groundRecs, spikeRecs, mapEnemies, transitionZone, this, game.activeSave, falseKnight);
 
 
@@ -324,6 +327,7 @@ public class GameScreen implements Screen {
         renderProjectiles();
         renderEffects();
         renderWorldEffects(Gdx.graphics.getDeltaTime());
+        renderInstantLasers();
         game.batch.end();
     }
 
@@ -404,6 +408,10 @@ public class GameScreen implements Screen {
                 offsetY = 0.6f;
             } else if (enemy instanceof Mosscreep) {
                 spriteW = hitboxW * 1.6f;
+                spriteH = hitboxH * 1.6f;
+                offsetY = 0.15f;
+            } else if (enemy instanceof Crystallized) {
+                spriteW = hitboxW * 1.8f;
                 spriteH = hitboxH * 1.6f;
                 offsetY = 0.15f;
             } else {
@@ -533,6 +541,20 @@ public class GameScreen implements Screen {
                 } else {
                     game.batch.draw(frame, effect.offsetX + effect.width, effect.offsetY, -effect.width, effect.height);
                 }
+            }
+        }
+    }
+
+    private void renderInstantLasers() {
+        if (controller.activeInstantLasers == null) return;
+
+        TextureRegion laserFrame = game.assetLoader.crystalLaserTex;
+
+        for (InstantLaser laser : controller.activeInstantLasers) {
+            if (laser.isFacingRight) {
+                game.batch.draw(laserFrame, laser.hitbox.x, laser.hitbox.y, laser.hitbox.width, laser.hitbox.height);
+            } else {
+                game.batch.draw(laserFrame, laser.hitbox.x + laser.hitbox.width, laser.hitbox.y, -laser.hitbox.width, laser.hitbox.height);
             }
         }
     }

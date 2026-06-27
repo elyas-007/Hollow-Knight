@@ -57,4 +57,20 @@ public class EnemyAnimationLoader {
 
         mosscreep.corpseFrame = mosscreep.deathLandAnim.getKeyFrames()[1];
     }
+
+    public static void loadCrystallizedAnimations(Crystallized crystallized) {
+        crystallized.idleAnim = loadAnimation("animation/enemy/crystallized/Idle.png", 5, 0.15f, Animation.PlayMode.LOOP);
+        crystallized.runAnim = loadAnimation("animation/enemy/crystallized/Run.png", 6, 0.1f, Animation.PlayMode.LOOP);
+
+        crystallized.shootAnim = loadAnimation("animation/enemy/crystallized/Shoot.png", 7, 0.1f, Animation.PlayMode.NORMAL);
+
+        crystallized.turnAnim = loadAnimation("animation/enemy/crystallized/Turn.png", 3, 0.1f, Animation.PlayMode.NORMAL);
+        crystallized.deathAirAnim = loadAnimation("animation/enemy/crystallized/Death Air.png", 3, 0.1f, Animation.PlayMode.NORMAL);
+        crystallized.deathLandAnim = loadAnimation("animation/enemy/crystallized/Death Land.png", 3, 0.1f, Animation.PlayMode.NORMAL);
+
+        crystallized.evadeAnim = loadAnimation("animation/enemy/crystallized/Evade.png", 7, 0.1f, Animation.PlayMode.NORMAL);
+
+        TextureRegion[] landFrames = crystallized.deathLandAnim.getKeyFrames();
+        crystallized.corpseFrame = landFrames[landFrames.length - 1];
+    }
 }

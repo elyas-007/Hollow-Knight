@@ -180,14 +180,14 @@
         },
         "green_path.tmx": {
             "expandedObjectLayers": [
-                7,
-                8
+                8,
+                7
             ],
             "scale": 1,
             "selectedLayer": 7,
             "viewCenter": {
-                "x": 12546.5,
-                "y": 6197.5
+                "x": 12000.5,
+                "y": 7999.5
             }
         },
         "grimm_particle_flame.tsx": {
