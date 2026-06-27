@@ -20,19 +20,40 @@ public class PauseUI {
     private ButtonController controller;
 
     public SettingsUI settingsUI;
+    public GuideUI guideUI;
+    public CheatUI cheatUI;
+
     public boolean isSettingsOpen = false;
+    public boolean isGuideOpen = false;
+    public boolean isCheatOpen = false;
     private InputMultiplexer multiplexer;
 
     public PauseUI(HollowKnight game, GameScreen gameScreen, InputMultiplexer multiplexer) {
         this.game = game;
         this.gameScreen = gameScreen;
         this.multiplexer = multiplexer;
-        stage = new Stage(new FitViewport(game.SCREEN_WIDTH, game.SCREEN_HEIGHT));
-        setupUI();
 
+        stage = new Stage(new FitViewport(game.SCREEN_WIDTH, game.SCREEN_HEIGHT));
+        setupSubUIs();
+        setupUI();
+    }
+
+    private void setupSubUIs() {
         settingsUI = new SettingsUI(game, () -> {
             isSettingsOpen = false;
             multiplexer.removeProcessor(settingsUI.stage);
+            multiplexer.addProcessor(stage);
+        });
+
+        guideUI = new GuideUI(game, () -> {
+            isGuideOpen = false;
+            multiplexer.removeProcessor(guideUI.stage);
+            multiplexer.addProcessor(stage);
+        }, multiplexer);
+
+        cheatUI = new CheatUI(game, () -> {
+            isCheatOpen = false;
+            multiplexer.removeProcessor(cheatUI.stage);
             multiplexer.addProcessor(stage);
         });
     }
@@ -61,8 +82,19 @@ public class PauseUI {
             multiplexer.removeProcessor(stage);
             multiplexer.addProcessor(settingsUI.stage);
         });
-        guideBtn.setUserObject((Runnable) () -> game.setScreen(new GuideScreen()));
-        cheatBtn.setUserObject((Runnable) () -> game.setScreen(new AchievementsScreen()));
+
+        guideBtn.setUserObject((Runnable) () -> {
+            isGuideOpen = true;
+            multiplexer.removeProcessor(stage);
+            multiplexer.addProcessor(guideUI.stage);
+        });
+
+        cheatBtn.setUserObject((Runnable) () -> {
+            isCheatOpen = true;
+            multiplexer.removeProcessor(stage);
+            multiplexer.addProcessor(cheatUI.stage);
+        });
+
         quitBtn.setUserObject((Runnable) this::quitGame);
 
         content.add(continueBtn).center().fillX().uniformX().padTop(10).padLeft(40).row();
@@ -81,30 +113,34 @@ public class PauseUI {
     }
 
     public void act(float delta) {
-        if (isSettingsOpen) {
-            settingsUI.act(delta);
-        } else {
+        if (isSettingsOpen) settingsUI.act(delta);
+        else if (isGuideOpen) guideUI.act(delta);
+        else if (isCheatOpen) cheatUI.act(delta);
+        else {
             stage.act(delta);
             if (controller != null) controller.update(delta);
         }
     }
 
     public void draw() {
-        if (isSettingsOpen) {
-            settingsUI.draw();
-        } else {
-            stage.draw();
-        }
+        if (isSettingsOpen) settingsUI.draw();
+        else if (isGuideOpen) guideUI.draw();
+        else if (isCheatOpen) cheatUI.draw();
+        else stage.draw();
     }
 
     public void resize(int width, int height) {
         stage.getViewport().update(width, height, true);
         if (settingsUI != null) settingsUI.resize(width, height);
+        if (guideUI != null) guideUI.resize(width, height);
+        if (cheatUI != null) cheatUI.resize(width, height);
     }
 
     public void dispose() {
-        stage.dispose();
+        if (stage != null) stage.dispose();
         if (settingsUI != null) settingsUI.dispose();
+        if (guideUI != null) guideUI.dispose();
+        if (cheatUI != null) cheatUI.dispose();
     }
 
     public void quitGame() {

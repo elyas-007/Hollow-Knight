@@ -71,6 +71,8 @@ public class AssetLoader {
     public Texture inventory_top;
     public Texture inventory_bottom;
 
+    public Texture top_menu;
+
 
     // Audio
     public  Music titleTheme;
@@ -173,6 +175,8 @@ public class AssetLoader {
         charmTextures.put(Charm.HEAVY_BLOW, new Texture("ui/inventory and charms/Heavy Blow - _0008_charm_nail_damage_up.png"));
         charmTextures.put(Charm.SHARP_SHADOW, new Texture("ui/inventory and charms/Sharp Shadow - charm_shade_impact.png"));
         charmTextures.put(Charm.VOID_HEART, new Texture("ui/inventory and charms/Void Heart - charm_black.png"));
+
+        top_menu = new Texture("ui/hud/prompt_divider.png");
     }
 
     public void dispose() {

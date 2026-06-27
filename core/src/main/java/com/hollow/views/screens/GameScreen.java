@@ -677,11 +677,31 @@ public class GameScreen implements Screen {
 
     public void togglePause() {
         isPaused = !isPaused;
+
         if (isPaused) {
-            multiplexer.addProcessor(pauseUI.isSettingsOpen ? pauseUI.settingsUI.stage : pauseUI.stage);
+            if (pauseUI.isSettingsOpen) {
+                multiplexer.addProcessor(pauseUI.settingsUI.stage);
+            } else if (pauseUI.isGuideOpen) {
+                if (pauseUI.guideUI.isControlsOpen) multiplexer.addProcessor(pauseUI.guideUI.controlsUI.stage);
+                else if (pauseUI.guideUI.isAbilitiesOpen) multiplexer.addProcessor(pauseUI.guideUI.abilitiesUI.stage);
+                else if (pauseUI.guideUI.isCheatOpen) multiplexer.addProcessor(pauseUI.guideUI.cheatUI.stage);
+                else multiplexer.addProcessor(pauseUI.guideUI.stage);
+            } else if (pauseUI.isCheatOpen) {
+                multiplexer.addProcessor(pauseUI.cheatUI.stage);
+            } else {
+                multiplexer.addProcessor(pauseUI.stage);
+            }
         } else {
             multiplexer.removeProcessor(pauseUI.stage);
             if (pauseUI.settingsUI != null) multiplexer.removeProcessor(pauseUI.settingsUI.stage);
+            if (pauseUI.cheatUI != null) multiplexer.removeProcessor(pauseUI.cheatUI.stage);
+
+            if (pauseUI.guideUI != null) {
+                multiplexer.removeProcessor(pauseUI.guideUI.stage);
+                if (pauseUI.guideUI.controlsUI != null) multiplexer.removeProcessor(pauseUI.guideUI.controlsUI.stage);
+                if (pauseUI.guideUI.abilitiesUI != null) multiplexer.removeProcessor(pauseUI.guideUI.abilitiesUI.stage);
+                if (pauseUI.guideUI.cheatUI != null) multiplexer.removeProcessor(pauseUI.guideUI.cheatUI.stage);
+            }
         }
     }
 

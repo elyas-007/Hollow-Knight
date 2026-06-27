@@ -2,6 +2,7 @@ package com.hollow.views.screens;
 
 import com.badlogic.gdx.Game;
 import com.badlogic.gdx.Gdx;
+import com.badlogic.gdx.InputMultiplexer;
 import com.badlogic.gdx.Screen;
 import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.GL20;
@@ -13,6 +14,7 @@ import com.badlogic.gdx.scenes.scene2d.ui.TextButton.TextButtonStyle;
 import com.badlogic.gdx.utils.viewport.FitViewport;
 import com.hollow.HollowKnight;
 import com.hollow.controllers.ButtonController;
+import com.hollow.views.hud.GuideUI;
 import com.hollow.views.hud.SettingsUI;
 
 public class MainMenuScreen implements Screen {
@@ -21,8 +23,12 @@ public class MainMenuScreen implements Screen {
     private FitViewport viewport;
     private ButtonController controller;
 
+    private InputMultiplexer multiplexer;
     private SettingsUI settingsUI;
+    private GuideUI guideUI;
+
     private boolean isSettingsOpen = false;
+    private boolean isGuideOpen = false;
 
     public MainMenuScreen(HollowKnight game) {
         this.game = game;
@@ -32,7 +38,21 @@ public class MainMenuScreen implements Screen {
     public void show() {
         viewport = new FitViewport(game.SCREEN_WIDTH, game.SCREEN_HEIGHT);
         stage = new Stage(viewport);
-        Gdx.input.setInputProcessor(stage);
+        multiplexer = new InputMultiplexer();
+        Gdx.input.setInputProcessor(multiplexer);
+        multiplexer.addProcessor(stage);
+
+        settingsUI = new SettingsUI(game, () -> {
+            isSettingsOpen = false;
+            multiplexer.removeProcessor(settingsUI.stage);
+            multiplexer.addProcessor(stage);
+        });
+
+        guideUI = new GuideUI(game, () -> {
+            isGuideOpen = false;
+            multiplexer.removeProcessor(guideUI.stage);
+            multiplexer.addProcessor(stage);
+        }, multiplexer);
 
         TextButtonStyle styleBtn = new TextButtonStyle();
         styleBtn.font = game.assetLoader.font;
@@ -51,8 +71,16 @@ public class MainMenuScreen implements Screen {
         TextButton quitBtn = new TextButton("Quit Game", styleBtn);
 
         startBtn.setUserObject((Runnable) () -> game.setScreen(new StartGameMenuScreen(game, this)));
-        guideBtn.setUserObject((Runnable) () -> game.setScreen(new GuideScreen()));
-        achievementsBtn.setUserObject((Runnable) () -> game.setScreen(new AchievementsScreen()));
+        settingsBtn.setUserObject((Runnable) () -> {
+            isSettingsOpen = true;
+            multiplexer.removeProcessor(stage);
+            multiplexer.addProcessor(settingsUI.stage);
+        });
+        guideBtn.setUserObject((Runnable) () -> {
+            isGuideOpen = true;
+            multiplexer.removeProcessor(stage);
+            multiplexer.addProcessor(guideUI.stage);
+        });
         quitBtn.setUserObject((Runnable) () -> Gdx.app.exit());
 
 
@@ -66,16 +94,6 @@ public class MainMenuScreen implements Screen {
         TextButton[] menuButtons = new TextButton[]{startBtn, settingsBtn, guideBtn, achievementsBtn, quitBtn};
         controller = new ButtonController(game, stage, menuButtons);
 
-        settingsUI = new SettingsUI(game, () -> {
-            isSettingsOpen = false;
-            Gdx.input.setInputProcessor(stage);
-        });
-
-        settingsBtn.setUserObject((Runnable) () -> {
-            isSettingsOpen = true;
-            Gdx.input.setInputProcessor(settingsUI.stage);
-        });
-
         if (game.assetLoader.titleTheme != null && !game.assetLoader.titleTheme.isPlaying() && game.settings.isMusicOn) {
             game.assetLoader.titleTheme.setLooping(true);
             game.assetLoader.titleTheme.setVolume(game.settings.musicVolume);
@@ -88,15 +106,20 @@ public class MainMenuScreen implements Screen {
         Gdx.gl.glClearColor(0f, 0f, 0f, 1f);
         Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT);
 
+        boolean showLight = !isSettingsOpen && !isGuideOpen;
+
         game.batch.setProjectionMatrix(stage.getCamera().combined);
         game.batch.begin();
-        game.menuBackground.updateAndDraw(game.batch, delta, game.settings.brightness, !isSettingsOpen);
+        game.menuBackground.updateAndDraw(game.batch, delta, game.settings.brightness, showLight);
         game.batch.end();
 
 
         if (isSettingsOpen) {
             settingsUI.act(delta);
             settingsUI.draw();
+        } else if (isGuideOpen) {
+            guideUI.act(delta);
+            guideUI.draw();
         } else {
             stage.act(delta);
             if (controller != null) controller.update(delta);
@@ -107,6 +130,8 @@ public class MainMenuScreen implements Screen {
     @Override
     public void resize(int width, int height) {
         viewport.update(width, height, true);
+        if (settingsUI != null) settingsUI.resize(width, height);
+        if (guideUI != null) guideUI.resize(width, height);
     }
 
     @Override
@@ -130,7 +155,8 @@ public class MainMenuScreen implements Screen {
 
     @Override
     public void dispose() {
-        if (stage != null)
-            stage.dispose();
+        if (stage != null) stage.dispose();
+        if (settingsUI != null) settingsUI.dispose();
+        if (guideUI != null) guideUI.dispose();
     }
 }
