@@ -31,6 +31,8 @@ public class GameHud implements Disposable, AchievementObserver {
     private Label achievementTitleLabel;
     private Label achievementDescLabel;
 
+    private Label cheatLabel;
+
     private int lastMasks;
 
     public GameHud(HollowKnight game, Knight knight) {
@@ -66,7 +68,33 @@ public class GameHud implements Disposable, AchievementObserver {
         root.add(rightStats).left().top().padTop(35);
 
         setupAchievementPopup(game);
+        setupCheatPopup(game);
         AchievementManager.getInstance().addObserver(this);
+    }
+
+    private void setupCheatPopup(HollowKnight game) {
+        LabelStyle style = new LabelStyle(game.assetLoader.font, Color.WHITE);
+        cheatLabel = new Label("", style);
+        cheatLabel.setAlignment(Align.right);
+
+        cheatLabel.setPosition(viewport.getWorldWidth() + 320f, viewport.getWorldHeight() - 40f, Align.topRight);
+
+        stage.addActor(cheatLabel);
+    }
+
+    public void showCheatPopup(String cheatName, boolean isEnabled) {
+        cheatLabel.clearActions();
+
+        String status = isEnabled ? "Enabled" : "Disabled";
+        cheatLabel.setText(cheatName + ": " + status);
+
+        cheatLabel.setColor(isEnabled ? Color.GREEN : Color.RED);
+
+        cheatLabel.addAction(Actions.sequence(
+            Actions.moveToAligned(viewport.getWorldWidth() - 30f, viewport.getWorldHeight() - 40f, Align.topRight, 0.3f, Interpolation.exp10Out),
+            Actions.delay(2f),
+            Actions.moveToAligned(viewport.getWorldWidth() + 300f, viewport.getWorldHeight() - 40f, Align.topRight, 0.3f, Interpolation.exp10In)
+        ));
     }
 
     public void setupAchievementPopup(HollowKnight game) {

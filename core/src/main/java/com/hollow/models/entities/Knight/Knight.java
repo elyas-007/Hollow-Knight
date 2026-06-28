@@ -102,6 +102,9 @@ public class Knight {
     public boolean castProjectile = false;
     private boolean hasCastFired = false;
 
+    public boolean noclipMode = false;
+    public boolean godMode = false;
+
     public Knight(float startX, float startY, GameData data) {
         position.set(startX, startY);
         lastPosition.set(startX, startY);
@@ -488,7 +491,7 @@ public class Knight {
     }
 
     public void takeDamage(int damage, boolean fromRight) {
-        if (invincibleTimer > 0 || state == KnightState.DEAD) return;
+        if (godMode || invincibleTimer > 0 || state == KnightState.DEAD) return;
 
         currentMasks -= damage;
         invincibleTimer = INVINCIBLE_DURATION;
@@ -609,6 +612,16 @@ public class Knight {
         stateTimer = 0f;
         stateLockTimer = 0f;
         activeEffects.clear();
+    }
+
+    public void refillSoulCheat() {
+        currentSoul = maxSoul;
+    }
+
+    public void emergencyHealCheat() {
+        if (currentMasks < maxMasks) {
+            currentMasks++;
+        }
     }
 
     public float getX()          { return position.x; }

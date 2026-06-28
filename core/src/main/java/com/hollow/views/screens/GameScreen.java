@@ -45,7 +45,7 @@ public class GameScreen implements Screen {
     private final HollowKnight game;
     private Knight knight;
     private Game controller;
-    private GameHud hud;
+    public GameHud hud;
 
     private OrthographicCamera camera;
     private FitViewport viewport;

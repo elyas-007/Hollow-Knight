@@ -53,6 +53,8 @@ public class Game {
     public Array<InstantLaser> activeInstantLasers = new Array<>();
     public boolean hasShadowCharm;
 
+    public boolean instaKillMode = false;
+
     public Game(HollowKnight game, Knight knight, Array<SolidBlock> groundRects,
                 Array<SolidBlock> spikeRects, Array<Enemy> enemies,
                 TransitionZone transitionZones, GameScreen screen,
@@ -120,8 +122,10 @@ public class Game {
 
         handleInput(delta);
         knight.update(delta);
-        resolveGroundCollision();
-        resolveSpikeCollision();
+        if (!knight.noclipMode) {
+            resolveGroundCollision();
+            resolveSpikeCollision();
+        }
         updateEnemies(delta);
 
         checkAndLockArena();
@@ -152,6 +156,7 @@ public class Game {
                     if (enemy.state != Enemy.EnemyState.CORPSE && p.hitbox.overlaps(enemy.hitbox)) {
                         int spellDamage = p.isShadow ? 2 : 1; // void hurt
                         if (hasShadowCharm) spellDamage = (int)(spellDamage * 1.5f);
+                        if (instaKillMode) spellDamage = 9999;
                         enemy.takeDamage(spellDamage, p.isFacingRight);
                         checkEnemyKill(enemy);
                         p.isDestroyed = true;
@@ -163,7 +168,10 @@ public class Game {
             if (!p.isDestroyed && boss != null && boss.currentState != FalseKnight.state.DEATH) {
                 Rectangle targetBox = (boss.currentState == FalseKnight.state.STUNNED) ? boss.vulnerabilityBox : boss.hitbox;
                 if (p.hitbox.overlaps(targetBox)) {
-                    boss.takeDamage(p.isShadow ? 15 : 10);
+                    int damage = p.isShadow ? 15 : 10;
+                    if (instaKillMode) damage = 9999;
+
+                    boss.takeDamage(damage);
                     p.isDestroyed = true;
                 }
             }
@@ -289,7 +297,7 @@ public class Game {
             }
 
             if (enemy.state != Enemy.EnemyState.CORPSE && enemy.state != Enemy.EnemyState.DYING_AIR && enemy.state != Enemy.EnemyState.DYING_LAND) {
-                if (knight.getHitbox().overlaps(enemy.hitbox) && !knight.isInvincible()) {
+                if (knight.getHitbox().overlaps(enemy.hitbox) && !knight.isInvincible() && !knight.noclipMode) {
 
                     if (knight.isDashing() && data.equippedCharms.contains(Charm.SHARP_SHADOW, true)) {
                         boolean hitFromRight = knight.getX() > enemy.position.x;
@@ -350,6 +358,46 @@ public class Game {
     private void handleInput(float delta) {
         if (pendingRespawn)
             return;
+
+        boolean ctrlPressed = Gdx.input.isKeyPressed(Input.Keys.CONTROL_LEFT);
+
+        if (ctrlPressed) {
+            if (Gdx.input.isKeyJustPressed(Input.Keys.F1)) {
+                knight.getPosition().set(screen.arenaMaxX + 2f, screen.arenaY + 2f);
+                knight.getVelocity().setZero();
+                screen.hud.showCheatPopup("Boss Teleport", true);
+            }
+            if (Gdx.input.isKeyJustPressed(Input.Keys.F2)) {
+                knight.noclipMode = !knight.noclipMode;
+                screen.hud.showCheatPopup("Noclip", knight.noclipMode);
+            }
+            if (Gdx.input.isKeyJustPressed(Input.Keys.F3)) {
+                knight.emergencyHealCheat();
+                screen.hud.showCheatPopup("Emergency Heal", true);
+            }
+            if (Gdx.input.isKeyJustPressed(Input.Keys.F4)) {
+                knight.refillSoulCheat();
+                screen.hud.showCheatPopup("Refill Soul", true);
+            }
+            if (Gdx.input.isKeyJustPressed(Input.Keys.F5)) {
+                knight.godMode = !knight.godMode;
+                screen.hud.showCheatPopup("God Mode", knight.godMode);
+            }
+            if (Gdx.input.isKeyJustPressed(Input.Keys.F6)) {
+                instaKillMode = !instaKillMode;
+                screen.hud.showCheatPopup("Insta-Kill", instaKillMode);
+            }
+        }
+
+        if (knight.noclipMode) {
+            float noclipSpeed = 25f;
+            knight.getVelocity().setZero();
+            if (Gdx.input.isKeyPressed(keyLeft)) knight.getVelocity().x = -noclipSpeed;
+            if (Gdx.input.isKeyPressed(keyRight)) knight.getVelocity().x = noclipSpeed;
+            if (Gdx.input.isKeyPressed(keyUp)) knight.getVelocity().y = noclipSpeed;
+            if (Gdx.input.isKeyPressed(keyDown)) knight.getVelocity().y = -noclipSpeed;
+            return;
+        }
 
         if (screen.zote != null) {
             boolean inRange = knight.getHitbox().overlaps(screen.zote.interactionBox);
@@ -528,6 +576,7 @@ public class Game {
 
         boolean hitSomething = false;
         int nailDamage = data.equippedCharms.contains(Charm.UNBREAKABLE_STRENGTH, true) ? 2 : 1; // unbreakable_strength
+        if (instaKillMode) nailDamage = 9999;
         int soulAmount = data.equippedCharms.contains(Charm.SOUL_CATCHER, true) ? 22 : 11; // soul catcher
         boolean hasHeavyBlow = data.equippedCharms.contains(Charm.HEAVY_BLOW, true); // heavy blow
 
@@ -574,7 +623,10 @@ public class Game {
             Rectangle targetBox = (boss.currentState == FalseKnight.state.STUNNED) ? boss.vulnerabilityBox : boss.hitbox;
 
             if (attackBox.overlaps(targetBox)) {
-                boss.takeDamage(10);
+                int nail = 10;
+                if (instaKillMode)
+                    nail = 9999;
+                boss.takeDamage(nail);
                 knight.gainSoul(11);
                 hitSomething = true;
 
@@ -592,7 +644,7 @@ public class Game {
 
 
     private void resolveSpikeCollision() {
-        if (knight.isInvincible() || knight.isDead() || pendingRespawn) {
+        if (knight.isInvincible() || knight.isDead() || pendingRespawn || knight.godMode) {
             return;
         }
 

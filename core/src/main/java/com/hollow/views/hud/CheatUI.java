@@ -50,22 +50,30 @@ public class CheatUI {
         content.add(title).colspan(3).padBottom(60).row();
 
 
-        String s1 = "Press [F1] : Restore Full Health\n";
-        String s2 = "Press [F2] : Fill Soul Vessel\n";
-        String s3 = "Press [F3] : Add +1000 Geo\n";
-        String s4 = "Press [F4] : Toggle Invincibility (God Mode)";
+        String s1 = "Press [F1] | Boss Arena Teleport: Instantly teleport to the beginning of the boss fight arena.";
+        String s2 = "Press [F2] | Noclip / Spectator Mode: Toggle flight and free movement through walls and obstacles without gravity.";
+        String s3 = "Press [F3] | Emergency Heal: Instantly receive one health mask (if your health is empty, it will immediately revive you).";
+        String s4 = "Press [F4] | Refill Soul Vessel: Instantly and completely refill the soul vessel.";
+        String s5 = "Press [F5] | God Mode: Toggle invincibility (complete immunity to enemy attacks and spikes).";
+        String s6 = "Press [F6] | Insta-Kill: Toggle the ability to destroy all enemies and bosses with a single strike.";
         Label cheat1 = new Label(s1, descStyle);
         Label cheat2 = new Label(s2, descStyle);
         Label cheat3 = new Label(s3, descStyle);
         Label cheat4 = new Label(s4, descStyle);
+        Label cheat5 = new Label(s5, descStyle);
+        Label cheat6 = new Label(s6, descStyle);
         cheat1.setAlignment(Align.left);
         cheat2.setAlignment(Align.left);
         cheat3.setAlignment(Align.left);
         cheat4.setAlignment(Align.left);
+        cheat5.setAlignment(Align.left);
+        cheat6.setAlignment(Align.left);
         content.add(cheat1).left().row();
         content.add(cheat2).left().row();
         content.add(cheat3).left().row();
         content.add(cheat4).left().row();
+        content.add(cheat5).left().row();
+        content.add(cheat6).left().row();
 
         TextButton backBtn = new TextButton("Back", style);
         backBtn.setUserObject((Runnable) () -> onClose.run());
