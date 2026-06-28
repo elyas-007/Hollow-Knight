@@ -121,6 +121,12 @@ public class Game {
         updateEnemies(delta);
 
         checkAndLockArena();
+        if (knight.castProjectile) {
+            knight.castProjectile = false;
+            float spawnX = knight.isFacingRight() ? (knight.getX() + knight.getWidth()) : (knight.getX() - 1.5f);
+            float spawnY = knight.getY() + 0.2f;
+            activeProjectiles.add(new Projectile(spawnX, spawnY, knight.isFacingRight(), hasShadowCharm));
+        }
 
         for (int i = activeProjectiles.size - 1; i >= 0; i--) {
             Projectile p = activeProjectiles.get(i);
@@ -416,10 +422,9 @@ public class Game {
         }
 
         if (Gdx.input.isKeyJustPressed(Input.Keys.Q)) {
-            if (knight.consumeSoul(33)) {
-                float spawnX = knight.isFacingRight() ? (knight.getX() + knight.getWidth()) : (knight.getX() - 1.5f);
-                float spawnY = knight.getY() + 0.2f;
-                activeProjectiles.add(new Projectile(spawnX, spawnY, knight.isFacingRight(), hasShadowCharm));
+            if (knight.getState() != KnightState.CASTING && !knight.isBusy() && knight.getSoul() >= 33) {
+                knight.consumeSoul(33);
+                knight.startCasting();
             }
         }
 

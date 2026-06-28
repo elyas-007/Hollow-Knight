@@ -31,7 +31,10 @@ public class KnightAnimationLoader {
         knight.wallSlideAnim = loadAnimation("animation/knight/Wall Slide.png", 4, 0.1f, Animation.PlayMode.LOOP);
         knight.wallJumpAnim = loadAnimation("animation/knight/Walljump.png", 9, 0.1f, Animation.PlayMode.LOOP);
         knight.idleAnim = loadAnimation("animation/knight/Idle.png", 9, 0.1f, Animation.PlayMode.LOOP);
-
+        knight.focusGetAnim = loadAnimation("animation/knight/Focus Get.png", 6, 0.1f, Animation.PlayMode.NORMAL);
+        knight.focusEndAnim = loadAnimation("animation/knight/Focus End.png", 3, 0.1f, Animation.PlayMode.NORMAL);
+        knight.focusStartAnim = loadAnimation("animation/knight/Focus Start.png", 3, 0.1f, Animation.PlayMode.NORMAL);
+        knight.castAnim = loadAnimation("animation/knight/Fireball Cast.png", 9, 0.1f, Animation.PlayMode.NORMAL);
 
         knight.dashEffectAnim = loadAnimation("effect/Dash Effect.png", 8, 0.05f, Animation.PlayMode.NORMAL);
         knight.slashEffectAnim = loadAnimation("effect/SlashEffect.png", 5, 0.05f, Animation.PlayMode.NORMAL);

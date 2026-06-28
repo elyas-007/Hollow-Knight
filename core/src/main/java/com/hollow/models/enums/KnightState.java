@@ -19,5 +19,9 @@ public enum KnightState {
     LOOK_UP,
     LOOK_DOWN,
     HURT,
-    DEAD
+    DEAD,
+    FOCUSING_START,
+    FOCUSING_GET,
+    FOCUSING_END,
+    CASTING
 }

@@ -70,6 +70,7 @@ public class Knight {
     public Animation<TextureRegion> dashEffectAnim, slashEffectAnim, upSlashEffectAnim, downSlashEffectAnim;
 
     public Animation<TextureRegion> idleAnim;
+    public Animation<TextureRegion> idleHurtAnim;
     public Animation<TextureRegion> runAnim;
     public Animation<TextureRegion> airborneAnim;
     public Animation<TextureRegion> doubleJumpAnim;
@@ -82,6 +83,10 @@ public class Knight {
     public Animation<TextureRegion> upSlashAnim;
     public Animation<TextureRegion> downSlashAnim;
     public Animation<TextureRegion> focusAnim;
+    public Animation<TextureRegion> focusStartAnim;
+    public Animation<TextureRegion> focusGetAnim;
+    public Animation<TextureRegion> focusEndAnim;
+    public Animation<TextureRegion> castAnim;
     public Animation<TextureRegion> lookUpAnim;
     public Animation<TextureRegion> lookDownAnim;
     public Animation<TextureRegion> hurtAnim;
@@ -94,7 +99,8 @@ public class Knight {
 
 
 
-
+    public boolean castProjectile = false;
+    private boolean hasCastFired = false;
 
     public Knight(float startX, float startY, GameData data) {
         position.set(startX, startY);
@@ -138,15 +144,20 @@ public class Knight {
         if (!healing) return;
         healTimer += delta;
 
-        float currentHealDuration = data.equippedCharms.contains( // quick focus
-            Charm.QUICK_FOCUS, true) ? HEAL_DURATION * 0.6f
-                                                    : HEAL_DURATION;
+        float currentHealDuration = data.equippedCharms.contains(Charm.QUICK_FOCUS, true) ? HEAL_DURATION * 0.6f : HEAL_DURATION;
 
         if (healTimer >= currentHealDuration) {
             currentSoul = Math.max(0, currentSoul - 33);
             currentMasks = Math.min(maxMasks, currentMasks + 1);
-            healing = false;
+
+            state = KnightState.FOCUSING_GET;
+            stateTimer = 0f;
+            stateLockTimer = animDuration(focusGetAnim);
             healTimer = 0f;
+
+            if (currentSoul < 33 || currentMasks >= maxMasks) {
+                healing = false;
+            }
         }
     }
 
@@ -174,7 +185,7 @@ public class Knight {
     }
 
     private void applyG(float delta) {
-        if (!isDashing) {
+        if (!isDashing && state != KnightState.CASTING) {
             velocity.y += G * delta;
 
             if (state == KnightState.WALL_SLIDE) {
@@ -202,7 +213,16 @@ public class Knight {
         }
 
         if (healing) {
-            state = KnightState.FOCUSING;
+            if (stateLockTimer > 0) {
+                stateLockTimer -= delta;
+            } else {
+                if (state == KnightState.FOCUSING_START || state == KnightState.FOCUSING_GET) {
+                    state = KnightState.FOCUSING;
+                    stateTimer = 0f;
+                } else if (state != KnightState.FOCUSING_START && state != KnightState.FOCUSING_GET && state != KnightState.FOCUSING) {
+                    state = KnightState.FOCUSING;
+                }
+            }
             if (state != preState) stateTimer = 0f;
             return;
         }
@@ -210,7 +230,18 @@ public class Knight {
         if (stateLockTimer > 0) {
             stateLockTimer -= delta;
 
-            if ((state == KnightState.WALL_JUMP || state == KnightState.LANDING) && (moveDirection != 0 || isDashing)) {
+            if (state == KnightState.CASTING) {
+                if (!hasCastFired && stateTimer >= animDuration(castAnim) * 0.4f) {
+                    castProjectile = true;
+                    hasCastFired = true;
+                }
+
+                if (stateTimer >= animDuration(castAnim)) {
+                    stateLockTimer = 0f;
+                } else {
+                    return;
+                }
+            } else if ((state == KnightState.WALL_JUMP || state == KnightState.LANDING) && (moveDirection != 0 || isDashing)) {
                 stateLockTimer = 0f;
             } else {
                 if (state != preState) stateTimer = 0f;
@@ -257,8 +288,10 @@ public class Knight {
     }
 
     private boolean movementLocked() {
-        return state == KnightState.HURT    || state == KnightState.DEAD || state == KnightState.FOCUSING
-            || state == KnightState.WALL_JUMP;
+        return state == KnightState.HURT    || state == KnightState.DEAD
+            || state == KnightState.FOCUSING || state == KnightState.FOCUSING_START
+            || state == KnightState.FOCUSING_GET || state == KnightState.FOCUSING_END
+            || state == KnightState.WALL_JUMP || state == KnightState.CASTING;
     }
 
     public void updateAnimations(float delta) {
@@ -288,11 +321,16 @@ public class Knight {
             case SLASH_ALT -> slashAltAnim;
             case UP_SLASH -> upSlashAnim;
             case DOWN_SLASH -> downSlashAnim;
+            case FOCUSING_START -> focusStartAnim;
             case FOCUSING -> focusAnim;
-            case LOOK_UP -> lookUpAnim;
-            case LOOK_DOWN -> lookDownAnim;
+            case FOCUSING_GET -> focusGetAnim;
+            case FOCUSING_END -> focusEndAnim;
+            case CASTING -> castAnim;
             case HURT -> hurtAnim;
             case DEAD -> deathAnim;
+            case LOOK_UP -> lookUpAnim;
+            case LOOK_DOWN -> lookDownAnim;
+            case IDLE -> (currentMasks == 1) ? idleHurtAnim : idleAnim;
             default -> idleAnim;
         };
     }
@@ -476,10 +514,25 @@ public class Knight {
     }
 
     public void stopFocusing() {
-        if (healing) {
+        if (healing || state == KnightState.FOCUSING || state == KnightState.FOCUSING_START || state == KnightState.FOCUSING_GET) {
             healing = false;
             healTimer = 0f;
+            state = KnightState.FOCUSING_END;
+            stateTimer = 0f;
+            stateLockTimer = animDuration(focusEndAnim);
         }
+    }
+
+    public void startCasting() {
+        if (isLocked()) return;
+        state = KnightState.CASTING;
+        stateTimer = 0f;
+        stateLockTimer = animDuration(castAnim);
+        castProjectile = false;
+        hasCastFired = false;
+
+        velocity.x = 0;
+        velocity.y = 0;
     }
 
     public void hitSpike() {
@@ -499,10 +552,7 @@ public class Knight {
     }
 
     public void startFocusing() {
-        if (healing)
-            return;
-
-        if (isLocked() || !isGrounded || velocity.x != 0)
+        if (healing || isLocked() || !isGrounded || velocity.x != 0)
             return;
 
         if (currentSoul < 33 || currentMasks >= maxMasks)
@@ -510,8 +560,9 @@ public class Knight {
 
         healing = true;
         healTimer = 0f;
-        state = KnightState.FOCUSING;
+        state = KnightState.FOCUSING_START;
         stateTimer = 0f;
+        stateLockTimer = animDuration(focusStartAnim);
     }
 
     public boolean heal() {
