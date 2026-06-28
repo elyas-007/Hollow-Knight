@@ -11,6 +11,7 @@ public class Crawlid extends Enemy {
     public Crawlid(float startX, float startY) {
         super(startX, startY);
         health = 2;
+        this.name = "crawlid";
     }
 
     @Override

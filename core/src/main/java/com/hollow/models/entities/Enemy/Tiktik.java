@@ -11,6 +11,7 @@ public class Tiktik extends Enemy {
     public Tiktik(float startX, float startY) {
         super(startX, startY);
         health = 1;
+        this.name = "tiktik";
     }
 
     @Override

@@ -8,6 +8,7 @@ public class Mosscreep extends Enemy {
         health = 1;
         hitbox.width = 1.2f;
         hitbox.height = 0.8f;
+        this.name = "mosscreep";
     }
 
     @Override

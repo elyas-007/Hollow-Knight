@@ -14,6 +14,7 @@ import com.badlogic.gdx.scenes.scene2d.ui.TextButton.TextButtonStyle;
 import com.badlogic.gdx.utils.viewport.FitViewport;
 import com.hollow.HollowKnight;
 import com.hollow.controllers.ButtonController;
+import com.hollow.views.hud.AchievementsUI;
 import com.hollow.views.hud.GuideUI;
 import com.hollow.views.hud.SettingsUI;
 
@@ -26,7 +27,9 @@ public class MainMenuScreen implements Screen {
     private InputMultiplexer multiplexer;
     private SettingsUI settingsUI;
     private GuideUI guideUI;
+    private AchievementsUI achievementsUI;
 
+    private boolean isAchievementsOpen = false;
     private boolean isSettingsOpen = false;
     private boolean isGuideOpen = false;
 
@@ -53,6 +56,12 @@ public class MainMenuScreen implements Screen {
             multiplexer.removeProcessor(guideUI.stage);
             multiplexer.addProcessor(stage);
         }, multiplexer);
+
+        achievementsUI = new AchievementsUI(game, () -> {
+            isAchievementsOpen = false;
+            multiplexer.removeProcessor(achievementsUI.stage);
+            multiplexer.addProcessor(stage);
+        });
 
         TextButtonStyle styleBtn = new TextButtonStyle();
         styleBtn.font = game.assetLoader.font;
@@ -81,6 +90,11 @@ public class MainMenuScreen implements Screen {
             multiplexer.removeProcessor(stage);
             multiplexer.addProcessor(guideUI.stage);
         });
+        achievementsBtn.setUserObject((Runnable) () -> {
+            isAchievementsOpen = true;
+            multiplexer.removeProcessor(stage);
+            multiplexer.addProcessor(achievementsUI.stage);
+        });
         quitBtn.setUserObject((Runnable) () -> Gdx.app.exit());
 
 
@@ -106,7 +120,7 @@ public class MainMenuScreen implements Screen {
         Gdx.gl.glClearColor(0f, 0f, 0f, 1f);
         Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT);
 
-        boolean showLight = !isSettingsOpen && !isGuideOpen;
+        boolean showLight = !isSettingsOpen && !isGuideOpen && !isAchievementsOpen;
 
         game.batch.setProjectionMatrix(stage.getCamera().combined);
         game.batch.begin();
@@ -120,6 +134,9 @@ public class MainMenuScreen implements Screen {
         } else if (isGuideOpen) {
             guideUI.act(delta);
             guideUI.draw();
+        } else if (isAchievementsOpen) {
+            achievementsUI.act(delta);
+            achievementsUI.draw();
         } else {
             stage.act(delta);
             if (controller != null) controller.update(delta);
@@ -132,6 +149,7 @@ public class MainMenuScreen implements Screen {
         viewport.update(width, height, true);
         if (settingsUI != null) settingsUI.resize(width, height);
         if (guideUI != null) guideUI.resize(width, height);
+        if (achievementsUI != null) achievementsUI.resize(width, height);
     }
 
     @Override
@@ -158,5 +176,6 @@ public class MainMenuScreen implements Screen {
         if (stage != null) stage.dispose();
         if (settingsUI != null) settingsUI.dispose();
         if (guideUI != null) guideUI.dispose();
+        if (achievementsUI != null) achievementsUI.dispose();
     }
 }

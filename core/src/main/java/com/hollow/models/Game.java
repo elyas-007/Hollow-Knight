@@ -95,6 +95,10 @@ public class Game {
 
 
     public void update(float delta) {
+        if (data != null && !knight.isDead() && !pendingRespawn) {
+            data.playTime += delta;
+        }
+
         if (knight.isDead()) {
             knight.update(delta);
             resolveGroundCollision();
@@ -126,6 +130,10 @@ public class Game {
             float spawnX = knight.isFacingRight() ? (knight.getX() + knight.getWidth()) : (knight.getX() - 1.5f);
             float spawnY = knight.getY() + 0.2f;
             activeProjectiles.add(new Projectile(spawnX, spawnY, knight.isFacingRight(), hasShadowCharm));
+
+            if (hasShadowCharm) {
+                AchievementManager.getInstance().unlockAchievement(Achievement.SHADOW_MASTER);
+            }
         }
 
         for (int i = activeProjectiles.size - 1; i >= 0; i--) {
@@ -145,6 +153,7 @@ public class Game {
                         int spellDamage = p.isShadow ? 2 : 1; // void hurt
                         if (hasShadowCharm) spellDamage = (int)(spellDamage * 1.5f);
                         enemy.takeDamage(spellDamage, p.isFacingRight);
+                        checkEnemyKill(enemy);
                         p.isDestroyed = true;
                         break;
                     }
@@ -191,6 +200,7 @@ public class Game {
                     data.falseKnightDefeated = true;
                     data.falseKnightDeathX = boss.position.x;
                     data.falseKnightDeathY = boss.position.y;
+                    AchievementManager.getInstance().unlockAchievement(Achievement.DEFEAT_FALSE_KNIGHT);
                     SaveManager.save(data);
                 }
 
@@ -233,6 +243,8 @@ public class Game {
             knight.stopMovingHorizontally();
             screen.startTransition(transitionZones.targetMap);
         }
+
+        //TODO : check speedrun and eng game
     }
 
     private void updateEnemies(float delta) {
@@ -282,6 +294,7 @@ public class Game {
                     if (knight.isDashing() && data.equippedCharms.contains(Charm.SHARP_SHADOW, true)) {
                         boolean hitFromRight = knight.getX() > enemy.position.x;
                         enemy.takeDamage(1, hitFromRight);
+                        checkEnemyKill(enemy);
                         int soulAmount = data.equippedCharms.contains(Charm.SOUL_CATCHER, true) ? 22 : 11;
                         knight.gainSoul(soulAmount);
                     } else {
@@ -523,6 +536,7 @@ public class Game {
                 if (attackBox.overlaps(enemy.hitbox)) {
                     boolean hitFromRight = knight.getX() > enemy.position.x;
                     enemy.takeDamage(nailDamage, hitFromRight);
+                    checkEnemyKill(enemy);
 
                     if (hasHeavyBlow) {
                         enemy.velocity.x = hitFromRight ? -12f : 12f;
@@ -709,6 +723,16 @@ public class Game {
             Vector2 bossSpawn = screen.findBossSpawnPoint();
             boss.position.set(bossSpawn.x, bossSpawn.y);
             boss.changeBehavior(new IdleBehavior());
+        }
+    }
+
+    private void checkEnemyKill(Enemy enemy) {
+        if (enemy.health <= 0) {
+            data.registerEnemyKill(enemy.name);
+            SaveManager.save(data);
+            if (data.killedEnemyTypes.size >= 6) {
+                AchievementManager.getInstance().unlockAchievement(Achievement.TRUE_HUNTER);
+            }
         }
     }
 }

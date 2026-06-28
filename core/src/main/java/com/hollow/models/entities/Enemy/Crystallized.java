@@ -24,6 +24,7 @@ public class Crystallized extends Enemy {
         hitbox.height = 1.6f;
         state = EnemyState.IDLE;
         velocity.x = 0;
+        this.name = "crystallized";
     }
 
     @Override

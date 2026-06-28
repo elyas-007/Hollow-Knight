@@ -75,6 +75,15 @@ public class AssetLoader {
 
     public TextureRegion crystalLaserTex;
 
+    public Texture achievementCompleteTex;
+    public Texture achievementEndingATex;
+    public Texture achievementFalseKnightTex;
+    public Texture achievementHunterTex;
+    public Texture achievementSecretTex;
+    public Texture achievementSpeedrunTex;
+    public Texture achievementFrameTex;
+
+
 
     // Audio
     public  Music titleTheme;
@@ -181,6 +190,16 @@ public class AssetLoader {
         top_menu = new Texture("ui/hud/prompt_divider.png");
 
         crystalLaserTex = new TextureRegion(new Texture("animation/enemy/crystallized/CrystalLaser.png"));
+
+        //achievements
+
+        achievementCompleteTex = new Texture("ui/achievement/achievement__0000_100_complete.png");
+        achievementEndingATex = new Texture("ui/achievement/achievement__0006_ending_A.png");
+        achievementFalseKnightTex = new Texture("ui/achievement/achievement_false_knight #50302521.png");
+        achievementHunterTex = new Texture("ui/achievement/achievement_Hunter_Marks.png");
+        achievementSecretTex = new Texture("ui/achievement/achievement_secret.png");
+        achievementSpeedrunTex = new Texture("ui/achievement/achievement_ultra_fast_finish.png");
+        achievementFrameTex = new Texture("ui/achievement/achievement_fleur0005.png");
     }
 
     public void dispose() {

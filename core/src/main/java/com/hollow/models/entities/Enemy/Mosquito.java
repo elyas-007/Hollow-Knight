@@ -22,6 +22,7 @@ public class Mosquito extends Enemy {
         hitbox.width = 1f;
         hitbox.height = 1f;
         state = EnemyState.IDLE;
+        this.name = "mosquito";
     }
 
 

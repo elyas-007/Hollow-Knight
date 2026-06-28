@@ -19,6 +19,7 @@ public class HuskHornhead extends Enemy {
         health = 3;
         hitbox.width = 1.4f;
         hitbox.height = 1.2f;
+        this.name = "huskhornhead";
     }
 
     @Override

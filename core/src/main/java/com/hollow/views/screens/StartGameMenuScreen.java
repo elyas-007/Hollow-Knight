@@ -211,8 +211,8 @@ public class StartGameMenuScreen implements Screen {
     }
 
     private String formatPlayTime(float time) {
-        int h = (int) time / 60;
-        int m = (int) time % 60;
-        return h + "H " + m + "M";
+        int m = (int) time / 60;
+        int s = (int) time % 60;
+        return m + "M " + s + "S";
     }
 }
