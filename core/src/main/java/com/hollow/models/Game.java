@@ -24,9 +24,14 @@ public class Game {
     public FalseKnight boss;
     private final Array<SolidBlock> groundRects;
     private final Array<SolidBlock> spikeRects;
+    private final Array<BreakableWall> breakableWalls;
+    public Array<Debris> activeDebris = new Array<>();
     private GameData data;
 
     private boolean wasOutsideArena = false;
+
+    public Vector2 voidHeartPos;
+    public float voidHeartStateTime = 0f;
 
     private Array<Enemy> enemies;
 
@@ -58,11 +63,12 @@ public class Game {
     public Game(HollowKnight game, Knight knight, Array<SolidBlock> groundRects,
                 Array<SolidBlock> spikeRects, Array<Enemy> enemies,
                 TransitionZone transitionZones, GameScreen screen,
-                GameData data, FalseKnight boss) {
+                GameData data, FalseKnight boss, Array<BreakableWall> breakableWalls) {
         this.game = game;
         this.knight = knight;
         this.groundRects = groundRects;
         this.spikeRects = spikeRects;
+        this.breakableWalls = breakableWalls;
         keyLeft = game.settings.keyLeft;
         keyRight = game.settings.keyRight;
         keyUp = game.settings.keyUp;
@@ -176,6 +182,31 @@ public class Game {
                 }
             }
 
+            for (BreakableWall w : breakableWalls) {
+                if (!p.isDestroyed && !w.isDestroyed()) {
+                    if (p.hitbox.overlaps(w.bounds)) {
+                        w.takeDamage(1);
+                        GameScreen.triggerShake(0.1f, 0.05f);
+
+                        int debrisCount = 10;
+                        for (int j = 0; j < debrisCount; j++) {
+                            float spawnX = w.bounds.x + (w.bounds.width / 2f);
+                            float spawnY = w.bounds.y + (w.bounds.height / 2f);
+
+                            activeDebris.add(new Debris(game.assetLoader.rockTexture, spawnX, spawnY));
+                        }
+                        if (w.getHp() <= 0) {
+                            w.setDestroyed(true);
+                            groundRects.removeValue(w, true);
+                            breakableWalls.removeValue(w, true);
+
+                            screen.removeWallTiles(w.bounds);
+                        }
+                    }
+                }
+            }
+
+
             if (p.isDestroyed) {
                 activeEffects.add(new Effect(
                     knight.blast,
@@ -242,6 +273,34 @@ public class Game {
                 }
             }
         }
+
+        for (int i = activeDebris.size - 1; i >= 0; i--) {
+            Debris d = activeDebris.get(i);
+            d.update(delta);
+            if (d.isDead()) {
+                activeDebris.removeIndex(i);
+            }
+        }
+
+        if (!data.unlockedCharms.contains(Charm.VOID_HEART, true) && voidHeartPos != null) {
+            voidHeartStateTime += delta;
+            Rectangle charmHitbox = new Rectangle(voidHeartPos.x, voidHeartPos.y, 1f, 1f);
+
+            if (knight.getHitbox().overlaps(charmHitbox)) {
+                screen.dialogueBox.setPromptVisible(true);
+
+                if (Gdx.input.isKeyJustPressed(Input.Keys.E)) {
+                    data.unlockedCharms.add(Charm.VOID_HEART);
+                    SaveManager.save(data);
+                    screen.hud.showItemPopup("Void Heart Unlocked!");
+
+                    if (screen.inventoryUI != null) {
+                        screen.inventoryUI.refreshUnlockedCharms();
+                    }
+                }
+            }
+        }
+
         checkMapTransitions();
     }
 
@@ -593,6 +652,31 @@ public class Game {
 
                     knight.gainSoul(soulAmount);
                     hitSomething = true;
+                }
+            }
+        }
+
+        for (BreakableWall w : breakableWalls) {
+            if (!w.isDestroyed()) {
+                if (attackBox.overlaps(w.bounds)) {
+                    w.takeDamage(1);
+                    GameScreen.triggerShake(0.1f, 0.05f);
+                    hitSomething = true;
+
+                    int debrisCount = 8;
+                    for (int i = 0; i < debrisCount; i++) {
+                        float spawnX = w.bounds.x + (w.bounds.width / 2f);
+                        float spawnY = w.bounds.y + (w.bounds.height / 2f);
+
+                        activeDebris.add(new Debris(game.assetLoader.rockTexture, spawnX, spawnY));
+                    }
+                    if (w.getHp() <= 0) {
+                        w.setDestroyed(true);
+                        groundRects.removeValue(w, true);
+                        breakableWalls.removeValue(w, true);
+
+                        screen.removeWallTiles(w.bounds);
+                    }
                 }
             }
         }

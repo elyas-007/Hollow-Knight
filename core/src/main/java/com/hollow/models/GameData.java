@@ -33,7 +33,7 @@ public class GameData {
         unlockedCharms.addAll(
             Charm.SOUL_CATCHER, Charm.DASH_MASTER, Charm.UNBREAKABLE_STRENGTH,
             Charm.QUICK_SLASH, Charm.QUICK_FOCUS, Charm.HEAVY_BLOW,
-            Charm.SHARP_SHADOW, Charm.VOID_HEART
+            Charm.SHARP_SHADOW
         );
     }
 

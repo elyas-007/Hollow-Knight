@@ -241,7 +241,7 @@ public class InventoryUI {
 
         final Image flyingIcon = new Image(game.assetLoader.charmTextures.get(charm));
         flyingIcon.setPosition(startPos.x, startPos.y);
-        flyingIcon.setSize(sourceSlot.getWidth(), sourceSlot.getHeight()); // اندازه اولیه 80x80
+        flyingIcon.setSize(sourceSlot.getWidth(), sourceSlot.getHeight());
         stage.addActor(flyingIcon);
 
         flyingIcon.addAction(Actions.sequence(
@@ -290,6 +290,19 @@ public class InventoryUI {
                 notch = new Image(game.assetLoader.emptyNotch);
             }
             notchesTable.add(notch).size(35, 35).padRight(10);
+        }
+    }
+
+    public void refreshUnlockedCharms() {
+        for (int i = 0; i < charmList.size; i++) {
+            Charm charm = charmList.get(i);
+            Stack slotStack = charmSlots.get(i);
+
+            if (data.unlockedCharms.contains(charm, true) && slotStack.getChildren().size == 1) {
+                final Image charmImg = new Image(game.assetLoader.charmTextures.get(charm));
+                charmImg.setTouchable(Touchable.enabled);
+                slotStack.add(charmImg);
+            }
         }
     }
 

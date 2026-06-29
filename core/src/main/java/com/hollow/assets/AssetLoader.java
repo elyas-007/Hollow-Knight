@@ -83,6 +83,8 @@ public class AssetLoader {
     public Texture achievementSpeedrunTex;
     public Texture achievementFrameTex;
 
+    public TextureRegion rockTexture;
+
 
 
     // Audio
@@ -200,6 +202,8 @@ public class AssetLoader {
         achievementSecretTex = new Texture("ui/achievement/achievement_secret.png");
         achievementSpeedrunTex = new Texture("ui/achievement/achievement_ultra_fast_finish.png");
         achievementFrameTex = new Texture("ui/achievement/achievement_fleur0005.png");
+
+        rockTexture = new TextureRegion(new Texture("effect/2163-7@2x.png"));
     }
 
     public void dispose() {

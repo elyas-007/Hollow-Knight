@@ -32,6 +32,7 @@ public class GameHud implements Disposable, AchievementObserver {
     private Label achievementDescLabel;
 
     private Label cheatLabel;
+    private Label itemPopupLabel;
 
     private int lastMasks;
 
@@ -70,6 +71,12 @@ public class GameHud implements Disposable, AchievementObserver {
         setupAchievementPopup(game);
         setupCheatPopup(game);
         AchievementManager.getInstance().addObserver(this);
+
+        itemPopupLabel = new Label("", new LabelStyle(game.assetLoader.font, Color.CYAN));
+        itemPopupLabel.setAlignment(Align.center);
+        itemPopupLabel.setPosition(viewport.getWorldWidth() / 2f, viewport.getWorldHeight() / 2f);
+        itemPopupLabel.getColor().a = 0f;
+        stage.addActor(itemPopupLabel);
     }
 
     private void setupCheatPopup(HollowKnight game) {
@@ -94,6 +101,19 @@ public class GameHud implements Disposable, AchievementObserver {
             Actions.moveToAligned(viewport.getWorldWidth() - 30f, viewport.getWorldHeight() - 40f, Align.topRight, 0.3f, Interpolation.exp10Out),
             Actions.delay(2f),
             Actions.moveToAligned(viewport.getWorldWidth() + 300f, viewport.getWorldHeight() - 40f, Align.topRight, 0.3f, Interpolation.exp10In)
+        ));
+    }
+
+    public void showItemPopup(String text) {
+        itemPopupLabel.setText(text);
+        itemPopupLabel.clearActions();
+        itemPopupLabel.getColor().a = 1f;
+        itemPopupLabel.setPosition(viewport.getWorldWidth() / 2f, viewport.getWorldHeight() / 2f - 50f);
+
+        itemPopupLabel.addAction(Actions.sequence(
+            Actions.moveBy(0, 80f, 1.5f, Interpolation.exp10Out),
+            Actions.delay(1.5f),
+            Actions.fadeOut(1f)
         ));
     }
 

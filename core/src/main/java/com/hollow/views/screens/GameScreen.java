@@ -17,13 +17,11 @@ import com.badlogic.gdx.utils.Array;
 import com.badlogic.gdx.utils.viewport.FitViewport;
 import com.hollow.HollowKnight;
 import com.hollow.assets.*;
-import com.hollow.models.Effect;
-import com.hollow.models.Game;
-import com.hollow.models.SolidBlock;
-import com.hollow.models.TransitionZone;
+import com.hollow.models.*;
 import com.hollow.models.entities.Enemy.*;
 import com.hollow.models.entities.FalseKnightBoss.FalseKnight;
 import com.hollow.models.entities.FalseKnightBoss.IdleBehavior;
+import com.hollow.models.entities.Knight.Charm;
 import com.hollow.models.entities.Knight.Knight;
 import com.badlogic.gdx.math.Rectangle;
 import com.badlogic.gdx.graphics.Color;
@@ -54,6 +52,7 @@ public class GameScreen implements Screen {
 
     private Array<SolidBlock> groundRecs;
     private Array<SolidBlock> spikeRecs;
+    private Array<BreakableWall> breakableWalls;
 
     private float mapPixelWidth;
     private float mapPixelHeight;
@@ -87,7 +86,7 @@ public class GameScreen implements Screen {
     public Zote zote;
 
     private boolean isInventoryOpen = false;
-    private InventoryUI inventoryUI;
+    public InventoryUI inventoryUI;
     private InputMultiplexer multiplexer;
 
     public boolean isPaused = false;
@@ -149,6 +148,8 @@ public class GameScreen implements Screen {
 
         groundRecs = helper.getSolidRectangles();
         spikeRecs = helper.getSolidRectangles();
+        breakableWalls = helper.getBreakableWall(map, UNIT_SCALE);
+        groundRecs.addAll(breakableWalls);
         transitionZone = helper.getTransitionZone(map, UNIT_SCALE);
 
         Array<Tiktik> mapTiktiks = helper.getTiktikSpawns(map, UNIT_SCALE);
@@ -205,7 +206,8 @@ public class GameScreen implements Screen {
         mapEnemies.addAll(mapMosquito);
         mapEnemies.addAll(mapMosscreep);
         mapEnemies.addAll(mapCrystallized);
-        controller = new Game(game, knight, groundRecs, spikeRecs, mapEnemies, transitionZone, this, game.activeSave, falseKnight);
+        controller = new Game(game, knight, groundRecs, spikeRecs, mapEnemies, transitionZone, this, game.activeSave, falseKnight, breakableWalls);
+        controller.voidHeartPos = helper.getVoidHeartPos(map, UNIT_SCALE);
 
 
         inventoryUI = new InventoryUI(game, game.activeSave);
@@ -243,6 +245,17 @@ public class GameScreen implements Screen {
             controller.update(delta);
             knight.updateAnimations(delta);
             dialogueBox.update(delta);
+
+            for (BreakableWall wall : breakableWalls) {
+                wall.update(delta);
+            }
+
+            if (breakableWalls.isEmpty()) {
+                MapLayer coverLayer = map.getLayers().get("secret_room_cover");
+                if (coverLayer != null) {
+                    coverLayer.setVisible(false);
+                }
+            }
         }
 
         drawWorld();
@@ -328,6 +341,7 @@ public class GameScreen implements Screen {
         renderEffects();
         renderWorldEffects(Gdx.graphics.getDeltaTime());
         renderInstantLasers();
+        renderCollectibles();
         game.batch.end();
     }
 
@@ -543,6 +557,24 @@ public class GameScreen implements Screen {
                 }
             }
         }
+
+        for (Debris d : controller.activeDebris) {
+            float width = d.texture.getRegionWidth() * UNIT_SCALE * d.scale;
+            float height = d.texture.getRegionHeight() * UNIT_SCALE * d.scale;
+
+            float alpha = d.lifeTime / d.maxLifeTime;
+            Color c = game.batch.getColor();
+            game.batch.setColor(c.r, c.g, c.b, alpha);
+
+            game.batch.draw(d.texture,
+                d.position.x - width / 2f, d.position.y - height / 2f,
+                width / 2f, height / 2f,
+                width, height,
+                1f, 1f,
+                d.rotation);
+
+            game.batch.setColor(c.r, c.g, c.b, 1f);
+        }
     }
 
     private void renderInstantLasers() {
@@ -748,6 +780,49 @@ public class GameScreen implements Screen {
                 if (pauseUI.guideUI.abilitiesUI != null) multiplexer.removeProcessor(pauseUI.guideUI.abilitiesUI.stage);
                 if (pauseUI.guideUI.cheatUI != null) multiplexer.removeProcessor(pauseUI.guideUI.cheatUI.stage);
             }
+        }
+    }
+
+    public void removeWallTiles(Rectangle bounds) {
+        MapLayer layer = map.getLayers().get("wall_visuals");
+
+        if (layer instanceof com.badlogic.gdx.maps.tiled.TiledMapTileLayer) {
+            com.badlogic.gdx.maps.tiled.TiledMapTileLayer visualLayer = (com.badlogic.gdx.maps.tiled.TiledMapTileLayer) layer;
+
+            float tileWorldWidth = map.getProperties().get("tilewidth", Integer.class) * UNIT_SCALE;
+            float tileWorldHeight = map.getProperties().get("tileheight", Integer.class) * UNIT_SCALE;
+
+            int startX = (int) (bounds.x / tileWorldWidth);
+            int startY = (int) (bounds.y / tileWorldHeight);
+            int endX = (int) ((bounds.x + bounds.width - 0.01f) / tileWorldWidth);
+            int endY = (int) ((bounds.y + bounds.height - 0.01f) / tileWorldHeight);
+
+            for (int x = startX; x <= endX; x++) {
+                for (int y = startY; y <= endY; y++) {
+                    visualLayer.setCell(x, y, null);
+                }
+            }
+        }
+    }
+
+    private void renderCollectibles() {
+        if (!game.activeSave.unlockedCharms.contains(Charm.VOID_HEART, true) && controller.voidHeartPos != null && breakableWalls.isEmpty()) {
+            float x = controller.voidHeartPos.x;
+            float y = controller.voidHeartPos.y;
+
+            float pulseAlpha = 0.65f + 0.35f * (float)Math.sin(controller.voidHeartStateTime * 5f);
+
+            game.batch.setColor(1f, 1f, 1f, pulseAlpha);
+            game.batch.draw(
+                game.assetLoader.charmTextures.get(Charm.VOID_HEART),
+                x - 0.2f, y - 0.2f, 1.4f, 1.4f
+            );
+
+            game.batch.setColor(1f, 1f, 1f, 1f);
+            game.batch.draw(
+                game.assetLoader.charmTextures.get(Charm.VOID_HEART),
+                x, y, 1f, 1f
+            );
         }
     }
 

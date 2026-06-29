@@ -9,6 +9,7 @@ import com.badlogic.gdx.math.Rectangle;
 import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.utils.Array;
 import com.hollow.HollowKnight;
+import com.hollow.models.BreakableWall;
 import com.hollow.models.SolidBlock;
 import com.hollow.models.TransitionZone;
 import com.hollow.models.entities.Enemy.*;
@@ -193,6 +194,44 @@ public class TiledMapHelper {
             }
         }
         return crystallizeds;
+    }
+
+    public Array<BreakableWall> getBreakableWall(TiledMap map, float unitScale) {
+        Array<BreakableWall> breakableWalls = new Array<>();
+
+        MapLayer layer = map.getLayers().get("breakable_wall");
+
+        if (layer == null)
+            return breakableWalls;
+
+        for (MapObject object : layer.getObjects()) {
+            if (object instanceof RectangleMapObject) {
+                Rectangle rect = ((RectangleMapObject) object).getRectangle();
+                breakableWalls.add(
+                    new BreakableWall(rect.x * unitScale, rect.y * unitScale,
+                                        rect.width * unitScale, rect.height * unitScale)
+                );
+            }
+        }
+
+        return breakableWalls;
+    }
+
+    public Vector2 getVoidHeartPos(TiledMap map, float unitScale) {
+        MapLayer layer = map.getLayers().get("void-heart");
+
+        if (layer == null)
+            return null;
+
+        for (MapObject object : layer.getObjects()) {
+            if (object.getName() != null && object.getName().equalsIgnoreCase("void-heart")) {
+                float x = object.getProperties().get("x", Float.class) * unitScale;
+                float y = object.getProperties().get("y", Float.class) * unitScale;
+
+                return new Vector2(x, y);
+            }
+        }
+        return null;
     }
 
 }
