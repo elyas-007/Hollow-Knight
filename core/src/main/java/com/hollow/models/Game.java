@@ -103,7 +103,7 @@ public class Game {
 
 
     public void update(float delta) {
-        if (data != null && !knight.isDead() && !pendingRespawn) {
+        if (data != null && !knight.isDead() && !pendingRespawn && !screen.isPaused) {
             data.playTime += delta;
         }
 
@@ -137,9 +137,32 @@ public class Game {
         checkAndLockArena();
         if (knight.castProjectile) {
             knight.castProjectile = false;
+
+            hasShadowCharm = data.equippedCharms.contains(Charm.VOID_HEART, true);
+
             float spawnX = knight.isFacingRight() ? (knight.getX() + knight.getWidth()) : (knight.getX() - 1.5f);
             float spawnY = knight.getY() + 0.2f;
             activeProjectiles.add(new Projectile(spawnX, spawnY, knight.isFacingRight(), hasShadowCharm));
+
+            float blastWidth = 5.0f;
+            float blastHeight = 5.0f;
+
+            float offset = 1f;
+
+            float effectX = knight.isFacingRight() ?
+                knight.getX() + (knight.getWidth() / 2f) - offset :
+                knight.getX() - blastWidth + (knight.getWidth() / 2f) + offset;
+
+            float effectY = knight.getY() - (blastHeight / 2f) + (knight.getHeight() / 2f);
+
+            activeEffects.add(new Effect(
+                knight.blast,
+                effectX,
+                effectY,
+                blastWidth,
+                blastHeight,
+                knight.isFacingRight()
+            ));
 
             if (hasShadowCharm) {
                 AchievementManager.getInstance().unlockAchievement(Achievement.SHADOW_MASTER);
@@ -165,7 +188,6 @@ public class Game {
                         if (instaKillMode) spellDamage = 9999;
                         enemy.takeDamage(spellDamage, p.isFacingRight);
                         checkEnemyKill(enemy);
-                        p.isDestroyed = true;
                         break;
                     }
                 }
@@ -178,7 +200,6 @@ public class Game {
                     if (instaKillMode) damage = 9999;
 
                     boss.takeDamage(damage);
-                    p.isDestroyed = true;
                 }
             }
 
@@ -202,19 +223,13 @@ public class Game {
 
                             screen.removeWallTiles(w.bounds);
                         }
+                        p.isDestroyed = true;
                     }
                 }
             }
 
 
             if (p.isDestroyed) {
-                activeEffects.add(new Effect(
-                    knight.blast,
-                    p.position.x,
-                    p.position.y,
-                    2f, 2f,
-                    p.isFacingRight
-                ));
                 activeProjectiles.removeIndex(i);
             }
         }
@@ -297,6 +312,29 @@ public class Game {
                     if (screen.inventoryUI != null) {
                         screen.inventoryUI.refreshUnlockedCharms();
                     }
+                }
+            }
+        }
+
+        if (screen.zote != null && screen.zote.currentState == Zote.State.ANGRY) {
+            screen.zote.angryTimer -= delta;
+
+            if (screen.zote.angryTimer <= 0) {
+                screen.zote.changeState(Zote.State.IDLE);
+            } else {
+                float zoteSpeed = 4f;
+
+                if (knight.getX() > screen.zote.position.x) {
+                    screen.zote.position.x += zoteSpeed * delta;
+                    screen.zote.isFacingRight = true;
+                } else {
+                    screen.zote.position.x -= zoteSpeed * delta;
+                    screen.zote.isFacingRight = false;
+                }
+
+                if (knight.getHitbox().overlaps(screen.zote.hitbox) && !knight.isInvincible()) {
+                    boolean hitFromRight = knight.getX() < screen.zote.position.x;
+                    knight.takeDamage(0, hitFromRight);
                 }
             }
         }
@@ -692,14 +730,13 @@ public class Game {
             }
         }
 
-        if (hitSomething) {
-            if (dir < 0) {
-                knight.setVelocityY(15f);
-                knight.setOnGround(false);
-                knight.resetWallTouch();
-            } else if (dir == 0) {
-                float recoil = knight.isFacingRight() ? -4f : 4f;
-                knight.getVelocity().x = recoil;
+        if (screen.zote != null) {
+            if ((screen.zote.currentState == Zote.State.IDLE || screen.zote.currentState == Zote.State.TALKING)
+                && attackBox.overlaps(screen.zote.hitbox)) {
+
+                screen.zote.changeState(Zote.State.ANGRY);
+                screen.zote.angryTimer = screen.zote.ANGRY_DURATION;
+                hitSomething = true;
             }
         }
 
@@ -724,6 +761,20 @@ public class Game {
                 }
             }
         }
+
+        if (hitSomething) {
+            if (dir < 0) {
+                knight.setVelocityY(30f);
+                knight.setOnGround(false);
+                knight.resetWallTouch();
+
+                knight.resetDash();
+                knight.resetDoubleJump();
+
+            } else if (dir == 0) {
+                knight.getVelocity().x = knight.isFacingRight() ? -4f : 4f;
+            }
+        }
     }
 
 
@@ -738,7 +789,8 @@ public class Game {
             if (spike.isDeadly) {
                 if (knightBox.overlaps(spike.bounds)) {
                     knight.hitSpike();
-                    knight.reSpawn();
+                    if (!knight.isDead())
+                        knight.reSpawn();
 
                     pendingRespawn = true;
                     respawnTimer = 0f;
@@ -817,20 +869,17 @@ public class Game {
         float y = screen.arenaY;
         float height = screen.arenaHeight;
 
-        if (knight.getX() < minX || knight.getX() > maxX) {
-            wasOutsideArena = true;
-        }
 
-        if (wasOutsideArena && knight.getX() > minX + 2f && knight.getX() < maxX - 2f) {
+        if (((knight.getX() > minX + 5f) && (knight.getX() < maxX - 5f)) && ((knight.getY() < y + height) && (knight.getY() > y))) {
             boss.bossFightStarted = true;
             screen.bossFightActive = true;
 
             leftDoor = new SolidBlock();
-            leftDoor.bounds = new Rectangle(minX, y, 1f, height);
+            leftDoor.bounds = new Rectangle(minX - 1f, y, 1f, height);
             leftDoor.isDeadly = false;
 
             rightDoor = new SolidBlock();
-            rightDoor.bounds = new Rectangle(maxX - 1f, y, 1f, height);
+            rightDoor.bounds = new Rectangle(maxX + 0.5f, y, 1f, height);
             rightDoor.isDeadly = false;
 
             groundRects.add(leftDoor);

@@ -92,6 +92,8 @@ public class GameScreen implements Screen {
     public boolean isPaused = false;
     private PauseUI pauseUI;
 
+    private Array<AmbientObject> ambientObjects;
+
 
     public GameScreen(HollowKnight game, String mapPath, float spawnX, float spawnY) {
         this.game = game;
@@ -214,6 +216,8 @@ public class GameScreen implements Screen {
         multiplexer = new InputMultiplexer();
         pauseUI = new PauseUI(game, this, multiplexer);
         Gdx.input.setInputProcessor(multiplexer);
+
+        ambientObjects = helper.getAmbientObjects(map, UNIT_SCALE, game.assetLoader);
     }
 
     public void render(float delta) {
@@ -255,6 +259,10 @@ public class GameScreen implements Screen {
                 if (coverLayer != null) {
                     coverLayer.setVisible(false);
                 }
+            }
+
+            for (AmbientObject obj : ambientObjects) {
+                obj.update(delta);
             }
         }
 
@@ -331,6 +339,20 @@ public class GameScreen implements Screen {
 
         game.batch.setProjectionMatrix(camera.combined);
         game.batch.begin();
+        if (ambientObjects != null) {
+            game.batch.setBlendFunction(GL20.GL_SRC_ALPHA, GL20.GL_ONE);
+            for (AmbientObject obj : ambientObjects) {
+                TextureRegion frame = obj.getCurrentFrame();
+                if (frame != null) {
+                    if (obj.isFacingRight) {
+                        game.batch.draw(frame, obj.x, obj.y, obj.width, obj.height);
+                    } else {
+                        game.batch.draw(frame, obj.x + obj.width, obj.y, -obj.width, obj.height);
+                    }
+                }
+            }
+            game.batch.setBlendFunction(GL20.GL_SRC_ALPHA, GL20.GL_ONE_MINUS_SRC_ALPHA);
+        }
         renderEnemies();
         renderZote();
         renderKnight();
@@ -386,11 +408,21 @@ public class GameScreen implements Screen {
             }
         }
 
+        Color originalColor = game.batch.getColor().cpy();
+
+        if (knight.isInvincible()) {
+            float speed = 25f;
+            float alpha = 0.5f + 0.5f * (float) Math.sin(knight.stateTimer * speed);
+            game.batch.setColor(1f, 1f, 1f, alpha);
+        }
+
         if (!facingLeft) {
             game.batch.draw(frame, drawX + spriteW, drawY, -spriteW, spriteH);
         } else {
             game.batch.draw(frame, drawX, drawY, spriteW, spriteH);
         }
+
+        game.batch.setColor(originalColor);
     }
 
     private void renderEnemies() {

@@ -4,17 +4,16 @@ import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.audio.Music;
 import com.badlogic.gdx.audio.Sound;
 import com.badlogic.gdx.graphics.Texture;
-import com.badlogic.gdx.graphics.g2d.Animation;
-import com.badlogic.gdx.graphics.g2d.BitmapFont;
-import com.badlogic.gdx.graphics.g2d.NinePatch;
-import com.badlogic.gdx.graphics.g2d.TextureRegion;
+import com.badlogic.gdx.graphics.g2d.*;
 import com.badlogic.gdx.graphics.g2d.freetype.FreeTypeFontGenerator;
 import com.badlogic.gdx.graphics.g2d.freetype.FreeTypeFontGenerator.FreeTypeFontParameter;
 
+import com.badlogic.gdx.graphics.glutils.ShaderProgram;
 import com.badlogic.gdx.maps.tiled.TiledMap;
 import com.badlogic.gdx.maps.tiled.TmxMapLoader;
 import com.badlogic.gdx.maps.tiled.renderers.OrthogonalTiledMapRenderer;
 import com.badlogic.gdx.scenes.scene2d.ui.Skin;
+import com.badlogic.gdx.utils.Array;
 import com.hollow.HollowKnight;
 import com.hollow.models.entities.Knight.Charm;
 
@@ -46,11 +45,15 @@ public class AssetLoader {
     public Texture pauseBottom;
 
     public TextureRegion healthFrameHud;
-    public TextureRegion geoHudGame;
     public TextureRegion fullMask;
     public TextureRegion emptyMask;
     public Animation<TextureRegion> maskShatterAnim;
-    public TextureRegion soul;
+    public Animation<TextureRegion> maskRefillAnim;
+    public Animation<TextureRegion> maskShineAnim;
+    public Texture orbMaskTexture;
+    public Animation<TextureRegion> soulIdleAnim;
+    public ShaderProgram liquidShader;
+    private TextureAtlas soulOrbAtlas;
 
     public Texture topOrnament;
     public Texture bottomOrnament;
@@ -84,6 +87,8 @@ public class AssetLoader {
     public Texture achievementFrameTex;
 
     public TextureRegion rockTexture;
+    public Animation<TextureRegion> butterflyAnim;
+    public Texture butterflyTexture;
 
 
 
@@ -148,11 +153,32 @@ public class AssetLoader {
         sliderSkin = new Skin(Gdx.files.internal("ui/Slider/slider.json"));
 
         healthFrameHud = new TextureRegion(new Texture("ui/hud/HUD Cln_167.png"));
-        geoHudGame = new TextureRegion(new Texture("ui/hud/HUD Cln_089.png"));
-        fullMask = new TextureRegion(new Texture("ui/hud/FilledHealthShine_004.png"));
+        fullMask = new TextureRegion(new Texture("ui/hud/FilledHealth.png"));
         emptyMask = new TextureRegion(new Texture("ui/hud/EmptyHealth.png"));
-        maskShatterAnim = KnightAnimationLoader.loadAnimation("ui/hud/BreakHealth.png", 6, 0.1f, Animation.PlayMode.LOOP);
-        soul = new TextureRegion(new Texture("ui/hud/SoulOrb_Full.png"));
+        maskShatterAnim = KnightAnimationLoader.loadAnimation("ui/hud/BreakHealth.png", 6, 0.1f, Animation.PlayMode.NORMAL);
+        maskRefillAnim = KnightAnimationLoader.loadAnimation("ui/hud/HealthRefill.png", 5,  0.1f, Animation.PlayMode.NORMAL);
+        maskShineAnim = KnightAnimationLoader.loadAnimation("ui/hud/FilledHealthShine.png", 5,  0.1f, Animation.PlayMode.NORMAL);
+        orbMaskTexture = new Texture("ui/hud/SoulOrb_Full.png");
+
+        String vertCode = Gdx.files.internal("ui/hud/soul_orb.vert").readString();
+        String fragCode = Gdx.files.internal("ui/hud/soul_orb.frag").readString();
+
+        ShaderProgram.pedantic = false;
+        liquidShader = new ShaderProgram(vertCode, fragCode);
+
+        if (!liquidShader.isCompiled()) {
+            Gdx.app.error("Shader Error", "compile Error: " + liquidShader.getLog());
+        }
+
+        soulOrbAtlas = new TextureAtlas(Gdx.files.internal("ui/hud/Soulorb.atlas"));
+        Array<TextureAtlas.AtlasRegion> idleFrames = new Array<>();
+        for (int i = 0; i <= 5; i++) {
+            idleFrames.add(soulOrbAtlas.findRegion("HUD_Soulorb_fills_soul_idle000" + i));
+        }
+
+        soulIdleAnim = new Animation<>(0.1f, idleFrames, Animation.PlayMode.LOOP);
+
+
 
         topOrnament = new Texture("ui/hud/gg_board_UI_top_0004.png");
         bottomOrnament = new Texture("ui/hud/gg_board_UI_bottom_0003.png");
@@ -204,6 +230,18 @@ public class AssetLoader {
         achievementFrameTex = new Texture("ui/achievement/achievement_fleur0005.png");
 
         rockTexture = new TextureRegion(new Texture("effect/2163-7@2x.png"));
+
+        butterflyTexture = new Texture(Gdx.files.internal("environment/blue_butterfly.png"));
+        int frameWidth = butterflyTexture.getWidth() / 4;
+        int frameHeight = butterflyTexture.getHeight() / 3;
+        TextureRegion[][] tmp = TextureRegion.split(butterflyTexture, frameWidth, frameHeight);
+        Array<TextureRegion> butterflyFrames = new Array<>();
+        for (int i = 0; i < 3; i++) {
+            for (int j = 0; j < 4; j++) {
+                butterflyFrames.add(tmp[i][j]);
+            }
+        }
+        butterflyAnim = new Animation<>(0.08f, butterflyFrames, Animation.PlayMode.LOOP);
     }
 
     public void dispose() {
@@ -223,6 +261,11 @@ public class AssetLoader {
         if (charmTextures != null) {
             for (Texture t : charmTextures.values()) t.dispose();
         }
+
+        if (soulOrbAtlas != null) soulOrbAtlas.dispose();
+        if (orbMaskTexture != null) orbMaskTexture.dispose();
+        if (liquidShader != null) liquidShader.dispose();
+        if (butterflyTexture != null) butterflyTexture.dispose();
     }
 
 

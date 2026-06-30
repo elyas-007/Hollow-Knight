@@ -9,6 +9,7 @@ import com.badlogic.gdx.math.Rectangle;
 import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.utils.Array;
 import com.hollow.HollowKnight;
+import com.hollow.models.AmbientObject;
 import com.hollow.models.BreakableWall;
 import com.hollow.models.SolidBlock;
 import com.hollow.models.TransitionZone;
@@ -232,6 +233,27 @@ public class TiledMapHelper {
             }
         }
         return null;
+    }
+
+    public Array<AmbientObject> getAmbientObjects(TiledMap map, float unitScale, AssetLoader assetLoader) {
+        Array<AmbientObject> ambientObjects = new Array<>();
+        MapLayer layer = map.getLayers().get("ambient_decorations");
+
+        if (layer == null) return ambientObjects;
+
+        for (MapObject object : layer.getObjects()) {
+            float x = object.getProperties().get("x", Float.class) * unitScale;
+            float y = object.getProperties().get("y", Float.class) * unitScale;
+            float width = object.getProperties().get("width", Float.class) * unitScale;
+            float height = object.getProperties().get("height", Float.class) * unitScale;
+
+            String type = object.getProperties().get("type", String.class);
+
+            if ("butterfly".equals(type)) {
+                ambientObjects.add(new AmbientObject(x, y, width, height, assetLoader.butterflyAnim, true));
+            }
+        }
+        return ambientObjects;
     }
 
 }

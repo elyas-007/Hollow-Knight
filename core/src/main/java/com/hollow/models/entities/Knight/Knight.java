@@ -188,7 +188,7 @@ public class Knight {
     }
 
     private void applyG(float delta) {
-        if (!isDashing && state != KnightState.CASTING) {
+        if (!isDashing && state != KnightState.CASTING && state != KnightState.DEAD) {
             velocity.y += G * delta;
 
             if (state == KnightState.WALL_SLIDE) {
@@ -329,7 +329,6 @@ public class Knight {
             case FOCUSING_GET -> focusGetAnim;
             case FOCUSING_END -> focusEndAnim;
             case CASTING -> castAnim;
-            case HURT -> hurtAnim;
             case DEAD -> deathAnim;
             case LOOK_UP -> lookUpAnim;
             case LOOK_DOWN -> lookDownAnim;
@@ -500,9 +499,15 @@ public class Knight {
         touchingWallSide = 0;
 //        stateTimer = 0f;
 
-        velocity.x = fromRight ? -FORCE_NAIL_X : FORCE_NAIL_X;
-        velocity.y = FORCE_NAIL_Y;
-        isGrounded = false;
+        if (currentMasks > 0) {
+            velocity.x = fromRight ? -FORCE_NAIL_X : FORCE_NAIL_X;
+            velocity.y = FORCE_NAIL_Y;
+            isGrounded = false;
+        } else {
+            velocity.x = 0f;
+            velocity.y = 0f;
+        }
+
 
         if (currentMasks <= 0) {
             currentMasks = 0;
@@ -549,6 +554,15 @@ public class Knight {
         touchingWallSide = 0;
         healing = false;
     }
+
+    public void resetDash() {
+        this.canDash = true;
+    }
+
+    public void resetDoubleJump() {
+        this.canDoubleJump = true;
+    }
+
 
     public void gainSoul(int amount) {
         currentSoul = Math.min(99, currentSoul + amount);

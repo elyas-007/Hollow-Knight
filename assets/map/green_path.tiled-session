@@ -183,11 +183,11 @@
                 8,
                 7
             ],
-            "scale": 1,
+            "scale": 0.75,
             "selectedLayer": 7,
             "viewCenter": {
-                "x": 12000.5,
-                "y": 7999.5
+                "x": 12918,
+                "y": 5914
             }
         },
         "grimm_particle_flame.tsx": {
@@ -325,10 +325,10 @@
     ],
     "project": "green_path.tiled-project",
     "recentFiles": [
-        "green_path.tmx",
-        "vine_platform_01.tsx",
-        "fung_new_0022_Layer-326.tsx",
         "nailmaster_hut_01_0002_glow.tsx",
+        "fung_new_0022_Layer-326.tsx",
+        "vine_platform_01.tsx",
+        "green_path.tmx",
         "cross_road.tmx"
     ],
     "tileset.lastUsedFormat": "tsx",

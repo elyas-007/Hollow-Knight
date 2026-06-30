@@ -46,7 +46,12 @@ public class GameHud implements Disposable, AchievementObserver {
         root.top().left().padTop(20).padLeft(20);
         stage.addActor(root);
 
-        soulVessel = new SoulVessel(game.assetLoader.healthFrameHud, game.assetLoader.soul); // bug
+        soulVessel = new SoulVessel(
+            game.assetLoader.healthFrameHud,
+            game.assetLoader.soulIdleAnim,
+            game.assetLoader.orbMaskTexture,
+            game.assetLoader.liquidShader
+        );
 
         maskWidgets = new Array<>();
         Table maskTable = new Table();
@@ -56,16 +61,18 @@ public class GameHud implements Disposable, AchievementObserver {
             MaskWidget mask = new MaskWidget(
                 game.assetLoader.fullMask,
                 game.assetLoader.emptyMask,
-                game.assetLoader.maskShatterAnim
+                game.assetLoader.maskShatterAnim,
+                game.assetLoader.maskRefillAnim,
+                game.assetLoader.maskShineAnim
             );
             maskWidgets.add(mask);
-            maskTable.add(mask).size(40, 40).padRight(1);
+            maskTable.add(mask).size(70, 70).padRight(3);
         }
 
         Table rightStats = new Table();
-        rightStats.add(maskTable).left().padBottom(2).row();
+        rightStats.add(maskTable).left().padTop(20).padBottom(2).row();
 
-        root.add(soulVessel).size(110, 110).padRight(-45);
+        root.add(soulVessel).size(180, 180).padRight(-45);
         root.add(rightStats).left().top().padTop(35);
 
         setupAchievementPopup(game);
@@ -84,7 +91,7 @@ public class GameHud implements Disposable, AchievementObserver {
         cheatLabel = new Label("", style);
         cheatLabel.setAlignment(Align.right);
 
-        cheatLabel.setPosition(viewport.getWorldWidth() + 320f, viewport.getWorldHeight() - 40f, Align.topRight);
+        cheatLabel.setPosition(viewport.getWorldWidth() + 400f, viewport.getWorldHeight() - 40f, Align.topRight);
 
         stage.addActor(cheatLabel);
     }
@@ -100,7 +107,7 @@ public class GameHud implements Disposable, AchievementObserver {
         cheatLabel.addAction(Actions.sequence(
             Actions.moveToAligned(viewport.getWorldWidth() - 30f, viewport.getWorldHeight() - 40f, Align.topRight, 0.3f, Interpolation.exp10Out),
             Actions.delay(2f),
-            Actions.moveToAligned(viewport.getWorldWidth() + 300f, viewport.getWorldHeight() - 40f, Align.topRight, 0.3f, Interpolation.exp10In)
+            Actions.moveToAligned(viewport.getWorldWidth() + 400, viewport.getWorldHeight() - 40f, Align.topRight, 0.3f, Interpolation.exp10In)
         ));
     }
 
@@ -153,7 +160,8 @@ public class GameHud implements Disposable, AchievementObserver {
 
         while (currentMask < lastMasks) {
             for (int i = maskWidgets.size - 1; i >= 0; i--) {
-                if (maskWidgets.get(i).getState() == MaskWidget.MaskState.FULL) {
+                MaskWidget.MaskState s = maskWidgets.get(i).getState();
+                if (s == MaskWidget.MaskState.FULL || s == MaskWidget.MaskState.SHINING) {
                     maskWidgets.get(i).shatter();
                     break;
                 }
@@ -163,7 +171,8 @@ public class GameHud implements Disposable, AchievementObserver {
 
         while (currentMask > lastMasks) {
             for (int i = 0; i < maskWidgets.size; i++) {
-                if (maskWidgets.get(i).getState() != MaskWidget.MaskState.FULL) {
+                MaskWidget.MaskState s = maskWidgets.get(i).getState();
+                if (s != MaskWidget.MaskState.FULL && s != MaskWidget.MaskState.SHINING && s != MaskWidget.MaskState.REFILLING) {
                     maskWidgets.get(i).fill();
                     break;
                 }

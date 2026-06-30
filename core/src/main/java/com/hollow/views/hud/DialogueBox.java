@@ -63,7 +63,7 @@ public class DialogueBox {
         rootTable.add(bottomImage).center();
 
         LabelStyle promptStyle = new LabelStyle(game.assetLoader.font, Color.WHITE);
-        promptLabel = new Label("Press 'E' ro Interact", promptStyle);
+        promptLabel = new Label("Press 'E' to Interact", promptStyle);
         promptLabel.setAlignment(Align.center);
 
         promptTable = new Table();
