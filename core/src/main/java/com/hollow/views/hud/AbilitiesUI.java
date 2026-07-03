@@ -15,17 +15,20 @@ import com.badlogic.gdx.utils.Align;
 import com.badlogic.gdx.utils.viewport.FitViewport;
 import com.hollow.HollowKnight;
 import com.hollow.controllers.ButtonController;
+import com.hollow.models.LanguageManager;
+import com.hollow.models.LanguageObserver;
 
-public class AbilitiesUI {
+public class AbilitiesUI implements LanguageObserver {
     public Stage stage;
-    private HollowKnight game;
+    private final HollowKnight game;
     private ButtonController controller;
-    private Runnable onClose;
+    private final Runnable onClose;
 
     public AbilitiesUI(HollowKnight game, Runnable onClose) {
         this.game = game;
         this.onClose = onClose;
         stage = new Stage(new FitViewport(game.SCREEN_WIDTH, game.SCREEN_HEIGHT));
+        LanguageManager.addObserver(this);
         setupUI();
     }
 
@@ -42,26 +45,20 @@ public class AbilitiesUI {
         Table content = new Table();
 
         Table title = new Table();
-        Label t = new Label("ABILITIES", titleStyle);
+        Label t = new Label(LanguageManager.get("abilitiesTitle"), titleStyle);
         t.setFontScale(1.5f);
         title.add(t).row();
         title.add(new Image(game.assetLoader.top_menu));
         content.add(title).colspan(3).padTop(20).padBottom(60).row();
 
-        String mechanicsText =
-            "SOUL SYSTEM:\n" +
-                "Strike enemies with your Nail to gather Soul.\n\n" +
-                "HEALING (FOCUS):\n" +
-                "Hold the Focus button to consume collected Soul and restore shattered Health Masks.\n\n" +
-                "CHARMS:\n" +
-                "Find Charms hidden in the world and equip them to enhance your abilities.";
+        String mechanicsText = LanguageManager.get("abilitiesDesc");
 
         Label mechanicsLabel = new Label(mechanicsText, descStyle);
         mechanicsLabel.setWrap(true);
         mechanicsLabel.setAlignment(Align.left);
         content.add(mechanicsLabel).width(1000).row();
 
-        TextButton backBtn = new TextButton("Back", style);
+        TextButton backBtn = new TextButton(LanguageManager.get("back"), style);
         backBtn.setUserObject((Runnable) () -> onClose.run());
 
         main.add(backBtn).left().pad(20).padLeft(50).row();
@@ -90,4 +87,10 @@ public class AbilitiesUI {
     public void draw() { stage.draw(); }
     public void resize(int width, int height) { stage.getViewport().update(width, height, true); }
     public void dispose() { if (stage != null) stage.dispose(); }
+
+    @Override
+    public void onLanguageChanged() {
+        stage.clear();
+        setupUI();
+    }
 }

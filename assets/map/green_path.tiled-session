@@ -98,14 +98,14 @@
             "expandedObjectLayers": [
                 10,
                 13,
-                11,
-                5
+                5,
+                11
             ],
-            "scale": 0.416015625,
+            "scale": 1,
             "selectedLayer": 11,
             "viewCenter": {
-                "x": 13099.267605633802,
-                "y": 8000.9014084507035
+                "x": 11892.5,
+                "y": 6904.5
             }
         },
         "cross_road.tmx#Lance_object": {
@@ -318,18 +318,15 @@
     "map.width": 3000,
     "openFiles": [
         "green_path.tmx",
-        "vine_platform_01.tsx",
-        "fung_new_0022_Layer-326.tsx",
-        "nailmaster_hut_01_0002_glow.tsx",
         "cross_road.tmx"
     ],
     "project": "green_path.tiled-project",
     "recentFiles": [
+        "green_path.tmx",
+        "cross_road.tmx",
         "nailmaster_hut_01_0002_glow.tsx",
         "fung_new_0022_Layer-326.tsx",
-        "vine_platform_01.tsx",
-        "green_path.tmx",
-        "cross_road.tmx"
+        "vine_platform_01.tsx"
     ],
     "tileset.lastUsedFormat": "tsx",
     "tileset.tileSize": {

@@ -10,10 +10,12 @@ import com.badlogic.gdx.scenes.scene2d.ui.TextButton.TextButtonStyle;
 import com.badlogic.gdx.utils.viewport.FitViewport;
 import com.hollow.HollowKnight;
 import com.hollow.controllers.ButtonController;
+import com.hollow.models.LanguageManager;
+import com.hollow.models.LanguageObserver;
 import com.hollow.models.SaveManager;
 import com.hollow.views.screens.*;
 
-public class PauseUI {
+public class PauseUI implements LanguageObserver {
     public Stage stage;
     private HollowKnight game;
     private GameScreen gameScreen;
@@ -34,6 +36,7 @@ public class PauseUI {
         this.multiplexer = multiplexer;
 
         stage = new Stage(new FitViewport(game.SCREEN_WIDTH, game.SCREEN_HEIGHT));
+        LanguageManager.addObserver(this);
         setupSubUIs();
         setupUI();
     }
@@ -69,11 +72,11 @@ public class PauseUI {
 
         root.add(new Image(game.assetLoader.pauseTop)).colspan(2).top().padBottom(30).center().row();
 
-        TextButton continueBtn = new TextButton("Continue", styleBtn);
-        TextButton settingsBtn = new TextButton("Settings", styleBtn);
-        TextButton guideBtn = new TextButton("Guide", styleBtn);
-        TextButton cheatBtn = new TextButton("Cheat", styleBtn);
-        TextButton quitBtn = new TextButton("Quit To Menu", styleBtn);
+        TextButton continueBtn = new TextButton(LanguageManager.get("continue"), styleBtn);
+        TextButton settingsBtn = new TextButton(LanguageManager.get("settings"), styleBtn);
+        TextButton guideBtn = new TextButton(LanguageManager.get("guide"), styleBtn);
+        TextButton cheatBtn = new TextButton(LanguageManager.get("cheat"), styleBtn);
+        TextButton quitBtn = new TextButton(LanguageManager.get("quitToMenu"), styleBtn);
 
         continueBtn.setUserObject((Runnable) () -> gameScreen.togglePause());
 
@@ -141,6 +144,7 @@ public class PauseUI {
         if (settingsUI != null) settingsUI.dispose();
         if (guideUI != null) guideUI.dispose();
         if (cheatUI != null) cheatUI.dispose();
+        LanguageManager.removeObserver(this);
     }
 
     public void quitGame() {
@@ -149,5 +153,11 @@ public class PauseUI {
             game.activeSave = null;
         }
         game.setScreen(new MainMenuScreen(game));
+    }
+
+    @Override
+    public void onLanguageChanged() {
+        stage.clear();
+        setupUI();
     }
 }

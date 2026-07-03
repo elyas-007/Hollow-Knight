@@ -9,6 +9,7 @@ import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.hollow.assets.AssetLoader;
 import com.hollow.models.GameData;
 import com.hollow.models.GameSettings;
+import com.hollow.models.LanguageManager;
 import com.hollow.models.SaveManager;
 import com.hollow.views.hud.MenuBackground;
 import com.hollow.views.screens.MainMenuScreen;
@@ -40,6 +41,8 @@ public class HollowKnight extends Game {
         Cursor customCursor = Gdx.graphics.newCursor(pixmap, xHotspot, yHotspot);
         Gdx.graphics.setCursor(customCursor);
         pixmap.dispose();
+
+        LanguageManager.load(settings.lang);
 
         this.setScreen(new MainMenuScreen(this));
     }

@@ -10,22 +10,25 @@ import com.badlogic.gdx.utils.viewport.FitViewport;
 import com.hollow.HollowKnight;
 import com.hollow.controllers.ButtonController;
 import com.hollow.models.GameSettings;
+import com.hollow.models.LanguageManager;
+import com.hollow.models.LanguageObserver;
 import com.hollow.models.enums.Language;
 
-public class SettingsUI {
+public class SettingsUI implements LanguageObserver {
     public Stage stage;
-    private HollowKnight game;
+    private final HollowKnight game;
     private ButtonController controller;
     private TextButton[] menuButtons;
     private boolean wait = false;
     private String rebindTarget = null;
     private Label rebindLabel;
-    private Runnable onClose;
+    private final Runnable onClose;
 
     public SettingsUI(HollowKnight game, Runnable onClose) {
         this.game = game;
         this.onClose = onClose;
         stage = new Stage(new FitViewport(game.SCREEN_WIDTH, game.SCREEN_HEIGHT));
+        LanguageManager.addObserver(this);
         setupUI();
     }
 
@@ -52,7 +55,7 @@ public class SettingsUI {
         scrollPane.setScrollingDisabled(true, false);
         stage.addActor(scrollPane);
 
-        Label title = new Label("SETTINGS", new Label.LabelStyle(font, Color.WHITE));
+        Label title = new Label(LanguageManager.get("settingsTitle"), new Label.LabelStyle(font, Color.WHITE));
         title.setFontScale(1.5f);
         title.layout();
         float titleWidth = title.getGlyphLayout().width * title.getFontScaleX();
@@ -64,86 +67,93 @@ public class SettingsUI {
         titleGroup.add(settingBottom).width(titleWidth).height(200).padTop(-75f).row();
         contentTable.add(titleGroup).colspan(2).padBottom(30).row();
 
-        contentTable.add(new Label("Music Volume", labelStyle)).left().padRight(30).padBottom(18);
+        contentTable.add(new Label(LanguageManager.get("musicVolume"), labelStyle)).left().padRight(30).padBottom(18);
         Slider musicSlider = new Slider(0f, 1f, 0.05f, false, game.assetLoader.sliderSkin, "menuSlider");
         musicSlider.setValue(setting.musicVolume);
         musicSlider.addListener(new ChangeListener() {
             @Override
             public void changed(ChangeEvent event, Actor actor) {
                 setting.musicVolume = musicSlider.getValue();
+                setting.save();
                 applyMusicVolume();
             }
         });
         contentTable.add(musicSlider).width(300).padBottom(18).row();
 
-        contentTable.add(new Label("Music", labelStyle)).left().padRight(30).padBottom(18);
-        TextButton musicToggle = new TextButton(setting.isMusicOn ? "ON" : "OFF", styleBtn);
+        contentTable.add(new Label(LanguageManager.get("music"), labelStyle)).left().padRight(30).padBottom(18);
+        TextButton musicToggle = new TextButton(setting.isMusicOn ? LanguageManager.get("on") : LanguageManager.get("off"), styleBtn);
         musicToggle.setUserObject((Runnable) () -> {
             setting.isMusicOn = !setting.isMusicOn;
-            musicToggle.setText(setting.isMusicOn ? "ON" : "OFF");
+            setting.save();
+            musicToggle.setText(setting.isMusicOn ? LanguageManager.get("on") : LanguageManager.get("off"));
             applyMusicToggle();
         });
         contentTable.add(musicToggle).left().padBottom(18).row();
 
-        contentTable.add(new Label("Sound Effect", labelStyle)).left().padRight(30).padBottom(18);
-        TextButton sfxToggle = new TextButton(setting.isSfxOn ? "ON" : "OFF", styleBtn);
+        contentTable.add(new Label(LanguageManager.get("soundEffect"), labelStyle)).left().padRight(30).padBottom(18);
+        TextButton sfxToggle = new TextButton(setting.isSfxOn ? LanguageManager.get("on") : LanguageManager.get("off"), styleBtn);
         sfxToggle.setUserObject((Runnable) () -> {
             setting.isSfxOn = !setting.isSfxOn;
-            sfxToggle.setText(setting.isSfxOn ? "ON" : "OFF");
+            setting.save();
+            sfxToggle.setText(setting.isSfxOn ? LanguageManager.get("on") : LanguageManager.get("off"));
         });
         contentTable.add(sfxToggle).left().padBottom(18).row();
 
-        TextButton resetAudio = new TextButton("Reset Audio", styleBtn);
+        TextButton resetAudio = new TextButton(LanguageManager.get("resetAudio"), styleBtn);
         resetAudio.setUserObject((Runnable) () -> {
             setting.resetAudio();
+            setting.save();
             musicSlider.setValue(setting.musicVolume);
-            musicToggle.setText("ON");
-            sfxToggle.setText("ON");
+            musicToggle.setText(LanguageManager.get("on"));
+            sfxToggle.setText(LanguageManager.get("on"));
             applyMusicToggle();
             applyMusicVolume();
         });
         contentTable.add(resetAudio).colspan(2).padBottom(28).row();
 
-        contentTable.add(new Label("Brightness", labelStyle)).left().padRight(30).padBottom(18);
+        contentTable.add(new Label(LanguageManager.get("brightness"), labelStyle)).left().padRight(30).padBottom(18);
         Slider btSlider = new Slider(0.2f, 1f, 0.05f, false, game.assetLoader.sliderSkin, "menuSlider");
         btSlider.setValue(setting.brightness);
         btSlider.addListener(new ChangeListener() {
             @Override
             public void changed(ChangeEvent event, Actor actor) {
                 setting.brightness = btSlider.getValue();
+                setting.save();
             }
         });
         contentTable.add(btSlider).width(300).padBottom(18).row();
 
-        TextButton resetBrightness = new TextButton("Reset Brightness", styleBtn);
+        TextButton resetBrightness = new TextButton(LanguageManager.get("resetBrightness"), styleBtn);
         resetBrightness.setUserObject((Runnable) () -> {
             setting.resetBrightness();
+            setting.save();
             btSlider.setValue(setting.brightness);
         });
         contentTable.add(resetBrightness).colspan(2).padBottom(28).row();
 
-        contentTable.add(new Label("Language", labelStyle)).left().padRight(30).padBottom(28);
+        contentTable.add(new Label(LanguageManager.get("language"), labelStyle)).left().padRight(30).padBottom(28);
         TextButton lanBtn = new TextButton(setting.lang.toString(), styleBtn);
         lanBtn.setUserObject((Runnable) () -> {
-            setting.lang = setting.lang.equals(Language.DE) ? Language.EN : Language.DE;
-            lanBtn.setText(setting.lang.toString());
+            setting.lang = setting.lang.equals(Language.ES) ? Language.EN : Language.ES;
+            setting.save();
+            LanguageManager.load(setting.lang);
         });
         contentTable.add(lanBtn).left().padBottom(28).row();
 
-        Label keyTitle = new Label("KeyBoard", new Label.LabelStyle(font, Color.WHITE));
+        Label keyTitle = new Label(LanguageManager.get("keyboardTitle"), new Label.LabelStyle(font, Color.WHITE));
         keyTitle.setFontScale(1.1f);
         contentTable.add(keyTitle).colspan(2).padBottom(14).row();
 
-        TextButton upBtn = addNewKey(contentTable, "Up", "up", setting, labelStyle, styleBtn);
-        TextButton downBtn = addNewKey(contentTable, "Down", "down", setting, labelStyle, styleBtn);
-        TextButton rightBtn = addNewKey(contentTable, "Right", "right", setting, labelStyle, styleBtn);
-        TextButton leftBtn = addNewKey(contentTable, "Left", "left", setting, labelStyle, styleBtn);
-        TextButton jumpBtn = addNewKey(contentTable, "Jump", "jump", setting, labelStyle, styleBtn);
-        TextButton attackBtn = addNewKey(contentTable, "Attack", "attack", setting, labelStyle, styleBtn);
-        TextButton dashBtn = addNewKey(contentTable, "Dash", "dash", setting, labelStyle, styleBtn);
-        TextButton focusBtn = addNewKey(contentTable, "Focus", "focus", setting, labelStyle, styleBtn);
+        TextButton upBtn = addNewKey(contentTable, LanguageManager.get("lookUp"), "up", setting, labelStyle, styleBtn);
+        TextButton downBtn = addNewKey(contentTable, LanguageManager.get("lookDown"), "down", setting, labelStyle, styleBtn);
+        TextButton rightBtn = addNewKey(contentTable, LanguageManager.get("moveRight"), "right", setting, labelStyle, styleBtn);
+        TextButton leftBtn = addNewKey(contentTable, LanguageManager.get("moveLeft"), "left", setting, labelStyle, styleBtn);
+        TextButton jumpBtn = addNewKey(contentTable, LanguageManager.get("jump"), "jump", setting, labelStyle, styleBtn);
+        TextButton attackBtn = addNewKey(contentTable, LanguageManager.get("attack"), "attack", setting, labelStyle, styleBtn);
+        TextButton dashBtn = addNewKey(contentTable, LanguageManager.get("dash"), "dash", setting, labelStyle, styleBtn);
+        TextButton focusBtn = addNewKey(contentTable, LanguageManager.get("focus"), "focus", setting, labelStyle, styleBtn);
 
-        TextButton resetKey = new TextButton("Reset Keys", styleBtn);
+        TextButton resetKey = new TextButton(LanguageManager.get("resetKeys"), styleBtn);
         resetKey.setUserObject((Runnable) () -> {
             setting.resetKey();
             setting.save();
@@ -154,7 +164,7 @@ public class SettingsUI {
         rebindLabel = new Label("", dimStyle);
         contentTable.add(rebindLabel).colspan(2).padBottom(14).row();
 
-        TextButton backBtn = new TextButton("Back", styleBtn);
+        TextButton backBtn = new TextButton(LanguageManager.get("back"), styleBtn);
         backBtn.setUserObject((Runnable) () -> {
             setting.save();
             onClose.run();
@@ -208,15 +218,16 @@ public class SettingsUI {
 
     public void dispose() {
         if (stage != null) stage.dispose();
+        game.settings.save();
     }
 
     private TextButton addNewKey(Table root, String action, String target, GameSettings setting, Label.LabelStyle labelStyle, TextButton.TextButtonStyle btnStyle) {
         Table r = new Table();
-        r.add(new Label(action, labelStyle)).width(120).left();
+        r.add(new Label(action, labelStyle)).width(100).padRight(200).left();
 
         Label keyName = new Label(Input.Keys.toString(getKey(setting, target)), labelStyle);
-        r.add(keyName).width(100).center();
-        TextButton changeBtn = new TextButton("Change", btnStyle);
+        r.add(keyName).width(100).padRight(80).center();
+        TextButton changeBtn = new TextButton(LanguageManager.get("change"), btnStyle);
         changeBtn.setUserObject((Runnable) () -> {
             rebind(target, keyName);
         });
@@ -229,7 +240,7 @@ public class SettingsUI {
     private void rebind(String target, Label keyName) {
         wait = true;
         rebindTarget = target;
-        rebindLabel.setText("Press any key to set [" + target + "] ... (ESC to cancel)");
+        rebindLabel.setText(LanguageManager.get("pressAnyKey") + target + LanguageManager.get("escToCancel"));
         rebindLabel.setUserObject(keyName);
     }
 
@@ -259,6 +270,7 @@ public class SettingsUI {
             case "attack" -> s.keyAttack = keycode;
             case "dash" -> s.keyDash = keycode;
         }
+        s.save();
         if (rebindLabel.getUserObject() instanceof Label) {
             ((Label) rebindLabel.getUserObject()).setText(Input.Keys.toString(keycode));
         }
@@ -288,5 +300,11 @@ public class SettingsUI {
         if (game.assetLoader.titleTheme != null) {
             game.assetLoader.titleTheme.setVolume(game.settings.musicVolume);
         }
+    }
+
+    @Override
+    public void onLanguageChanged() {
+        stage.clear();
+        setupUI();
     }
 }

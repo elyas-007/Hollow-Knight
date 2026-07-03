@@ -13,17 +13,17 @@ import com.badlogic.gdx.utils.Array;
 import com.badlogic.gdx.utils.Scaling;
 import com.badlogic.gdx.utils.viewport.FitViewport;
 import com.hollow.HollowKnight;
+import com.hollow.models.LanguageManager;
+import com.hollow.models.LanguageObserver;
 
-public class DialogueBox {
+public class DialogueBox implements LanguageObserver {
     private HollowKnight game;
-    private Stage stage;
-    private Label textLabel;
+    private final Stage stage;
+    private final Label textLabel;
 
+    private final Table rootTable;
 
-    private Table rootTable;
-
-
-    private Array<String> dialogueLines;
+    private final Array<String> dialogueLines;
     private int currentLineIndex = 0;
 
     private String targetText = "";
@@ -34,12 +34,13 @@ public class DialogueBox {
     public boolean isVisible = false;
     private boolean isTyping = false;
 
-    private Label promptLabel;
-    private Table promptTable;
+    private final Label promptLabel;
+    private final Table promptTable;
 
     public DialogueBox(HollowKnight game) {
         this.game = game;
         stage = new Stage(new FitViewport(game.SCREEN_WIDTH, game.SCREEN_HEIGHT));
+        LanguageManager.addObserver(this);
 
         LabelStyle style = new LabelStyle(game.assetLoader.font, Color.WHITE);
 
@@ -63,7 +64,7 @@ public class DialogueBox {
         rootTable.add(bottomImage).center();
 
         LabelStyle promptStyle = new LabelStyle(game.assetLoader.font, Color.WHITE);
-        promptLabel = new Label("Press 'E' to Interact", promptStyle);
+        promptLabel = new Label(LanguageManager.get("pressToInteract"), promptStyle);
         promptLabel.setAlignment(Align.center);
 
         promptTable = new Table();
@@ -140,6 +141,13 @@ public class DialogueBox {
         }
     }
 
+    @Override
+    public void onLanguageChanged() {
+        if (promptLabel != null) {
+            promptLabel.setText(LanguageManager.get("pressToInteract"));
+        }
+    }
+
     public void draw() {
         stage.act();
         stage.draw();
@@ -150,6 +158,7 @@ public class DialogueBox {
     }
 
     public void dispose() {
+        LanguageManager.removeObserver(this);
         stage.dispose();
     }
 }

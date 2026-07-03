@@ -14,32 +14,30 @@ import com.badlogic.gdx.utils.Disposable;
 import com.badlogic.gdx.utils.viewport.FitViewport;
 import com.badlogic.gdx.utils.viewport.Viewport;
 import com.hollow.HollowKnight;
-import com.hollow.models.Achievement;
-import com.hollow.models.AchievementManager;
-import com.hollow.models.AchievementObserver;
+import com.hollow.models.*;
 import com.hollow.models.entities.Knight.Knight;
 
-public class GameHud implements Disposable, AchievementObserver {
+public class GameHud implements Disposable, AchievementObserver, LanguageObserver {
     public Stage stage;
-    private Viewport viewport;
+    private final Viewport viewport;
 
-
-    private Array<MaskWidget> maskWidgets;
-    private SoulVessel soulVessel;
+    private final Array<MaskWidget> maskWidgets;
+    private final SoulVessel soulVessel;
 
     private Table popupTable;
+    private Label achievementUnlockedLabel;
     private Label achievementTitleLabel;
     private Label achievementDescLabel;
 
     private Label cheatLabel;
-    private Label itemPopupLabel;
+    private final Label itemPopupLabel;
 
     private int lastMasks;
 
     public GameHud(HollowKnight game, Knight knight) {
         viewport = new FitViewport(game.SCREEN_WIDTH, game.SCREEN_HEIGHT, new OrthographicCamera());
         stage = new Stage(viewport, game.batch);
-
+        LanguageManager.addObserver(this);
 
         Table root = new Table();
         root.setFillParent(true);
@@ -99,7 +97,7 @@ public class GameHud implements Disposable, AchievementObserver {
     public void showCheatPopup(String cheatName, boolean isEnabled) {
         cheatLabel.clearActions();
 
-        String status = isEnabled ? "Enabled" : "Disabled";
+        String status = isEnabled ? LanguageManager.get("enabled") : LanguageManager.get("disabled");
         cheatLabel.setText(cheatName + ": " + status);
 
         cheatLabel.setColor(isEnabled ? Color.GREEN : Color.RED);
@@ -139,7 +137,8 @@ public class GameHud implements Disposable, AchievementObserver {
         popupTable.setTransform(true);
         popupTable.setOrigin(Align.center);
 
-        popupTable.add(new Label("Achievement Unlocked!", new LabelStyle(game.assetLoader.font, Color.GOLD))).padBottom(5).row();
+        achievementUnlockedLabel = new Label(LanguageManager.get("achievementUnlocked"), new LabelStyle(game.assetLoader.font, Color.GOLD));
+        popupTable.add(achievementUnlockedLabel).padBottom(5).row();
         popupTable.add(achievementTitleLabel).padBottom(5).row();
         popupTable.add(achievementDescLabel).row();
 
@@ -152,9 +151,6 @@ public class GameHud implements Disposable, AchievementObserver {
         stage.act(delta);
 
         soulVessel.setSoul(knight.getSoul());
-
-        //update geo
-
 
         int currentMask = knight.getCurrentMasks();
 
@@ -184,6 +180,7 @@ public class GameHud implements Disposable, AchievementObserver {
     public void draw() {
         stage.draw();
     }
+
     public void resize(int width, int height) {
         viewport.update(width, height, true);
     }
@@ -191,6 +188,7 @@ public class GameHud implements Disposable, AchievementObserver {
     @Override
     public void dispose() {
         AchievementManager.getInstance().removeObserver(this);
+        LanguageManager.removeObserver(this);
         stage.dispose();
     }
 
@@ -207,5 +205,12 @@ public class GameHud implements Disposable, AchievementObserver {
             Actions.delay(3.5f),
             Actions.moveToAligned(viewport.getWorldWidth() / 2f, -150f, Align.center, 0.6f, Interpolation.exp10In)
         ));
+    }
+
+    @Override
+    public void onLanguageChanged() {
+        if (achievementUnlockedLabel != null) {
+            achievementUnlockedLabel.setText(LanguageManager.get("achievementUnlocked"));
+        }
     }
 }

@@ -16,11 +16,13 @@ import com.hollow.HollowKnight;
 import com.hollow.controllers.ButtonController;
 import com.hollow.models.Achievement;
 import com.hollow.models.AchievementManager;
+import com.hollow.models.LanguageManager;
+import com.hollow.models.LanguageObserver;
 
-public class AchievementsUI {
+public class AchievementsUI implements LanguageObserver {
     public Stage stage;
-    private HollowKnight game;
-    private Runnable onClose;
+    private final HollowKnight game;
+    private final Runnable onClose;
     private ButtonController controller;
     private TextButton[] menuButtons;
 
@@ -28,6 +30,7 @@ public class AchievementsUI {
     public AchievementsUI(HollowKnight game, Runnable onClose) {
         this.game = game;
         stage = new Stage(new FitViewport(game.SCREEN_WIDTH, game.SCREEN_HEIGHT));
+        LanguageManager.addObserver(this);
         this.onClose = onClose;
         setupUI();
     }
@@ -43,7 +46,7 @@ public class AchievementsUI {
         btnStyle.font = game.assetLoader.font;
         btnStyle.fontColor = Color.WHITE;
 
-        TextButton backBtn = new TextButton("Back", btnStyle);
+        TextButton backBtn = new TextButton(LanguageManager.get("back"), btnStyle);
         backBtn.addListener(new ClickListener() {
             @Override
             public void clicked(InputEvent event, float x, float y) {
@@ -55,7 +58,7 @@ public class AchievementsUI {
 
         Table titleTable = new Table();
         Label.LabelStyle titleStyle = new Label.LabelStyle(game.assetLoader.font, Color.GOLD);
-        Label t = new Label("ACHIEVEMENTS", titleStyle);
+        Label t = new Label(LanguageManager.get("achievementsTitle"), titleStyle);
         t.setFontScale(1.5f);
         titleTable.add(t).row();
         titleTable.add(new Image(game.assetLoader.top_menu)).padTop(10);
@@ -118,7 +121,7 @@ public class AchievementsUI {
         Label nameLabel = new Label(ach.title, new Label.LabelStyle(game.assetLoader.font, titleColor));
         nameLabel.setAlignment(Align.left);
 
-        Label descLabel = new Label(isUnlocked ? ach.dec : "Locked Achievement...", new Label.LabelStyle(game.assetLoader.font, descColor));
+        Label descLabel = new Label(isUnlocked ? ach.dec : LanguageManager.get("lockedAchievement"), new Label.LabelStyle(game.assetLoader.font, descColor));
         descLabel.setFontScale(0.75f);
         descLabel.setAlignment(Align.left);
         descLabel.setWrap(true);
@@ -196,5 +199,11 @@ public class AchievementsUI {
 
     public void dispose() {
         stage.dispose();
+    }
+
+    @Override
+    public void onLanguageChanged() {
+        stage.clear();
+        setupUI();
     }
 }

@@ -5,6 +5,7 @@ import com.badlogic.gdx.graphics.g2d.TextureRegion;
 import com.badlogic.gdx.math.MathUtils;
 import com.badlogic.gdx.math.Rectangle;
 import com.badlogic.gdx.math.Vector2;
+import com.hollow.models.LanguageManager;
 
 public class Zote {
     public enum State { IDLE, TALKING, ANGRY, FALLING, GETTING_UP, ROLLING, TURNING, SLEEPING }
@@ -31,27 +32,6 @@ public class Zote {
 
     public float angryTimer = 0f;
     public final float ANGRY_DURATION = 3.0f;
-
-    private final String[] introDialogue = {
-        "Just what do you think you're doing?! You dare to come between me and my prey?",
-        "Is it a habit of yours to scurry about, getting in the way and causing bother?",
-        "I am Zote the Mighty, a knight of great renown. Cross me again, and you'll find out why they call my weapon 'Life Ender'.",
-        "Now leave me be. I have important work to do."
-    };
-
-    private final String[] precepts = {
-        "'Always Win Your Battles'. Losing a battle earns you nothing and teaches you nothing. Win your battles, or don't engage in them at all!",
-        "'Never Let Them Laugh at You'. Fools laugh at everything, even at their superiors. But beware, laughter isn't harmless!",
-        "'Always Be Rested'. Fighting and adventuring take their toll on your body. When you rest, your body strengthens and repairs itself.",
-        "'Forget Your Past'. The past is painful, and thinking about your past can only bring you misery. Think about something else instead.",
-        "'Strength Beats Strength'. Is your opponent strong? No matter! Simply overcome their strength with even more strength.",
-        "'Choose Your Own Fate'. Our elders teach that our fate is chosen for us before we are even born. I disagree.",
-        "'Mourn Not the Dead'. When we die, do things get better for us or worse? There's no way to tell, so we shouldn't bother mourning.",
-        "'Travel Alone'. You can rely on nobody, and nobody will always be loyal. Therefore, nobody should be your constant companion.",
-        "'Keep Your Home Tidy'. Your home is where you keep your most prized possession - yourself. Therefore, you should make an effort to keep it nice and clean.",
-        "'Keep Your Weapon Sharp'. I make sure that my weapon, 'Life Ender', is kept well-sharpened at all times. This makes it much easier to cut things."
-    };
-
 
     public Zote(float x, float y) {
         position = new Vector2(x, y);
@@ -126,10 +106,15 @@ public class Zote {
     public String[] getDialogue() {
         if (!hasFinishedIntro) {
             hasFinishedIntro = true;
-            return introDialogue;
+            return new String[]{
+                LanguageManager.get("zoteIntro1"),
+                LanguageManager.get("zoteIntro2"),
+                LanguageManager.get("zoteIntro3"),
+                LanguageManager.get("zoteIntro4")
+            };
         } else {
-            int rand = MathUtils.random(0, precepts.length - 1);
-            return new String[]{precepts[rand]};
+            int rand = MathUtils.random(1, 10);
+            return new String[]{ LanguageManager.get("zotePrecept" + rand) };
         }
     }
 }

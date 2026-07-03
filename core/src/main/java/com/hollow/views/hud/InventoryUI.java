@@ -21,9 +21,11 @@ import com.badlogic.gdx.utils.viewport.FitViewport;
 import com.hollow.HollowKnight;
 import com.hollow.controllers.CharmSelectionController;
 import com.hollow.models.GameData;
+import com.hollow.models.LanguageManager;
+import com.hollow.models.LanguageObserver;
 import com.hollow.models.entities.Knight.Charm;
 
-public class InventoryUI {
+public class InventoryUI implements LanguageObserver {
     public Stage stage;
     private HollowKnight game;
     private GameData data;
@@ -40,14 +42,15 @@ public class InventoryUI {
     private final int MAX_NOTCHES = 3;
     private Container<Image>[] equippedSlots;
 
-    private Array<Stack> charmSlots = new Array<>();
-    private Array<Charm> charmList = new Array<>();
+    private final Array<Stack> charmSlots = new Array<>();
+    private final Array<Charm> charmList = new Array<>();
     private CharmSelectionController controller;
 
     public InventoryUI(HollowKnight game, GameData data) {
         this.game = game;
         this.data = data;
-        stage = new Stage(new FitViewport(1920, 1080));
+        stage = new Stage(new FitViewport(game.SCREEN_WIDTH, game.SCREEN_HEIGHT));
+        LanguageManager.addObserver(this);
         setupUI();
     }
 
@@ -62,7 +65,7 @@ public class InventoryUI {
         Table leftTable = new Table();
 
         LabelStyle style = new LabelStyle(game.assetLoader.font, Color.WHITE);
-        Label equippedLabel = new Label("Equipped", style);
+        Label equippedLabel = new Label(LanguageManager.get("equipped"), style);
         leftTable.add(equippedLabel).left().padBottom(10).row();
 
         equippedCharmsTable = new Table();
@@ -75,7 +78,7 @@ public class InventoryUI {
         }
         leftTable.add(equippedCharmsTable).left().padBottom(20).row();
 
-        Label notchLabel = new Label("Notches", style);
+        Label notchLabel = new Label(LanguageManager.get("notches"), style);
         leftTable.add(notchLabel).left().padBottom(10).row();
 
         notchesTable = new Table();
@@ -144,7 +147,7 @@ public class InventoryUI {
     private void buildMainLayout(Table contentTable) {
         Image tl = new Image(game.assetLoader.overScreen_Top_Left);
         Image top = new Image(game.assetLoader.inventory_top);
-        Label titleL = new Label("CHARMS", new LabelStyle(game.assetLoader.font, Color.WHITE));
+        Label titleL = new Label(LanguageManager.get("charmsTitle"), new LabelStyle(game.assetLoader.font, Color.WHITE));
         Image tr = new Image(game.assetLoader.overScreen_Top_Right);
 
         Table title = new Table();
@@ -195,7 +198,7 @@ public class InventoryUI {
             charmDescLabel.setText(charm.getDescription());
             charmIconRight.setDrawable(new Image(game.assetLoader.charmTextures.get(charm)).getDrawable());
         } else {
-            charmNameLabel.setText("???");
+            charmNameLabel.setText(LanguageManager.get("unknown"));
             charmDescLabel.setText("");
             charmIconRight.setDrawable(null);
         }
@@ -318,5 +321,11 @@ public class InventoryUI {
 
     public void dispose() {
         stage.dispose();
+    }
+
+    @Override
+    public void onLanguageChanged() {
+        stage.clear();
+        setupUI();
     }
 }

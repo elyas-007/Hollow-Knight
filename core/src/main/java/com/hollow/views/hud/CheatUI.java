@@ -15,8 +15,10 @@ import com.badlogic.gdx.utils.Align;
 import com.badlogic.gdx.utils.viewport.FitViewport;
 import com.hollow.HollowKnight;
 import com.hollow.controllers.ButtonController;
+import com.hollow.models.LanguageManager;
+import com.hollow.models.LanguageObserver;
 
-public class CheatUI {
+public class CheatUI implements LanguageObserver {
     public Stage stage;
     private HollowKnight game;
     private ButtonController controller;
@@ -26,6 +28,7 @@ public class CheatUI {
         this.game = game;
         this.onClose = onClose;
         stage = new Stage(new FitViewport(game.SCREEN_WIDTH, game.SCREEN_HEIGHT));
+        LanguageManager.addObserver(this);
         setupUI();
     }
 
@@ -42,7 +45,7 @@ public class CheatUI {
         Table content = new Table();
 
         Table title = new Table();
-        Label t = new Label("CHEATS", titleStyle);
+        Label t = new Label(LanguageManager.get("cheatsTitle"), titleStyle);
         t.setFontScale(1.5f);
         title.add(t).row();
         title.add(new Image(game.assetLoader.top_menu));
@@ -50,12 +53,12 @@ public class CheatUI {
         content.add(title).colspan(3).padBottom(60).row();
 
 
-        String s1 = "Press [F1] | Boss Arena Teleport: Instantly teleport to the beginning of the boss fight arena.";
-        String s2 = "Press [F2] | Noclip / Spectator Mode: Toggle flight and free movement through walls and obstacles without gravity.";
-        String s3 = "Press [F3] | Emergency Heal: Instantly receive one health mask (if your health is empty, it will immediately revive you).";
-        String s4 = "Press [F4] | Refill Soul Vessel: Instantly and completely refill the soul vessel.";
-        String s5 = "Press [F5] | God Mode: Toggle invincibility (complete immunity to enemy attacks and spikes).";
-        String s6 = "Press [F6] | Insta-Kill: Toggle the ability to destroy all enemies and bosses with a single strike.";
+        String s1 = LanguageManager.get("cheat1");
+        String s2 = LanguageManager.get("cheat2");
+        String s3 = LanguageManager.get("cheat3");
+        String s4 = LanguageManager.get("cheat4");
+        String s5 = LanguageManager.get("cheat5");
+        String s6 = LanguageManager.get("cheat6");
         Label cheat1 = new Label(s1, descStyle);
         Label cheat2 = new Label(s2, descStyle);
         Label cheat3 = new Label(s3, descStyle);
@@ -68,14 +71,14 @@ public class CheatUI {
         cheat4.setAlignment(Align.left);
         cheat5.setAlignment(Align.left);
         cheat6.setAlignment(Align.left);
-        content.add(cheat1).left().row();
-        content.add(cheat2).left().row();
-        content.add(cheat3).left().row();
-        content.add(cheat4).left().row();
-        content.add(cheat5).left().row();
-        content.add(cheat6).left().row();
+        content.add(cheat1).left().padBottom(15).row();
+        content.add(cheat2).left().padBottom(15).row();
+        content.add(cheat3).left().padBottom(15).row();
+        content.add(cheat4).left().padBottom(15).row();
+        content.add(cheat5).left().padBottom(15).row();
+        content.add(cheat6).left().padBottom(15).row();
 
-        TextButton backBtn = new TextButton("Back", style);
+        TextButton backBtn = new TextButton(LanguageManager.get("back"), style);
         backBtn.setUserObject((Runnable) () -> onClose.run());
 
         main.add(backBtn).left().pad(20).padLeft(50).row();
@@ -112,5 +115,11 @@ public class CheatUI {
 
     public void dispose() {
         if (stage != null) stage.dispose();
+    }
+
+    @Override
+    public void onLanguageChanged() {
+        stage.clear();
+        setupUI();
     }
 }

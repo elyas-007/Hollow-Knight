@@ -16,8 +16,10 @@ import com.badlogic.gdx.utils.Align;
 import com.badlogic.gdx.utils.viewport.FitViewport;
 import com.hollow.HollowKnight;
 import com.hollow.controllers.ButtonController;
+import com.hollow.models.LanguageManager;
+import com.hollow.models.LanguageObserver;
 
-public class ControlsUI {
+public class ControlsUI implements LanguageObserver {
     public Stage stage;
     private HollowKnight game;
     private ButtonController controller;
@@ -26,7 +28,8 @@ public class ControlsUI {
     public ControlsUI(HollowKnight game, Runnable onClose) {
         this.game = game;
         this.onClose = onClose;
-        stage = new Stage(new FitViewport(1920, 1080));
+        stage = new Stage(new FitViewport(game.SCREEN_WIDTH, game.SCREEN_HEIGHT));
+        LanguageManager.addObserver(this);
         setupUI();
     }
 
@@ -42,7 +45,7 @@ public class ControlsUI {
         Table content = new Table();
 
         Table title = new Table();
-        Label t = new Label("CONTROLS", titleStyle);
+        Label t = new Label(LanguageManager.get("controlsBtn"), titleStyle);
         t.setFontScale(1.5f);
         title.add(t).row();
         title.add(new Image(game.assetLoader.top_menu));
@@ -50,18 +53,18 @@ public class ControlsUI {
         content.add(title).colspan(3).padTop(20).padBottom(60).row();
 
         Table keysTable = new Table();
-        keysTable.add(createKeyRow("Move Left", game.settings.keyLeft, titleStyle, style)).pad(10);
-        keysTable.add(createKeyRow("Move Right", game.settings.keyRight, titleStyle, style)).pad(10).row();
-        keysTable.add(createKeyRow("Look Up", game.settings.keyUp, titleStyle, style)).pad(10);
-        keysTable.add(createKeyRow("Look Down", game.settings.keyDown, titleStyle, style)).pad(10).row();
-        keysTable.add(createKeyRow("Jump", game.settings.keyJump, titleStyle, style)).pad(10);
-        keysTable.add(createKeyRow("Dash", game.settings.keyDash, titleStyle, style)).pad(10).row();
-        keysTable.add(createKeyRow("Attack", game.settings.keyAttack, titleStyle, style)).pad(10);
-        keysTable.add(createKeyRow("Focus", game.settings.keyFocus, titleStyle, style)).pad(10).row();
+        keysTable.add(createKeyRow(LanguageManager.get("moveLeft"), game.settings.keyLeft, titleStyle, style)).pad(10);
+        keysTable.add(createKeyRow(LanguageManager.get("moveRight"), game.settings.keyRight, titleStyle, style)).pad(10).row();
+        keysTable.add(createKeyRow(LanguageManager.get("lookUp"), game.settings.keyUp, titleStyle, style)).pad(10);
+        keysTable.add(createKeyRow(LanguageManager.get("lookDown"), game.settings.keyDown, titleStyle, style)).pad(10).row();
+        keysTable.add(createKeyRow(LanguageManager.get("jump"), game.settings.keyJump, titleStyle, style)).pad(10);
+        keysTable.add(createKeyRow(LanguageManager.get("dash"), game.settings.keyDash, titleStyle, style)).pad(10).row();
+        keysTable.add(createKeyRow(LanguageManager.get("attack"), game.settings.keyAttack, titleStyle, style)).pad(10);
+        keysTable.add(createKeyRow(LanguageManager.get("focus"), game.settings.keyFocus, titleStyle, style)).pad(10).row();
 
         content.add(keysTable).row();
 
-        TextButton backBtn = new TextButton("Back", style);
+        TextButton backBtn = new TextButton(LanguageManager.get("back"), style);
         backBtn.setUserObject((Runnable) () -> onClose.run());
 
         main.add(backBtn).left().pad(20).padLeft(50).row();
@@ -104,4 +107,10 @@ public class ControlsUI {
     public void draw() { stage.draw(); }
     public void resize(int width, int height) { stage.getViewport().update(width, height, true); }
     public void dispose() { if (stage != null) stage.dispose(); }
+
+    @Override
+    public void onLanguageChanged() {
+        stage.clear();
+        setupUI();
+    }
 }

@@ -1,9 +1,9 @@
-package com.hollow.views.screens;
+package com.hollow.views.hud;
 
-import com.badlogic.gdx.Gdx;
-import com.badlogic.gdx.Screen;
+import com.badlogic.gdx.Input;
 import com.badlogic.gdx.graphics.Color;
-import com.badlogic.gdx.graphics.GL20;
+import com.badlogic.gdx.scenes.scene2d.InputEvent;
+import com.badlogic.gdx.scenes.scene2d.InputListener;
 import com.badlogic.gdx.scenes.scene2d.Stage;
 import com.badlogic.gdx.scenes.scene2d.Touchable;
 import com.badlogic.gdx.scenes.scene2d.ui.*;
@@ -19,33 +19,20 @@ import com.hollow.models.GameData;
 import com.hollow.models.LanguageManager;
 import com.hollow.models.LanguageObserver;
 import com.hollow.models.SaveManager;
+import com.hollow.views.screens.GameScreen;
 
-public class StartGameMenuScreen implements Screen, LanguageObserver {
+public class StartGameUI implements LanguageObserver {
+    public Stage stage;
     private final HollowKnight game;
-    private Stage stage;
-    private FitViewport viewport;
     private ButtonController controller;
-    private Screen lastScreen;
+    private final Runnable onClose;
 
-    public StartGameMenuScreen(HollowKnight game, Screen lastScreen) {
+    public StartGameUI(HollowKnight game, Runnable onClose) {
         this.game = game;
-        this.lastScreen = lastScreen;
+        this.onClose = onClose;
+        stage = new Stage(new FitViewport(game.SCREEN_WIDTH, game.SCREEN_HEIGHT));
         LanguageManager.addObserver(this);
-    }
-
-    @Override
-    public void show() {
-        viewport = new FitViewport(game.SCREEN_WIDTH, game.SCREEN_HEIGHT);
-        stage = new Stage(viewport, game.batch);
-        Gdx.input.setInputProcessor(stage);
-
         setupUI();
-
-        if (game.assetLoader.titleTheme != null && !game.assetLoader.titleTheme.isPlaying() && game.settings.isMusicOn) {
-            game.assetLoader.titleTheme.setLooping(true);
-            game.assetLoader.titleTheme.setVolume(game.settings.musicVolume);
-            game.assetLoader.titleTheme.play();
-        }
     }
 
     private void setupUI() {
@@ -62,23 +49,20 @@ public class StartGameMenuScreen implements Screen, LanguageObserver {
 
         Label title = new Label(LanguageManager.get("selectProfile"), titleStyle);
         title.setFontScale(1.5f);
-        root.add(title).padBottom(5).row();
-        root.add(new Image(game.assetLoader.under_SelectProfile)).padBottom(40).row();
+        root.add(title).padBottom(5).padTop(-80f).row();
+        root.add(new Image(game.assetLoader.under_SelectProfile)).padBottom(50).row();
 
         Array<TextButton> buttons = new Array<>();
 
         for (int i = 1; i <= 4; i++) {
             final int slotId = i;
-
             GameData data = SaveManager.load(slotId);
-
             Table rowTable = new Table();
 
             TextButton profileBox = new TextButton("", styleBtn);
             profileBox.clearChildren();
             profileBox.setUserObject((Runnable) () -> startGame(data));
             buttons.add(profileBox);
-
 
             Stack layerStack = new Stack();
             layerStack.setFillParent(true);
@@ -111,8 +95,6 @@ public class StartGameMenuScreen implements Screen, LanguageObserver {
                     maskRow.add(new Image(game.assetLoader.mask)).size(20, 20).padRight(2);
 
                 stateTable.add(maskRow).left().padBottom(5).row();
-
-
                 leftInfo.add(stateTable).left();
 
                 Table rightInfo = new Table();
@@ -145,7 +127,8 @@ public class StartGameMenuScreen implements Screen, LanguageObserver {
 
                 clearBtn.setUserObject((Runnable) () -> {
                     SaveManager.clearSave(slotId);
-                    game.setScreen(this);
+                    stage.clear();
+                    setupUI();
                 });
                 buttons.add(clearBtn);
 
@@ -158,11 +141,20 @@ public class StartGameMenuScreen implements Screen, LanguageObserver {
         }
 
         TextButton backBtn = new TextButton(LanguageManager.get("back"), styleBtn);
-        backBtn.setUserObject((Runnable) () -> {
-            game.setScreen(lastScreen);
-        });
+        backBtn.setUserObject((Runnable) onClose::run);
         buttons.add(backBtn);
         root.add(backBtn).padTop(30);
+
+        stage.addListener(new InputListener() {
+            @Override
+            public boolean keyDown(InputEvent event, int keycode) {
+                if (keycode == Input.Keys.ESCAPE) {
+                    onClose.run();
+                    return true;
+                }
+                return false;
+            }
+        });
 
         TextButton[] menuItems = buttons.toArray(TextButton.class);
         controller = new ButtonController(game, stage, menuItems);
@@ -174,54 +166,26 @@ public class StartGameMenuScreen implements Screen, LanguageObserver {
         setupUI();
     }
 
-    @Override
-    public void render(float delta) {
-        Gdx.gl.glClearColor(0f, 0f, 0f, 1f);
-        Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT);
-
-        game.batch.setProjectionMatrix(stage.getCamera().combined);
-        game.batch.begin();
-        game.menuBackground.updateAndDraw(game.batch, delta, game.settings.brightness, false);
-        game.batch.end();
-
+    public void act(float delta) {
         stage.act(delta);
+        if (controller != null) controller.update(delta);
+    }
 
-        if (controller != null)
-            controller.update(delta);
-
+    public void draw() {
         stage.draw();
     }
 
-
-    @Override public void resize(int width, int height) {
-        viewport.update(width, height, true);
-    }
-    @Override public void pause() {
-
-    }
-    @Override public void resume() {
-
-    }
-    @Override
-    public void hide() {
-        Gdx.input.setInputProcessor(null);
-
-        if (game.assetLoader.titleTheme != null) {
-            game.assetLoader.titleTheme.stop();
-        }
+    public void resize(int width, int height) {
+        stage.getViewport().update(width, height, true);
     }
 
-    @Override
     public void dispose() {
         LanguageManager.removeObserver(this);
-        if (stage != null) {
-            stage.dispose();
-        }
+        if (stage != null) stage.dispose();
     }
 
     private void startGame(GameData data) {
         if (data.isEmpty) data.isEmpty = false;
-
         game.activeSave = data;
         game.setScreen(new GameScreen(game, data.location));
     }

@@ -15,8 +15,11 @@ import com.badlogic.gdx.scenes.scene2d.ui.TextButton.TextButtonStyle;
 import com.badlogic.gdx.utils.viewport.FitViewport;
 import com.hollow.HollowKnight;
 import com.hollow.controllers.ButtonController;
+import com.hollow.models.LanguageManager;
+import com.hollow.models.LanguageObserver;
+import com.hollow.models.enums.Language;
 
-public class GuideUI {
+public class GuideUI implements LanguageObserver {
     public Stage stage;
     private HollowKnight game;
     private ButtonController controller;
@@ -36,6 +39,7 @@ public class GuideUI {
         this.onClose = onClose;
         this.multiplexer = multiplexer;
         stage = new Stage(new FitViewport(game.SCREEN_WIDTH, game.SCREEN_HEIGHT));
+        LanguageManager.addObserver(this);
 
         setupSubUIs();
         setupUI();
@@ -72,13 +76,13 @@ public class GuideUI {
         main.setFillParent(true);
         Table content = new Table();
 
-        Label t = new Label("GUIDE", titleStyle);
+        Label t = new Label(LanguageManager.get("guideTitle"), titleStyle);
         t.setFontScale(1.5f);
 
         content.add(t).center().padBottom(50).row();
-        TextButton controlsBtn = new TextButton("Controls", style);
-        TextButton abilitiesBtn = new TextButton("Abilities", style);
-        TextButton cheatsBtn = new TextButton("Cheat Codes", style);
+        TextButton controlsBtn = new TextButton(LanguageManager.get("controlsBtn"), style);
+        TextButton abilitiesBtn = new TextButton(LanguageManager.get("abilitiesBtn"), style);
+        TextButton cheatsBtn = new TextButton(LanguageManager.get("cheatsBtn"), style);
 
         controlsBtn.setUserObject((Runnable) () -> {
             isControlsOpen = true;
@@ -102,7 +106,7 @@ public class GuideUI {
         content.add(abilitiesBtn).padBottom(20).center().row();
         content.add(cheatsBtn).padBottom(20).center().row();
 
-        TextButton backBtn = new TextButton("Back", style);
+        TextButton backBtn = new TextButton(LanguageManager.get("back"), style);
         backBtn.setUserObject((Runnable) () -> onClose.run());
 
         main.add(backBtn).left().pad(20).padLeft(50).row();
@@ -153,5 +157,11 @@ public class GuideUI {
         if (controlsUI != null) controlsUI.dispose();
         if (abilitiesUI != null) abilitiesUI.dispose();
         if (cheatUI != null) cheatUI.dispose();
+    }
+
+    @Override
+    public void onLanguageChanged() {
+        stage.clear();
+        setupUI();
     }
 }

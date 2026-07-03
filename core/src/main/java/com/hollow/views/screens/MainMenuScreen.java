@@ -1,6 +1,5 @@
 package com.hollow.views.screens;
 
-import com.badlogic.gdx.Game;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.InputMultiplexer;
 import com.badlogic.gdx.Screen;
@@ -14,11 +13,14 @@ import com.badlogic.gdx.scenes.scene2d.ui.TextButton.TextButtonStyle;
 import com.badlogic.gdx.utils.viewport.FitViewport;
 import com.hollow.HollowKnight;
 import com.hollow.controllers.ButtonController;
+import com.hollow.models.LanguageManager;
+import com.hollow.models.LanguageObserver;
 import com.hollow.views.hud.AchievementsUI;
 import com.hollow.views.hud.GuideUI;
 import com.hollow.views.hud.SettingsUI;
+import com.hollow.views.hud.StartGameUI;
 
-public class MainMenuScreen implements Screen {
+public class MainMenuScreen implements Screen, LanguageObserver {
     private final HollowKnight game;
     private Stage stage;
     private FitViewport viewport;
@@ -28,13 +30,16 @@ public class MainMenuScreen implements Screen {
     private SettingsUI settingsUI;
     private GuideUI guideUI;
     private AchievementsUI achievementsUI;
+    private StartGameUI startGameUI;
 
+    private boolean isStartGameOpen = false;
     private boolean isAchievementsOpen = false;
     private boolean isSettingsOpen = false;
     private boolean isGuideOpen = false;
 
     public MainMenuScreen(HollowKnight game) {
         this.game = game;
+        LanguageManager.addObserver(this);
     }
 
     @Override
@@ -44,6 +49,12 @@ public class MainMenuScreen implements Screen {
         multiplexer = new InputMultiplexer();
         Gdx.input.setInputProcessor(multiplexer);
         multiplexer.addProcessor(stage);
+
+        startGameUI = new StartGameUI(game, () -> {
+            isStartGameOpen = false;
+            multiplexer.removeProcessor(startGameUI.stage);
+            multiplexer.addProcessor(stage);
+        });
 
         settingsUI = new SettingsUI(game, () -> {
             isSettingsOpen = false;
@@ -63,6 +74,16 @@ public class MainMenuScreen implements Screen {
             multiplexer.addProcessor(stage);
         });
 
+        setupUI();
+
+        if (game.assetLoader.titleTheme != null && !game.assetLoader.titleTheme.isPlaying() && game.settings.isMusicOn) {
+            game.assetLoader.titleTheme.setLooping(true);
+            game.assetLoader.titleTheme.setVolume(game.settings.musicVolume);
+            game.assetLoader.titleTheme.play();
+        }
+    }
+
+    private void setupUI() {
         TextButtonStyle styleBtn = new TextButtonStyle();
         styleBtn.font = game.assetLoader.font;
         styleBtn.fontColor = Color.WHITE;
@@ -73,13 +94,17 @@ public class MainMenuScreen implements Screen {
 
         Image gameLogo = new Image(game.assetLoader.hollowKnightLogo);
 
-        TextButton startBtn = new TextButton("Start Game", styleBtn);
-        TextButton settingsBtn = new TextButton("Settings", styleBtn);
-        TextButton guideBtn = new TextButton("Guide", styleBtn);
-        TextButton achievementsBtn = new TextButton("achievements", styleBtn);
-        TextButton quitBtn = new TextButton("Quit Game", styleBtn);
+        TextButton startBtn = new TextButton(LanguageManager.get("startGame"), styleBtn);
+        TextButton settingsBtn = new TextButton(LanguageManager.get("settings"), styleBtn);
+        TextButton guideBtn = new TextButton(LanguageManager.get("guide"), styleBtn);
+        TextButton achievementsBtn = new TextButton(LanguageManager.get("achievements"), styleBtn);
+        TextButton quitBtn = new TextButton(LanguageManager.get("quitGame"), styleBtn);
 
-        startBtn.setUserObject((Runnable) () -> game.setScreen(new StartGameMenuScreen(game, this)));
+        startBtn.setUserObject((Runnable) () -> {
+            isStartGameOpen = true;
+            multiplexer.removeProcessor(stage);
+            multiplexer.addProcessor(startGameUI.stage);
+        });
         settingsBtn.setUserObject((Runnable) () -> {
             isSettingsOpen = true;
             multiplexer.removeProcessor(stage);
@@ -97,7 +122,6 @@ public class MainMenuScreen implements Screen {
         });
         quitBtn.setUserObject((Runnable) () -> Gdx.app.exit());
 
-
         rootTable.add(gameLogo).height(400).width(900).padBottom(60).row();
         rootTable.add(startBtn).padBottom(20).row();
         rootTable.add(settingsBtn).padBottom(20).row();
@@ -107,12 +131,12 @@ public class MainMenuScreen implements Screen {
 
         TextButton[] menuButtons = new TextButton[]{startBtn, settingsBtn, guideBtn, achievementsBtn, quitBtn};
         controller = new ButtonController(game, stage, menuButtons);
+    }
 
-        if (game.assetLoader.titleTheme != null && !game.assetLoader.titleTheme.isPlaying() && game.settings.isMusicOn) {
-            game.assetLoader.titleTheme.setLooping(true);
-            game.assetLoader.titleTheme.setVolume(game.settings.musicVolume);
-            game.assetLoader.titleTheme.play();
-        }
+    @Override
+    public void onLanguageChanged() {
+        stage.clear();
+        setupUI();
     }
 
     @Override
@@ -120,15 +144,17 @@ public class MainMenuScreen implements Screen {
         Gdx.gl.glClearColor(0f, 0f, 0f, 1f);
         Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT);
 
-        boolean showLight = !isSettingsOpen && !isGuideOpen && !isAchievementsOpen;
+        boolean showLight = !isSettingsOpen && !isGuideOpen && !isAchievementsOpen && !isStartGameOpen;
 
         game.batch.setProjectionMatrix(stage.getCamera().combined);
         game.batch.begin();
         game.menuBackground.updateAndDraw(game.batch, delta, game.settings.brightness, showLight);
         game.batch.end();
 
-
-        if (isSettingsOpen) {
+        if (isStartGameOpen) {
+            startGameUI.act(delta);
+            startGameUI.draw();
+        } else if (isSettingsOpen) {
             settingsUI.act(delta);
             settingsUI.draw();
         } else if (isGuideOpen) {
@@ -173,6 +199,8 @@ public class MainMenuScreen implements Screen {
 
     @Override
     public void dispose() {
+        LanguageManager.removeObserver(this);
+
         if (stage != null) stage.dispose();
         if (settingsUI != null) settingsUI.dispose();
         if (guideUI != null) guideUI.dispose();
