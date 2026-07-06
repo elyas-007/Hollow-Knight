@@ -2,31 +2,65 @@ package com.hollow.views.screens;
 
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Screen;
+import com.badlogic.gdx.assets.AssetManager;
+import com.badlogic.gdx.assets.loaders.resolvers.InternalFileHandleResolver;
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.Animation;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.graphics.g2d.TextureRegion;
 import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
+import com.badlogic.gdx.maps.tiled.TiledMap;
+import com.badlogic.gdx.maps.tiled.TmxMapLoader;
 import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.utils.Array;
 import com.hollow.HollowKnight;
+import com.hollow.assets.TiledMapHelper;
 
 public class LoadingScreen implements Screen {
-    private HollowKnight game;
-    private String nextMap;
+    private final HollowKnight game;
+    private final String nextMap;
+    private String actualMapPath;
 
     private SpriteBatch batch;
     private Texture loadingSheet;
     private Animation<TextureRegion> loadingAnimation;
     private float stateTime;
 
+    private AssetManager assetManager;
+
     private float timer = 0f;
     private final float MINIMUM_LOAD_TIME = 1.5f;
+
+    private boolean useCustomSpawn = false;
+    private float spawnX = 0f;
+    private float spawnY = 0f;
 
     public LoadingScreen(HollowKnight game, String nextMap) {
         this.game = game;
         this.nextMap = nextMap;
+        this.useCustomSpawn = false;
+        init();
+    }
+
+    public LoadingScreen(HollowKnight game, String nextMap, float spawnX, float spawnY) {
+        this.game = game;
+        this.nextMap = nextMap;
+        this.useCustomSpawn = true;
+        init();
+    }
+
+    private void init() {
         this.batch = new SpriteBatch();
+
+        if (nextMap.equals("CROSSROAD")) {
+            actualMapPath = "map/cross_road.tmx";
+        } else {
+            actualMapPath = "map/green_path.tmx";
+        }
+
+        assetManager = new AssetManager();
+        assetManager.setLoader(TiledMap.class, new TmxMapLoader(new InternalFileHandleResolver()));
+        assetManager.load(actualMapPath, TiledMap.class);
 
         setupAnimation();
     }
@@ -44,6 +78,8 @@ public class LoadingScreen implements Screen {
         stateTime += delta;
         timer += delta;
 
+        boolean isMapLoaded = assetManager.update();
+
         TextureRegion currentFrame = loadingAnimation.getKeyFrame(stateTime, true);
 
         batch.begin();
@@ -57,12 +93,23 @@ public class LoadingScreen implements Screen {
         batch.draw(currentFrame, drawX, drawY, iconWidth, iconHeight);
         batch.end();
 
-        if (timer >= MINIMUM_LOAD_TIME) {
-            if (game.activeSave.location.equals("CROSSROAD"))
-                game.activeSave.location = "GREENPATH";
-            else
-                game.activeSave.location = "CROSSROAD";
-            game.setScreen(new GameScreen(game, nextMap, 0, 0));
+        if (timer >= MINIMUM_LOAD_TIME && isMapLoaded) {
+            TiledMap preloadedMap = assetManager.get(actualMapPath, TiledMap.class);
+
+            game.activeSave.location = nextMap;
+
+            if (useCustomSpawn) {
+                TiledMapHelper helper = new TiledMapHelper();
+                Vector2 newSpawn = helper.findCustomSpawnPoint(preloadedMap, 1f / 64f);
+
+                if (newSpawn != null) {
+                    game.setScreen(new GameScreen(game, actualMapPath, newSpawn.x, newSpawn.y, preloadedMap));
+                } else {
+                    game.setScreen(new GameScreen(game, actualMapPath, spawnX, spawnY, preloadedMap));
+                }
+            } else {
+                game.setScreen(new GameScreen(game, nextMap, preloadedMap));
+            }
         }
     }
 
@@ -94,10 +141,10 @@ public class LoadingScreen implements Screen {
 
 
     private void setupAnimation() {
-        loadingSheet = new Texture(Gdx.files.internal("effect/SpriteAtlasTexture-LongSaveIcon-2048x1024-fmt12.png"));
+        loadingSheet = new Texture(Gdx.files.internal("effect/SpriteAtlasTexture-Load_Icon_Knight-512x256-fmt12.png"));
 
-        int frameCols = 8;
-        int frameRows = 5;
+        int frameCols = 4;
+        int frameRows = 2;
 
         TextureRegion[][] tmp = TextureRegion.split(loadingSheet,
             loadingSheet.getWidth() / frameCols,

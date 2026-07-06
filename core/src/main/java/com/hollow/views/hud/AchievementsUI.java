@@ -145,9 +145,7 @@ public class AchievementsUI implements LanguageObserver {
                 if (pointer == -1 && !isHovered) {
                     isHovered = true;
 
-                    if (game.assetLoader.buttonHover != null && game.settings.isSfxOn) {
-                        game.assetLoader.buttonHover.play(game.settings.musicVolume);
-                    }
+                    game.audioManager.playSound(game.audioManager.audioLoader.buttonHover);
 
                     stack.clearActions();
                     stack.addAction(Actions.scaleTo(1.05f, 1.05f, 0.1f, Interpolation.fade));

@@ -60,6 +60,9 @@ public class Game {
 
     public boolean instaKillMode = false;
 
+    public boolean inCombat = false;
+    private final float COMBAT_RADIUS = 15f;
+
     public Game(HollowKnight game, Knight knight, Array<SolidBlock> groundRects,
                 Array<SolidBlock> spikeRects, Array<Enemy> enemies,
                 TransitionZone transitionZones, GameScreen screen,
@@ -103,6 +106,7 @@ public class Game {
 
 
     public void update(float delta) {
+        updateCombatState();
         if (data != null && !knight.isDead() && !pendingRespawn && !screen.isPaused) {
             data.playTime += delta;
         }
@@ -139,6 +143,8 @@ public class Game {
             knight.castProjectile = false;
 
             hasShadowCharm = data.equippedCharms.contains(Charm.VOID_HEART, true);
+
+            game.audioManager.playSound(game.audioManager.audioLoader.knight_fireball);
 
             float spawnX = knight.isFacingRight() ? (knight.getX() + knight.getWidth()) : (knight.getX() - 1.5f);
             float spawnY = knight.getY() + 0.2f;
@@ -187,6 +193,7 @@ public class Game {
                         if (hasShadowCharm) spellDamage = (int)(spellDamage * 1.5f);
                         if (instaKillMode) spellDamage = 9999;
                         enemy.takeDamage(spellDamage, p.isFacingRight);
+                        game.audioManager.playSound(game.audioManager.audioLoader.enemy_hit);
                         checkEnemyKill(enemy);
                         break;
                     }
@@ -198,6 +205,12 @@ public class Game {
                 if (p.hitbox.overlaps(targetBox)) {
                     int damage = p.isShadow ? 15 : 10;
                     if (instaKillMode) damage = 9999;
+
+                    if (boss.currentState == FalseKnight.state.STUNNED) {
+                        game.audioManager.playSound(game.audioManager.audioLoader.fk_headHit);
+                    } else {
+                        game.audioManager.playSound(game.audioManager.audioLoader.fk_armourHit);
+                    }
 
                     boss.takeDamage(damage);
                 }
@@ -217,11 +230,14 @@ public class Game {
                             activeDebris.add(new Debris(game.assetLoader.rockTexture, spawnX, spawnY));
                         }
                         if (w.getHp() <= 0) {
+                            game.audioManager.playWallDeathSound();
                             w.setDestroyed(true);
                             groundRects.removeValue(w, true);
                             breakableWalls.removeValue(w, true);
 
                             screen.removeWallTiles(w.bounds);
+                        } else {
+                            game.audioManager.playWallHitSound();
                         }
                         p.isDestroyed = true;
                     }
@@ -260,6 +276,7 @@ public class Game {
 
                 if (screen.bossFightActive) {
                     screen.bossFightActive = false;
+                    screen.stopBossMusic();
                     if (leftDoor != null) groundRects.removeValue(leftDoor, true);
                     if (rightDoor != null) groundRects.removeValue(rightDoor, true);
                 }
@@ -301,6 +318,14 @@ public class Game {
             voidHeartStateTime += delta;
             Rectangle charmHitbox = new Rectangle(voidHeartPos.x, voidHeartPos.y, 1f, 1f);
 
+            float distance = knight.getPosition().dst(voidHeartPos);
+
+            if (distance < 6f && !screen.isPaused) {
+                game.audioManager.playCharmProximityLoop();
+            } else {
+                game.audioManager.stopCharmProximityLoop();
+            }
+
             if (knight.getHitbox().overlaps(charmHitbox)) {
                 screen.dialogueBox.setPromptVisible(true);
 
@@ -309,33 +334,43 @@ public class Game {
                     SaveManager.save(data);
                     screen.hud.showItemPopup("Void Heart Unlocked!");
 
+                    game.audioManager.stopCharmProximityLoop();
+                    game.audioManager.playSound(game.audioManager.audioLoader.Knight_pickUpSpellFinal);
+
                     if (screen.inventoryUI != null) {
                         screen.inventoryUI.refreshUnlockedCharms();
                     }
                 }
             }
+        } else {
+            game.audioManager.stopCharmProximityLoop();
         }
 
-        if (screen.zote != null && screen.zote.currentState == Zote.State.ANGRY) {
-            screen.zote.angryTimer -= delta;
+        if (screen.zote != null) {
+            if (screen.zote.currentState == Zote.State.ANGRY) {
+                game.audioManager.playZoteAttackLoop();
+                screen.zote.angryTimer -= delta;
 
-            if (screen.zote.angryTimer <= 0) {
-                screen.zote.changeState(Zote.State.IDLE);
-            } else {
-                float zoteSpeed = 4f;
-
-                if (knight.getX() > screen.zote.position.x) {
-                    screen.zote.position.x += zoteSpeed * delta;
-                    screen.zote.isFacingRight = true;
+                if (screen.zote.angryTimer <= 0) {
+                    screen.zote.changeState(Zote.State.IDLE);
                 } else {
-                    screen.zote.position.x -= zoteSpeed * delta;
-                    screen.zote.isFacingRight = false;
-                }
+                    float zoteSpeed = 4f;
 
-                if (knight.getHitbox().overlaps(screen.zote.hitbox) && !knight.isInvincible()) {
-                    boolean hitFromRight = knight.getX() < screen.zote.position.x;
-                    knight.takeDamage(0, hitFromRight);
+                    if (knight.getX() > screen.zote.position.x) {
+                        screen.zote.position.x += zoteSpeed * delta;
+                        screen.zote.isFacingRight = true;
+                    } else {
+                        screen.zote.position.x -= zoteSpeed * delta;
+                        screen.zote.isFacingRight = false;
+                    }
+
+                    if (knight.getHitbox().overlaps(screen.zote.hitbox) && !knight.isInvincible()) {
+                        boolean hitFromRight = knight.getX() < screen.zote.position.x;
+                        knight.takeDamage(0, hitFromRight);
+                    }
                 }
+            } else {
+                game.audioManager.stopZoteAttackLoop();
             }
         }
 
@@ -399,6 +434,7 @@ public class Game {
                     if (knight.isDashing() && data.equippedCharms.contains(Charm.SHARP_SHADOW, true)) {
                         boolean hitFromRight = knight.getX() > enemy.position.x;
                         enemy.takeDamage(1, hitFromRight);
+                        game.audioManager.playSound(game.audioManager.audioLoader.enemy_hit);
                         checkEnemyKill(enemy);
                         int soulAmount = data.equippedCharms.contains(Charm.SOUL_CATCHER, true) ? 22 : 11;
                         knight.gainSoul(soulAmount);
@@ -506,6 +542,7 @@ public class Game {
             if (screen.zote.pendingDialogue && screen.zote.currentState == Zote.State.IDLE) {
                 screen.zote.pendingDialogue = false;
                 screen.dialogueBox.startDialogue(screen.zote.getDialogue());
+//                game.audioManager.playZoteDialogue();
             }
 
             if (screen.zote.currentState == Zote.State.GETTING_UP) {
@@ -531,8 +568,10 @@ public class Game {
                     if (screen.zote.currentState == Zote.State.SLEEPING) {
                         screen.zote.changeState(Zote.State.GETTING_UP);
                         screen.zote.pendingDialogue = true;
+                        game.audioManager.playSound(game.audioManager.audioLoader.zoteGetUp);
                     } else if (screen.zote.currentState == Zote.State.IDLE) {
                         screen.dialogueBox.startDialogue(screen.zote.getDialogue());
+//                        game.audioManager.playZoteDialogue();
                     }
 
                     knight.stopMovingHorizontally();
@@ -682,6 +721,7 @@ public class Game {
                 if (attackBox.overlaps(enemy.hitbox)) {
                     boolean hitFromRight = knight.getX() > enemy.position.x;
                     enemy.takeDamage(nailDamage, hitFromRight);
+                    game.audioManager.playSound(game.audioManager.audioLoader.enemy_hit);
                     checkEnemyKill(enemy);
 
                     if (hasHeavyBlow) {
@@ -709,11 +749,14 @@ public class Game {
                         activeDebris.add(new Debris(game.assetLoader.rockTexture, spawnX, spawnY));
                     }
                     if (w.getHp() <= 0) {
+                        game.audioManager.playWallDeathSound();
                         w.setDestroyed(true);
                         groundRects.removeValue(w, true);
                         breakableWalls.removeValue(w, true);
 
                         screen.removeWallTiles(w.bounds);
+                    } else {
+                        game.audioManager.playWallHitSound();
                     }
                 }
             }
@@ -724,6 +767,7 @@ public class Game {
                 if (spike.isDeadly) {
                     if (attackBox.overlaps(spike.bounds)) {
                         hitSomething = true;
+                        game.audioManager.playSound(game.audioManager.audioLoader.hit_metal);
                         break;
                     }
                 }
@@ -737,6 +781,8 @@ public class Game {
                 screen.zote.changeState(Zote.State.ANGRY);
                 screen.zote.angryTimer = screen.zote.ANGRY_DURATION;
                 hitSomething = true;
+
+                game.audioManager.playSound(game.audioManager.audioLoader.zoteRoar);
             }
         }
 
@@ -747,6 +793,12 @@ public class Game {
                 int nail = 10;
                 if (instaKillMode)
                     nail = 9999;
+
+                if (boss.currentState == FalseKnight.state.STUNNED) {
+                    game.audioManager.playSound(game.audioManager.audioLoader.fk_headHit);
+                } else {
+                    game.audioManager.playSound(game.audioManager.audioLoader.fk_armourHit);
+                }
                 boss.takeDamage(nail);
                 knight.gainSoul(11);
                 hitSomething = true;
@@ -774,6 +826,8 @@ public class Game {
             } else if (dir == 0) {
                 knight.getVelocity().x = knight.isFacingRight() ? -4f : 4f;
             }
+        } else {
+            game.audioManager.playSound(game.audioManager.audioLoader.knight_slash);
         }
     }
 
@@ -873,6 +927,7 @@ public class Game {
         if (((knight.getX() > minX + 5f) && (knight.getX() < maxX - 5f)) && ((knight.getY() < y + height) && (knight.getY() > y))) {
             boss.bossFightStarted = true;
             screen.bossFightActive = true;
+            screen.playBossMusic();
 
             leftDoor = new SolidBlock();
             leftDoor.bounds = new Rectangle(minX - 1f, y, 1f, height);
@@ -890,6 +945,11 @@ public class Game {
     private void resetBossFight() {
         if (leftDoor != null) groundRects.removeValue(leftDoor, true);
         if (rightDoor != null) groundRects.removeValue(rightDoor, true);
+
+        if (screen.bossFightActive) {
+            screen.bossFightActive = false;
+            screen.stopBossMusic();
+        }
 
         screen.bossFightActive = false;
         wasOutsideArena = false;
@@ -913,11 +973,41 @@ public class Game {
 
     private void checkEnemyKill(Enemy enemy) {
         if (enemy.health <= 0) {
+            game.audioManager.playSound(game.audioManager.audioLoader.enemy_death);
             data.registerEnemyKill(enemy.name);
             SaveManager.save(data);
             if (data.killedEnemyTypes.size >= 6) {
                 AchievementManager.getInstance().unlockAchievement(Achievement.TRUE_HUNTER);
             }
         }
+    }
+
+    private void updateCombatState() {
+        if (knight.isDead() || pendingRespawn) {
+            inCombat = false;
+            return;
+        }
+
+        boolean enemyNearby = false;
+
+        for (Enemy enemy : enemies) {
+            if (enemy.state != Enemy.EnemyState.CORPSE &&
+                enemy.state != Enemy.EnemyState.DYING_AIR &&
+                enemy.state != Enemy.EnemyState.DYING_LAND) {
+
+                float distance = knight.getPosition().dst(enemy.position);
+
+                if (distance <= COMBAT_RADIUS) {
+                    enemyNearby = true;
+                    break;
+                }
+            }
+        }
+
+        if (screen.zote != null && screen.zote.currentState == Zote.State.ANGRY) {
+            enemyNearby = true;
+        }
+
+        inCombat = enemyNearby;
     }
 }

@@ -3,6 +3,7 @@ package com.hollow.models.entities.Enemy;
 import com.badlogic.gdx.graphics.g2d.Animation;
 import com.badlogic.gdx.graphics.g2d.TextureRegion;
 import com.badlogic.gdx.math.Vector2;
+import com.hollow.models.AudioManager;
 
 public class Mosquito extends Enemy {
 
@@ -14,6 +15,9 @@ public class Mosquito extends Enemy {
     private Vector2 lungeDir = new Vector2();
     private static final float FLY_SPEED = 2f;
     private static final float LUNGE_SPEED = 12f;
+
+    public AudioManager audioManager;
+    private long flyLoopId = -1;
 
 
     public Mosquito(float startX, float startY) {
@@ -40,6 +44,17 @@ public class Mosquito extends Enemy {
 
         position.y += velocity.y * delta;
 
+        if (state != EnemyState.DYING_AIR && state != EnemyState.DYING_LAND) {
+            if (flyLoopId == -1 && audioManager != null && audioManager.audioLoader.mosq_fly != null) {
+                flyLoopId = audioManager.audioLoader.mosq_fly.loop(0.2f);
+            }
+        } else {
+            if (flyLoopId != -1 && audioManager != null && audioManager.audioLoader.mosq_fly != null) {
+                audioManager.audioLoader.mosq_fly.stop(flyLoopId);
+                flyLoopId = -1;
+            }
+        }
+
         switch (state) {
             case IDLE -> {
                 float dirX = targetX - position.x;
@@ -56,6 +71,8 @@ public class Mosquito extends Enemy {
                     state = EnemyState.ATTACK_ANTICIPATE;
                     stateTime = 0f;
                     velocity.setZero();
+
+                    if (audioManager != null) audioManager.playSound(audioManager.audioLoader.mosq_prepare);
                 }
             }
 
@@ -68,6 +85,8 @@ public class Mosquito extends Enemy {
                     lungeDir.set(targetX - position.x, targetY - position.y).nor();
                     velocity.x = lungeDir.x * LUNGE_SPEED;
                     velocity.y = lungeDir.y * LUNGE_SPEED;
+
+                    if (audioManager != null) audioManager.playSound(audioManager.audioLoader.mosq_charge);
                 }
             }
 
@@ -121,6 +140,13 @@ public class Mosquito extends Enemy {
         if (state == EnemyState.IDLE) {
             state = EnemyState.TURNING;
             stateTime = 0f;
+        } else if (state == EnemyState.ATTACK_LUNGE) {
+            state = EnemyState.IDLE;
+            stateTime = 0f;
+            cooldown = 2.0f;
+            velocity.setZero();
+
+            if (audioManager != null) audioManager.playSound(audioManager.audioLoader.mosq_wallHit);
         }
     }
 

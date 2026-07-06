@@ -94,18 +94,23 @@ public class GameScreen implements Screen {
 
     private Array<AmbientObject> ambientObjects;
 
+    private boolean isTransition;
 
-    public GameScreen(HollowKnight game, String mapPath, float spawnX, float spawnY) {
+    public GameScreen(HollowKnight game, String mapPath, float spawnX, float spawnY, TiledMap preloadedMap) {
         this.game = game;
         this.mapPath = mapPath;
         this.customSpawn = new Vector2(spawnX, spawnY);
+        this.map = preloadedMap;
+        this.isTransition = true;
     }
 
-    public GameScreen(HollowKnight game, String mapPath) {
+    public GameScreen(HollowKnight game, String mapPath, TiledMap preloadedMap) {
         this.game = game;
         if (mapPath.equals("CROSSROAD")) this.mapPath = "map/cross_road.tmx";
         else this.mapPath = "map/green_path.tmx";
         this.customSpawn = null;
+        this.map = preloadedMap;
+        this.isTransition = false;
     }
 
 
@@ -119,7 +124,7 @@ public class GameScreen implements Screen {
         fadeAlpha = 1f;
         shapeRenderer = new ShapeRenderer();
 
-        map = helper.loadMap(this.mapPath);
+//        map = helper.loadMap(this.mapPath);
         renderer = new OrthogonalTiledMapRenderer(map, UNIT_SCALE);
 
         int tileWidth = map.getProperties().get("tilewidth", Integer.class);
@@ -131,11 +136,13 @@ public class GameScreen implements Screen {
 
         Vector2 spawnPoint;
         if (this.customSpawn != null) {
-            spawnPoint = findCustomSpawnPoint();
+            spawnPoint = this.customSpawn;
         } else {
             spawnPoint = findSpawnPoint();
         }
-        knight = new Knight(spawnPoint.x, spawnPoint.y, game.activeSave);
+        knight = new Knight(spawnPoint.x, spawnPoint.y, game.activeSave, game.audioManager);
+
+        knight.isGrassTerrain = mapPath.equals("map/green_path.tmx");
 
         KnightAnimationLoader.loadAllAnimations(knight);
 
@@ -148,8 +155,8 @@ public class GameScreen implements Screen {
         camera.position.set(camStartX, camStartY, 0);
         camera.update();
 
-        groundRecs = helper.getSolidRectangles();
-        spikeRecs = helper.getSolidRectangles();
+        groundRecs = helper.getSolidRectangles(map, UNIT_SCALE);
+        spikeRecs = helper.getSolidRectangles(map, UNIT_SCALE);
         breakableWalls = helper.getBreakableWall(map, UNIT_SCALE);
         groundRecs.addAll(breakableWalls);
         transitionZone = helper.getTransitionZone(map, UNIT_SCALE);
@@ -163,7 +170,7 @@ public class GameScreen implements Screen {
         for (Tiktik t : mapTiktiks) EnemyAnimationLoader.loadTiktikAnimations(t);
         for (Crawlid c : mapCrawlids) EnemyAnimationLoader.loadCrawlidAnimations(c);
         for (HuskHornhead h : mapHuskHornHeads) EnemyAnimationLoader.loadHuskHornheadAnimations(h);
-        for (Mosquito m : mapMosquito) EnemyAnimationLoader.loadMosquitoAnimations(m);
+        for (Mosquito m : mapMosquito) {EnemyAnimationLoader.loadMosquitoAnimations(m); m.audioManager = game.audioManager;}
         for (Mosscreep m : mapMosscreep) EnemyAnimationLoader.loadMosscreepAnimations(m);
         for (Crystallized c : mapCrystallized) EnemyAnimationLoader.loadCrystallizedAnimations(c);
 
@@ -171,12 +178,12 @@ public class GameScreen implements Screen {
 
         if (mapPath.equals("map/cross_road.tmx")) {
             if (game.activeSave.falseKnightDefeated) {
-                falseKnight = new FalseKnight(game.activeSave.falseKnightDeathX, game.activeSave.falseKnightDeathY);
+                falseKnight = new FalseKnight(game.activeSave.falseKnightDeathX, game.activeSave.falseKnightDeathY, game.audioManager);
                 BossAnimationLoader.loadAllAnimations(falseKnight);
                 falseKnight.setupAsCorpse();
             } else {
                 Vector2 boss_pos = findBossSpawnPoint();
-                falseKnight = new FalseKnight(boss_pos.x, boss_pos.y);
+                falseKnight = new FalseKnight(boss_pos.x, boss_pos.y, game.audioManager);
                 BossAnimationLoader.loadAllAnimations(falseKnight);
                 falseKnight.changeBehavior(new IdleBehavior());
             }
@@ -218,6 +225,22 @@ public class GameScreen implements Screen {
         Gdx.input.setInputProcessor(multiplexer);
 
         ambientObjects = helper.getAmbientObjects(map, UNIT_SCALE, game.assetLoader);
+
+
+        if (mapPath.equals("map/cross_road.tmx")) {
+            game.audioManager.playDynamicMusic(
+                null,
+                game.audioManager.audioLoader.crossroadsMain,
+                game.audioManager.audioLoader.crossroadsBass, isTransition
+            );
+        } else if (mapPath.equals("map/green_path.tmx")) {
+            game.audioManager.playDynamicMusic(
+                game.audioManager.audioLoader.greenpathAtmos,
+                game.audioManager.audioLoader.greenpathMain,
+                game.audioManager.audioLoader.greenpathBass, isTransition
+            );
+        }
+        game.audioManager.setCombatState(false);
     }
 
     public void render(float delta) {
@@ -244,6 +267,16 @@ public class GameScreen implements Screen {
 
 
         updateCamera();
+
+        if (bossFightActive && controller.boss != null && controller.boss.currentState != FalseKnight.state.DEATH) {
+            game.audioManager.setCombatState(false);
+        } else {
+            if (controller != null) {
+                game.audioManager.setCombatState(controller.inCombat);
+            }
+        }
+
+        game.audioManager.update(delta);
 
         if (!isInventoryOpen && !isPaused) {
             controller.update(delta);
@@ -654,6 +687,7 @@ public class GameScreen implements Screen {
 
     public void startTransition(String targetMap) {
         if (!isFadingOut) {
+            game.audioManager.stopAllSfxLoops();
             this.nextMap = targetMap;
             this.isFadingOut = true;
         }
@@ -675,7 +709,7 @@ public class GameScreen implements Screen {
             fadeAlpha += delta * 1.5f;
             if (fadeAlpha >= 1f) {
                 fadeAlpha = 1f;
-                game.setScreen(new LoadingScreen(game, nextMap));
+                game.setScreen(new LoadingScreen(game, nextMap, 0, 0));
             }
         }
 
@@ -684,16 +718,6 @@ public class GameScreen implements Screen {
         shapeRenderer.end();
 
         Gdx.gl.glDisable(GL20.GL_BLEND);
-    }
-
-    private Vector2 findCustomSpawnPoint() {
-        MapLayer layer = map.getLayers().get("transition");
-        MapObject spawnPoint = layer.getObjects().get("custom_spawn");
-
-        float x = spawnPoint.getProperties().get("x", Float.class) * UNIT_SCALE;
-        float y = spawnPoint.getProperties().get("y", Float.class) * UNIT_SCALE;
-
-        return new Vector2(x, y);
     }
 
     public Vector2 findBossSpawnPoint() {
@@ -788,7 +812,10 @@ public class GameScreen implements Screen {
     public void togglePause() {
         isPaused = !isPaused;
 
+        game.audioManager.stopAllSfxLoops();
+
         if (isPaused) {
+            game.audioManager.pauseMusic();
             if (pauseUI.isSettingsOpen) {
                 multiplexer.addProcessor(pauseUI.settingsUI.stage);
             } else if (pauseUI.isGuideOpen) {
@@ -802,6 +829,7 @@ public class GameScreen implements Screen {
                 multiplexer.addProcessor(pauseUI.stage);
             }
         } else {
+            game.audioManager.resumeMusic();
             multiplexer.removeProcessor(pauseUI.stage);
             if (pauseUI.settingsUI != null) multiplexer.removeProcessor(pauseUI.settingsUI.stage);
             if (pauseUI.cheatUI != null) multiplexer.removeProcessor(pauseUI.cheatUI.stage);
@@ -856,6 +884,31 @@ public class GameScreen implements Screen {
                 x, y, 1f, 1f
             );
         }
+    }
+
+    public void playBossMusic() {
+        if (game.audioManager.audioLoader.bossFight != null) {
+            game.audioManager.playMusic(game.audioManager.audioLoader.bossFight, true, true);
+        }
+    }
+
+    public void stopBossMusic() {
+        if (mapPath.equals("map/cross_road.tmx")) {
+            game.audioManager.playDynamicMusic(
+                null,
+                game.audioManager.audioLoader.crossroadsMain,
+                game.audioManager.audioLoader.crossroadsBass,
+                true
+            );
+        } else if (mapPath.equals("map/green_path.tmx")) {
+            game.audioManager.playDynamicMusic(
+                game.audioManager.audioLoader.greenpathAtmos,
+                game.audioManager.audioLoader.greenpathMain,
+                game.audioManager.audioLoader.greenpathBass,
+                true
+            );
+        }
+        game.audioManager.setCombatState(false);
     }
 
 }

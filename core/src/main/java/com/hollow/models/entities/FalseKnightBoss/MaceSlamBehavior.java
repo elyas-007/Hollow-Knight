@@ -50,6 +50,8 @@ public class MaceSlamBehavior implements BossBehavior {
 
         // perform attack and check
         // update camera for shake
+        boss.audioManager.playSound(boss.audioManager.audioLoader.fk_swing);
+        boss.audioManager.playSound(boss.audioManager.audioLoader.fk_strike);
 
          GameScreen.triggerShake(0.3f, 0.4f);
 

@@ -75,12 +75,7 @@ public class MainMenuScreen implements Screen, LanguageObserver {
         });
 
         setupUI();
-
-        if (game.assetLoader.titleTheme != null && !game.assetLoader.titleTheme.isPlaying() && game.settings.isMusicOn) {
-            game.assetLoader.titleTheme.setLooping(true);
-            game.assetLoader.titleTheme.setVolume(game.settings.musicVolume);
-            game.assetLoader.titleTheme.play();
-        }
+        game.audioManager.playMusic(game.audioManager.audioLoader.titleTheme, true, false);
     }
 
     private void setupUI() {
@@ -191,10 +186,7 @@ public class MainMenuScreen implements Screen, LanguageObserver {
     @Override
     public void hide() {
         Gdx.input.setInputProcessor(null);
-
-        if (game.assetLoader.titleTheme != null) {
-            game.assetLoader.titleTheme.stop();
-        }
+        game.audioManager.stopMusic();
     }
 
     @Override

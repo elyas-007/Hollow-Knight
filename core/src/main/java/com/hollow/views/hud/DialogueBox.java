@@ -103,6 +103,7 @@ public class DialogueBox implements LanguageObserver {
             charIndex = 0;
             charTimer = 0f;
             isTyping = true;
+            game.audioManager.playZoteDialogue();
         } else {
             isVisible = false;
             rootTable.setVisible(false);
@@ -125,8 +126,6 @@ public class DialogueBox implements LanguageObserver {
                 }
 
                 textLabel.setText(targetText.substring(0, charIndex));
-
-                //TODO: play sound
             }
         }
 

@@ -100,10 +100,7 @@ public class ButtonController {
     private void updateSelectionState(int newIndex, boolean playSound) {
         this.selectedItem = newIndex;
 
-        if (playSound && game.assetLoader.buttonHover != null && game.settings.isSfxOn) {
-            game.assetLoader.buttonHover.stop();
-            game.assetLoader.buttonHover.play();
-        }
+        game.audioManager.playSound(game.audioManager.audioLoader.buttonHover);
 
         stage.setKeyboardFocus(menuItems[selectedItem]);
     }
@@ -135,10 +132,7 @@ public class ButtonController {
     }
 
     public void triggerSelection() {
-        if (game.assetLoader.buttonClick != null && game.settings.isSfxOn) {
-            game.assetLoader.buttonClick.stop();
-            game.assetLoader.buttonClick.play();
-        }
+        game.audioManager.playSound(game.audioManager.audioLoader.buttonClick);
 
         if (menuItems[selectedItem].getUserObject() != null) {
             ((Runnable) menuItems[selectedItem].getUserObject()).run();

@@ -7,10 +7,7 @@ import com.badlogic.gdx.graphics.Cursor;
 import com.badlogic.gdx.graphics.Pixmap;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.hollow.assets.AssetLoader;
-import com.hollow.models.GameData;
-import com.hollow.models.GameSettings;
-import com.hollow.models.LanguageManager;
-import com.hollow.models.SaveManager;
+import com.hollow.models.*;
 import com.hollow.views.hud.MenuBackground;
 import com.hollow.views.screens.MainMenuScreen;
 
@@ -18,6 +15,7 @@ public class HollowKnight extends Game {
     public SpriteBatch batch;
     public AssetLoader assetLoader;
     public GameSettings settings;
+    public AudioManager audioManager;
     public GameData activeSave;
     public final int SCREEN_WIDTH = 1920;
     public final int SCREEN_HEIGHT = 1080;
@@ -31,6 +29,7 @@ public class HollowKnight extends Game {
         assetLoader = new AssetLoader(this);
         assetLoader.loadMainMenu();
         settings = GameSettings.load();
+        audioManager = new AudioManager(this);
 
         menuBackground = new MenuBackground(assetLoader, this);
 
@@ -63,12 +62,7 @@ public class HollowKnight extends Game {
         if (activeSave != null) SaveManager.save(activeSave);
         batch.dispose();
         assetLoader.dispose();
+        if (audioManager != null) audioManager.dispose();
         if (menuBackground != null) menuBackground.dispose();
    }
-
-    public void playSound(Sound sound) {
-        if (settings.isSfxOn && sound != null) {
-            sound.play();
-        }
-    }
 }

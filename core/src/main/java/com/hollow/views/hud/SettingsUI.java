@@ -285,21 +285,15 @@ public class SettingsUI implements LanguageObserver {
     }
 
     private void applyMusicToggle() {
-        if (game.assetLoader.titleTheme == null) return;
         if (game.settings.isMusicOn) {
-            if (!game.assetLoader.titleTheme.isPlaying()) {
-                game.assetLoader.titleTheme.setLooping(true);
-                game.assetLoader.titleTheme.play();
-            }
+            game.audioManager.resumeMusic();
         } else {
-            game.assetLoader.titleTheme.pause();
+            game.audioManager.pauseMusic();
         }
     }
 
     private void applyMusicVolume() {
-        if (game.assetLoader.titleTheme != null) {
-            game.assetLoader.titleTheme.setVolume(game.settings.musicVolume);
-        }
+        game.audioManager.updateMusicVolume();
     }
 
     @Override

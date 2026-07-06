@@ -215,16 +215,10 @@ public class InventoryUI implements LanguageObserver {
         if (data.equippedCharms.contains(charm, true)) {
             data.equippedCharms.removeValue(charm, true);
             updateEquippedAndNotches();
-            if (game.settings.isSfxOn && game.assetLoader.buttonClick != null) {
-                game.assetLoader.buttonClick.stop();
-                game.assetLoader.buttonClick.play();
-            }
+            game.audioManager.playSound(game.audioManager.audioLoader.buttonClick);
         } else if (data.equippedCharms.size < MAX_NOTCHES) {
             animateEquip(charm, slotStack);
-            if (game.settings.isSfxOn && game.assetLoader.buttonClick != null) {
-                game.assetLoader.buttonClick.stop();
-                game.assetLoader.buttonClick.play();
-            }
+            game.audioManager.playSound(game.audioManager.audioLoader.buttonClick);
         }
     }
 
@@ -272,10 +266,7 @@ public class InventoryUI implements LanguageObserver {
                     public void clicked(InputEvent event, float x, float y) {
                         data.equippedCharms.removeValue(c, true);
                         updateEquippedAndNotches();
-                        if (game.settings.isSfxOn && game.assetLoader.buttonClick != null) {
-                            game.assetLoader.buttonClick.stop();
-                            game.assetLoader.buttonClick.play();
-                        }
+                        game.audioManager.playSound(game.audioManager.audioLoader.buttonClick);
                     }
                 });
                 equippedSlots[i].setActor(img);

@@ -91,12 +91,6 @@ public class AssetLoader {
     public Texture butterflyTexture;
 
 
-
-    // Audio
-    public  Music titleTheme;
-    public Sound buttonHover;
-    public Sound buttonClick;
-
     public BitmapFont font;
     public BitmapFont subFont;
 
@@ -115,10 +109,6 @@ public class AssetLoader {
 
         titleBottom = new Texture("ui/mainMenu/titleBottom.png");
         settingBottom = new Texture("ui/mainMenu/settingBottom.png");
-
-        titleTheme = Gdx.audio.newMusic(Gdx.files.internal("audio/bgm/Title.wav"));
-        buttonHover = Gdx.audio.newSound(Gdx.files.internal("audio/sound-effect/button-hover.wav"));
-        buttonClick = Gdx.audio.newSound(Gdx.files.internal("audio/sound-effect/button-click.wav"));
 
         FreeTypeFontGenerator generator = new FreeTypeFontGenerator(Gdx.files.internal("font/primary_font.ttf"));
         FreeTypeFontParameter parameter = new FreeTypeFontParameter();
@@ -251,9 +241,6 @@ public class AssetLoader {
         if (pointerL != null) pointerL.getTexture().dispose();
         if (font != null) font.dispose();
         if (subFont != null) subFont.dispose();
-        if (titleTheme != null) titleTheme.dispose();
-        if (buttonHover != null) buttonHover.dispose();
-        if (buttonClick != null) buttonClick.dispose();
 
         if (emptyNotch != null) emptyNotch.dispose();
         if (fullNotch != null) fullNotch.dispose();

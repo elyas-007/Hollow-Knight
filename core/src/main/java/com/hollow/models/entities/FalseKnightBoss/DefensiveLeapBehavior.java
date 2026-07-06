@@ -12,6 +12,9 @@ public class DefensiveLeapBehavior implements BossBehavior {
         timer = 0f;
         boss.isGrounded = false;
 
+        boss.audioManager.playFalseKnightShout();
+        boss.audioManager.playSound(boss.audioManager.audioLoader.fk_jump);
+
         int direction = boss.isFacingRight ? -1 : 1;
 
         boss.velocity.y = boss.leapVelocityY * 0.8f;

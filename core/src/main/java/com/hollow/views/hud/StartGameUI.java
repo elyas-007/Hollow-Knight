@@ -20,6 +20,7 @@ import com.hollow.models.LanguageManager;
 import com.hollow.models.LanguageObserver;
 import com.hollow.models.SaveManager;
 import com.hollow.views.screens.GameScreen;
+import com.hollow.views.screens.LoadingScreen;
 
 public class StartGameUI implements LanguageObserver {
     public Stage stage;
@@ -69,7 +70,7 @@ public class StartGameUI implements LanguageObserver {
 
             if (!data.isEmpty) {
                 NinePatchDrawable bgDrawable = new NinePatchDrawable(
-                    data.location.equals("GREENPATH") ? game.assetLoader.saveBackground_greenPath : game.assetLoader.saveBackground_forgotten
+                    data.location.equals("GREEN_PATH") ? game.assetLoader.saveBackground_greenPath : game.assetLoader.saveBackground_forgotten
                 );
 
                 Image bgImage = new Image(bgDrawable);
@@ -187,7 +188,7 @@ public class StartGameUI implements LanguageObserver {
     private void startGame(GameData data) {
         if (data.isEmpty) data.isEmpty = false;
         game.activeSave = data;
-        game.setScreen(new GameScreen(game, data.location));
+        game.setScreen(new LoadingScreen(game, data.location));
     }
 
     private String formatPlayTime(float time) {

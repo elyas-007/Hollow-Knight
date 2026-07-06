@@ -20,6 +20,9 @@ public class PowerSlamBehavior implements BossBehavior {
         hasStruck = false;
         boss.isGrounded = false;
 
+        boss.audioManager.playFalseKnightShout();
+        boss.audioManager.playSound(boss.audioManager.audioLoader.fk_jump);
+
         int direction = boss.isFacingRight ? 1 : -1;
         boss.velocity.x = SLAM_LEAP_VELOCITY_X * direction;
         boss.velocity.y = SLAM_LEAP_VELOCITY_Y;

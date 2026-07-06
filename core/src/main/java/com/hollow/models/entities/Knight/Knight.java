@@ -5,6 +5,7 @@ import com.badlogic.gdx.graphics.g2d.TextureRegion;
 import com.badlogic.gdx.math.Rectangle;
 import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.utils.Array;
+import com.hollow.models.AudioManager;
 import com.hollow.models.Effect;
 import com.hollow.models.GameData;
 import com.hollow.models.enums.KnightState;
@@ -105,11 +106,15 @@ public class Knight {
     public boolean noclipMode = false;
     public boolean godMode = false;
 
-    public Knight(float startX, float startY, GameData data) {
+    private AudioManager audioManager;
+    public boolean isGrassTerrain = false;
+
+    public Knight(float startX, float startY, GameData data, AudioManager audioManager) {
         position.set(startX, startY);
         lastPosition.set(startX, startY);
         hitbox.set(startX, startY, HIT_WIDTH, HIT_HEIGHT);
         this.data = data;
+        this.audioManager = audioManager;
     }
 
 
@@ -122,6 +127,30 @@ public class Knight {
         updatePosition(delta);
         updateHitbox();
         updateHealing(delta);
+
+        if (state == KnightState.RUNNING && isGrounded) {
+            audioManager.playFootsteps(isGrassTerrain);
+        } else {
+            audioManager.stopFootsteps();
+        }
+
+        if (state == KnightState.AIRBORNE && velocity.y < -6f) {
+            audioManager.playFallingSound();
+        } else {
+            audioManager.stopFallingSound();
+        }
+
+        if (state == KnightState.WALL_SLIDE) {
+            audioManager.playWallSlideLoop();
+        } else {
+            audioManager.stopWallSlideLoop();
+        }
+
+        if (state == KnightState.FOCUSING_START || state == KnightState.FOCUSING) {
+            audioManager.playFocusChargeLoop();
+        } else {
+            audioManager.stopFocusChargeLoop();
+        }
 
         for (int i = activeEffects.size - 1; i >= 0; i--) {
             Effect effect = activeEffects.get(i);
@@ -157,6 +186,7 @@ public class Knight {
             stateTimer = 0f;
             stateLockTimer = animDuration(focusGetAnim);
             healTimer = 0f;
+            audioManager.playSound(audioManager.audioLoader.knight_focusHeal);
 
             if (currentSoul < 33 || currentMasks >= maxMasks) {
                 healing = false;
@@ -370,12 +400,14 @@ public class Knight {
             velocity.y = JUMP_SPEED;
             isGrounded = false;
             canDoubleJump = true;
+            audioManager.playSound(audioManager.audioLoader.knight_jump);
         } else if (canDoubleJump) {
             velocity.y = JUMP_SPEED * 0.8f;
             canDoubleJump = false;
             state = KnightState.DOUBLE_JUMPING;
             stateTimer = 0f;
             stateLockTimer = animDuration(doubleJumpAnim);
+            audioManager.playSound(audioManager.audioLoader.knight_wings);
         }
     }
 
@@ -394,6 +426,7 @@ public class Knight {
         state = KnightState.WALL_JUMP;
         stateTimer = 0f;
         stateLockTimer = animDuration(wallJumpAnim);
+        audioManager.playSound(audioManager.audioLoader.knight_wallJump);
     }
 
     public void littleJumping() {
@@ -415,6 +448,12 @@ public class Knight {
 
         float offsetX = isFacingRight ? -1.5f : -0.5f;
         activeEffects.add(new Effect(dashEffectAnim, offsetX, 0f, 2.5f, 1.5f, isFacingRight));
+
+        if (data.equippedCharms.contains(Charm.SHARP_SHADOW, true)) {
+            audioManager.playSound(audioManager.audioLoader.knight_shadeDash);
+        } else {
+            audioManager.playSound(audioManager.audioLoader.knight_dash);
+        }
     }
 
     public void attacking(int direction) {
@@ -445,6 +484,7 @@ public class Knight {
 
     public void landing(float top) {
         boolean wasAirborne = !isGrounded && velocity.y < -3f;
+        boolean isHardLanding = !isGrounded && velocity.y <= -18f;
 
         position.y = top;
         velocity.y = 0;
@@ -462,11 +502,14 @@ public class Knight {
                 stateLockTimer = 0f;
             }
 
-//            if (stateLockTimer <= 0 && state != KnightState.HURT && state != KnightState.DEAD) {
-//                state = KnightState.LANDING;
-//                stateTimer = 0f;
-//                stateLockTimer = animDuration(landingAnim);
-//            }
+            if (stateLockTimer <= 0 && state != KnightState.HURT && state != KnightState.DEAD) {
+                state = KnightState.LANDING;
+                stateTimer = 0f;
+                stateLockTimer = animDuration(landingAnim);
+            }
+        }
+        if (isHardLanding) {
+            audioManager.playSound(audioManager.audioLoader.knight_hardLand);
         }
     }
 
@@ -514,10 +557,13 @@ public class Knight {
             state = KnightState.DEAD;
             stateTimer = 0f;
             stateLockTimer = animDuration(deathAnim);
+            audioManager.playSound(audioManager.audioLoader.knight_death);
         } else {
             state = KnightState.HURT;
             stateTimer = 0f;
             stateLockTimer = animDuration(hurtAnim);
+            if (damage != 0)
+                audioManager.playSound(audioManager.audioLoader.knight_damage);
         }
     }
 

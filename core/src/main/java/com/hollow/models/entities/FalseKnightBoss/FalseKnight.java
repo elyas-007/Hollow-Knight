@@ -5,6 +5,7 @@ import com.badlogic.gdx.graphics.g2d.TextureRegion;
 import com.badlogic.gdx.math.Rectangle;
 import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.utils.Array;
+import com.hollow.models.AudioManager;
 
 public class FalseKnight {
     public boolean bossFightStarted = false;
@@ -73,7 +74,9 @@ public class FalseKnight {
     private float animationStateTime = 0f;
     public float animationSpeedMultiplier = 1.0f;
 
-    public FalseKnight(float x, float y) {
+    public AudioManager audioManager;
+
+    public FalseKnight(float x, float y, AudioManager audioManager) {
         this.position = new Vector2(x, y);
         this.velocity = new Vector2(0, 0);
         this.hitbox = new Rectangle(x, y, 3f, 4f);
@@ -81,6 +84,7 @@ public class FalseKnight {
 
         this.currentHp = maxHp;
         this.lastState = state.IDLE;
+        this.audioManager = audioManager;
     }
 
     public void changeBehavior(BossBehavior newBehavior) {
@@ -147,12 +151,14 @@ public class FalseKnight {
 
         if (currentHp <= 0) {
             currentHp = 0;
+            if (audioManager != null) audioManager.playSound(audioManager.audioLoader.fk_death);
             changeBehavior(new DeathBehavior());
             return;
         }
 
         if (currentHp <= maxHp / 2 && !isPhaseTwo) {
             isPhaseTwo = true;
+            if (audioManager != null) audioManager.playSound(audioManager.audioLoader.fk_stun);
             changeBehavior(new StunnedBehavior());
         }
     }

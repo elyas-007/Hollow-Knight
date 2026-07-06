@@ -11,6 +11,9 @@ public class OffensiveLeapBehavior implements BossBehavior {
     public void enter(FalseKnight boss) {
         boss.currentState = FalseKnight.state.OFFENSIVE_LEAP;
         timer = 0f;
+
+        boss.audioManager.playFalseKnightShout();
+        boss.audioManager.playSound(boss.audioManager.audioLoader.fk_jump);
         hasJumped = false;
         boss.velocity.setZero();
     }

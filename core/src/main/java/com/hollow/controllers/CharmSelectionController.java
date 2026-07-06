@@ -110,11 +110,7 @@ public class CharmSelectionController {
 
         inventoryUI.highlightSlot(selectedItem);
 
-        if (playSound && game.assetLoader.buttonHover != null && game.settings.isSfxOn) {
-            game.assetLoader.buttonHover.stop();
-            game.assetLoader.buttonHover.play();
-        }
-
+        game.audioManager.playSound(game.audioManager.audioLoader.buttonHover);
     }
 
     public void update(float delta) {

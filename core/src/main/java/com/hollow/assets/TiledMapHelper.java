@@ -16,17 +16,11 @@ import com.hollow.models.TransitionZone;
 import com.hollow.models.entities.Enemy.*;
 
 public class TiledMapHelper {
-    private TiledMap tiledMap;
 
-    public TiledMap loadMap(String path) {
-        tiledMap = new TmxMapLoader().load(path);
-        return tiledMap;
-    }
-
-    public Array<SolidBlock> getSolidRectangles() {
+    public Array<SolidBlock> getSolidRectangles(TiledMap map, float unitScale) {
         Array<SolidBlock> solidBlocks = new Array<>();
 
-        MapLayer layer = tiledMap.getLayers().get("logic");
+        MapLayer layer = map.getLayers().get("logic");
 
         for (MapObject object : layer.getObjects()) {
 
@@ -39,8 +33,8 @@ public class TiledMapHelper {
                     isDeadly = object.getProperties().get("deadly", Boolean.class);
                 }
 
-                solidBlocks.add(new SolidBlock(rect.x * (1f / 64f), rect.y * (1f / 64f),
-                    rect.width * (1f / 64f), rect.height * (1f / 64f), isDeadly));
+                solidBlocks.add(new SolidBlock(rect.x * unitScale, rect.y * unitScale,
+                    rect.width * unitScale, rect.height * unitScale, isDeadly));
             }
         }
 
@@ -254,6 +248,16 @@ public class TiledMapHelper {
             }
         }
         return ambientObjects;
+    }
+
+    public Vector2 findCustomSpawnPoint(TiledMap map, float unitScale) {
+        MapLayer layer = map.getLayers().get("transition");
+        MapObject spawnPoint = layer.getObjects().get("custom_spawn");
+
+        float x = spawnPoint.getProperties().get("x", Float.class) * unitScale;
+        float y = spawnPoint.getProperties().get("y", Float.class) * unitScale;
+
+        return new Vector2(x, y);
     }
 
 }
