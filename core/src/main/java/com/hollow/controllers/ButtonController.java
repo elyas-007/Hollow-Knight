@@ -78,7 +78,7 @@ public class ButtonController {
                 @Override
                 public void enter(InputEvent event, float x, float y, int pointer, Actor fromActor) {
                     if (pointer == -1 && selectedItem != index)
-                        updateSelectionState(index, game.settings.isSfxOn);
+                        updateSelectionState(index, game.data.getSettings().isSfxOn());
                 }
 
                 @Override
@@ -94,7 +94,7 @@ public class ButtonController {
         if (newIndex < 0) newIndex = menuItems.length - 1;
         else if (newIndex >= menuItems.length) newIndex = 0;
 
-        updateSelectionState(newIndex, game.settings.isSfxOn);
+        updateSelectionState(newIndex, game.data.getSettings().isSfxOn());
     }
 
     private void updateSelectionState(int newIndex, boolean playSound) {

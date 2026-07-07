@@ -47,7 +47,8 @@ public class GameScreen implements Screen {
 
     private OrthographicCamera camera;
     private FitViewport viewport;
-    private TiledMap map;
+    private final TiledMap map;
+    private TiledMapHelper helper;
     private OrthogonalTiledMapRenderer renderer;
 
     private Array<SolidBlock> groundRecs;
@@ -56,9 +57,6 @@ public class GameScreen implements Screen {
 
     private float mapPixelWidth;
     private float mapPixelHeight;
-
-    private TiledMapHelper helper;
-    private final int[] mainLayer = {1};
 
     private ShapeRenderer shapeRenderer;
 
@@ -85,12 +83,13 @@ public class GameScreen implements Screen {
     public DialogueBox dialogueBox;
     public Zote zote;
 
-    private boolean isInventoryOpen = false;
     public InventoryUI inventoryUI;
-    private InputMultiplexer multiplexer;
-
-    public boolean isPaused = false;
     private PauseUI pauseUI;
+
+    private boolean isInventoryOpen = false;
+    public boolean isPaused = false;
+
+    private InputMultiplexer multiplexer;
 
     private Array<AmbientObject> ambientObjects;
 
@@ -124,7 +123,6 @@ public class GameScreen implements Screen {
         fadeAlpha = 1f;
         shapeRenderer = new ShapeRenderer();
 
-//        map = helper.loadMap(this.mapPath);
         renderer = new OrthogonalTiledMapRenderer(map, UNIT_SCALE);
 
         int tileWidth = map.getProperties().get("tilewidth", Integer.class);
@@ -140,7 +138,7 @@ public class GameScreen implements Screen {
         } else {
             spawnPoint = findSpawnPoint();
         }
-        knight = new Knight(spawnPoint.x, spawnPoint.y, game.activeSave, game.audioManager);
+        knight = new Knight(spawnPoint.x, spawnPoint.y, game.data, game.audioManager);
 
         knight.isGrassTerrain = mapPath.equals("map/green_path.tmx");
 
@@ -177,8 +175,11 @@ public class GameScreen implements Screen {
         hud = new GameHud(game, knight);
 
         if (mapPath.equals("map/cross_road.tmx")) {
-            if (game.activeSave.falseKnightDefeated) {
-                falseKnight = new FalseKnight(game.activeSave.falseKnightDeathX, game.activeSave.falseKnightDeathY, game.audioManager);
+            if (game.data.getActiveSlot().isFalseKnightDefeated()) {
+                falseKnight = new FalseKnight(game.data.getActiveSlot().getFalseKnightDeathX(),
+                    game.data.getActiveSlot().getFalseKnightDeathY(),
+                    game.audioManager);
+
                 BossAnimationLoader.loadAllAnimations(falseKnight);
                 falseKnight.setupAsCorpse();
             } else {
@@ -215,11 +216,13 @@ public class GameScreen implements Screen {
         mapEnemies.addAll(mapMosquito);
         mapEnemies.addAll(mapMosscreep);
         mapEnemies.addAll(mapCrystallized);
-        controller = new Game(game, knight, groundRecs, spikeRecs, mapEnemies, transitionZone, this, game.activeSave, falseKnight, breakableWalls);
+        controller = new Game(game, knight, groundRecs, spikeRecs, mapEnemies, transitionZone, this,
+            game.data, falseKnight, breakableWalls);
+
         controller.voidHeartPos = helper.getVoidHeartPos(map, UNIT_SCALE);
 
 
-        inventoryUI = new InventoryUI(game, game.activeSave);
+        inventoryUI = new InventoryUI(game, game.data);
         multiplexer = new InputMultiplexer();
         pauseUI = new PauseUI(game, this, multiplexer);
         Gdx.input.setInputProcessor(multiplexer);
@@ -244,7 +247,6 @@ public class GameScreen implements Screen {
     }
 
     public void render(float delta) {
-
         if (Gdx.input.isKeyJustPressed(Input.Keys.I)) {
             if (!isPaused) {
                 isInventoryOpen = !isInventoryOpen;
@@ -866,7 +868,9 @@ public class GameScreen implements Screen {
     }
 
     private void renderCollectibles() {
-        if (!game.activeSave.unlockedCharms.contains(Charm.VOID_HEART, true) && controller.voidHeartPos != null && breakableWalls.isEmpty()) {
+        if (!game.data.getActiveSlot().getUnlockedCharms().contains(Charm.VOID_HEART, true) &&
+            controller.voidHeartPos != null && breakableWalls.isEmpty()) {
+
             float x = controller.voidHeartPos.x;
             float y = controller.voidHeartPos.y;
 

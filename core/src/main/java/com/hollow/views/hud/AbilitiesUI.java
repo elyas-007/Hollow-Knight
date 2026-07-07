@@ -18,7 +18,7 @@ import com.hollow.controllers.ButtonController;
 import com.hollow.models.LanguageManager;
 import com.hollow.models.LanguageObserver;
 
-public class AbilitiesUI implements LanguageObserver {
+public class AbilitiesUI implements LanguageObserver, UI {
     public Stage stage;
     private final HollowKnight game;
     private ButtonController controller;
@@ -28,11 +28,12 @@ public class AbilitiesUI implements LanguageObserver {
         this.game = game;
         this.onClose = onClose;
         stage = new Stage(new FitViewport(game.SCREEN_WIDTH, game.SCREEN_HEIGHT));
-        LanguageManager.addObserver(this);
+        game.languageManager.addObserver(this);
         setupUI();
     }
 
-    private void setupUI() {
+    @Override
+    public void setupUI() {
         TextButtonStyle style = new TextButtonStyle();
         style.font = game.assetLoader.font;
         style.fontColor = Color.WHITE;
@@ -45,20 +46,20 @@ public class AbilitiesUI implements LanguageObserver {
         Table content = new Table();
 
         Table title = new Table();
-        Label t = new Label(LanguageManager.get("abilitiesTitle"), titleStyle);
+        Label t = new Label(game.languageManager.get("abilitiesTitle"), titleStyle);
         t.setFontScale(1.5f);
         title.add(t).row();
         title.add(new Image(game.assetLoader.top_menu));
         content.add(title).colspan(3).padTop(20).padBottom(60).row();
 
-        String mechanicsText = LanguageManager.get("abilitiesDesc");
+        String mechanicsText = game.languageManager.get("abilitiesDesc");
 
         Label mechanicsLabel = new Label(mechanicsText, descStyle);
         mechanicsLabel.setWrap(true);
         mechanicsLabel.setAlignment(Align.left);
         content.add(mechanicsLabel).width(1000).row();
 
-        TextButton backBtn = new TextButton(LanguageManager.get("back"), style);
+        TextButton backBtn = new TextButton(game.languageManager.get("back"), style);
         backBtn.setUserObject((Runnable) () -> onClose.run());
 
         main.add(backBtn).left().pad(20).padLeft(50).row();
@@ -80,12 +81,16 @@ public class AbilitiesUI implements LanguageObserver {
         controller = new ButtonController(game, stage, menuButtons);
     }
 
+    @Override
     public void act(float delta) {
         stage.act(delta);
         if (controller != null) controller.update(delta);
     }
+    @Override
     public void draw() { stage.draw(); }
+    @Override
     public void resize(int width, int height) { stage.getViewport().update(width, height, true); }
+    @Override
     public void dispose() { if (stage != null) stage.dispose(); }
 
     @Override

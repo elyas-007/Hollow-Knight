@@ -40,7 +40,7 @@ public class DialogueBox implements LanguageObserver {
     public DialogueBox(HollowKnight game) {
         this.game = game;
         stage = new Stage(new FitViewport(game.SCREEN_WIDTH, game.SCREEN_HEIGHT));
-        LanguageManager.addObserver(this);
+        game.languageManager.addObserver(this);
 
         LabelStyle style = new LabelStyle(game.assetLoader.font, Color.WHITE);
 
@@ -64,7 +64,7 @@ public class DialogueBox implements LanguageObserver {
         rootTable.add(bottomImage).center();
 
         LabelStyle promptStyle = new LabelStyle(game.assetLoader.font, Color.WHITE);
-        promptLabel = new Label(LanguageManager.get("pressToInteract"), promptStyle);
+        promptLabel = new Label(game.languageManager.get("pressToInteract"), promptStyle);
         promptLabel.setAlignment(Align.center);
 
         promptTable = new Table();
@@ -143,7 +143,7 @@ public class DialogueBox implements LanguageObserver {
     @Override
     public void onLanguageChanged() {
         if (promptLabel != null) {
-            promptLabel.setText(LanguageManager.get("pressToInteract"));
+            promptLabel.setText(game.languageManager.get("pressToInteract"));
         }
     }
 

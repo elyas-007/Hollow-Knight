@@ -176,7 +176,7 @@ public class Knight {
         if (!healing) return;
         healTimer += delta;
 
-        float currentHealDuration = data.equippedCharms.contains(Charm.QUICK_FOCUS, true) ? HEAL_DURATION * 0.6f : HEAL_DURATION;
+        float currentHealDuration = data.getActiveSlot().getEquippedCharms().contains(Charm.QUICK_FOCUS, true) ? HEAL_DURATION * 0.6f : HEAL_DURATION;
 
         if (healTimer >= currentHealDuration) {
             currentSoul = Math.max(0, currentSoul - 33);
@@ -206,7 +206,7 @@ public class Knight {
     private void updateDash(float delta) {
         if (isDashing) {
             dashDuration -= delta;
-            float currentDashSpeed = data.equippedCharms.contains( //sharp shadow
+            float currentDashSpeed = data.getActiveSlot().getEquippedCharms().contains( //sharp shadow
                 Charm.SHARP_SHADOW, true) ?
                 DASH_SPEED * 1.2f : DASH_SPEED;
             velocity.set(currentDashSpeed * dashDirection, 0f);
@@ -441,7 +441,7 @@ public class Knight {
         isDashing = true;
         canDash = false;
         dashDuration = DASH_DURATION;
-        dashCooldown = data.equippedCharms.contains( // dash master
+        dashCooldown = data.getActiveSlot().getEquippedCharms().contains( // dash master
             Charm.DASH_MASTER, true) ?
             DASH_COOLDOWN * 0.5f : DASH_COOLDOWN;
         dashDirection = (isFacingRight) ? 1f : -1f;
@@ -449,7 +449,7 @@ public class Knight {
         float offsetX = isFacingRight ? -1.5f : -0.5f;
         activeEffects.add(new Effect(dashEffectAnim, offsetX, 0f, 2.5f, 1.5f, isFacingRight));
 
-        if (data.equippedCharms.contains(Charm.SHARP_SHADOW, true)) {
+        if (data.getActiveSlot().getEquippedCharms().contains(Charm.SHARP_SHADOW, true)) {
             audioManager.playSound(audioManager.audioLoader.knight_shadeDash);
         } else {
             audioManager.playSound(audioManager.audioLoader.knight_dash);
@@ -477,7 +477,7 @@ public class Knight {
             activeEffects.add(new Effect(slashEffectAnim, offsetX, 0f, 2.5f, 2f, isFacingRight));
         }
         stateTimer = 0f;
-        float speedMultiplier = data.equippedCharms.contains( //quick slash
+        float speedMultiplier = data.getActiveSlot().getEquippedCharms().contains( //quick slash
             Charm.QUICK_SLASH, true) ? 0.6f : 1f;
         stateLockTimer = animDuration(anim) * speedMultiplier;
     }

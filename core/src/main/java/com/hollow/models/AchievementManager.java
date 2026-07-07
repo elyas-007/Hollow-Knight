@@ -1,8 +1,10 @@
 package com.hollow.models;
 
 import com.badlogic.gdx.utils.Array;
+import com.hollow.HollowKnight;
 
 public class AchievementManager {
+    private static HollowKnight game;
     private static AchievementManager instance;
     private Array<AchievementObserver> observers;
     private AchievementData globalData;
@@ -10,15 +12,20 @@ public class AchievementManager {
 
     private AchievementManager() {
         observers = new Array<>();
-        globalData = AchievementSaveManager.load();
+        globalData = game.data.getAchievements();
     }
 
 
     public static AchievementManager getInstance() {
         if (instance == null)
-            instance = new AchievementManager();
-
+            throw new RuntimeException("Achievement Manager has not yet been initialized! Call init() first.");
         return instance;
+    }
+
+    public static void init(HollowKnight hollowGame) {
+        if (instance == null)
+            game = hollowGame;
+        instance = new AchievementManager();
     }
 
     public void addObserver(AchievementObserver observer) {
@@ -41,7 +48,7 @@ public class AchievementManager {
     public void unlockAchievement(Achievement achievement) {
         if (!isUnlocked(achievement)) {
             globalData.unlockedAchievements.add(achievement.name());
-            AchievementSaveManager.save(globalData);
+            SaveManager.save(game.data);
 
             notifyAchievementUnlocked(achievement);
         }

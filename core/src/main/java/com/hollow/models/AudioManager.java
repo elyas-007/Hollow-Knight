@@ -7,8 +7,9 @@ import com.hollow.HollowKnight;
 import com.hollow.assets.AudioLoader;
 
 public class AudioManager {
-    private final HollowKnight game;
-    public AudioLoader audioLoader;
+    private static AudioManager instance;
+    private static HollowKnight game;
+    public final AudioLoader audioLoader;
 
     private Music currentMusic;
     private Music prevMusic;
@@ -51,15 +52,33 @@ public class AudioManager {
 
     private int lastZoteTalkIndex = -1;
 
-    public AudioManager(HollowKnight game) {
-        this.game = game;
-        this.audioLoader = new AudioLoader();
-        this.audioLoader.load();
+    private AudioManager() {
+        audioLoader = new AudioLoader();
+        audioLoader.load();
     }
 
+    public static AudioManager getInstance() {
+        if (instance == null) {
+            throw new RuntimeException("AudioLoader is not initialized! Call init() first.");
+        }
+        return instance;
+    }
+
+    public static void init(HollowKnight hollowGame) {
+        if (instance == null) {
+            game = hollowGame;
+            instance = new AudioManager();
+        }
+    }
+
+    private boolean isSfxOn() { return game.data.getSettings().isSfxOn(); }
+    private boolean isMusicOn() { return game.data.getSettings().isMusicOn(); }
+    private float getSfxVol() { return game.data.getSettings().getSfxVolume(); }
+    private float getMusicVol() { return game.data.getSettings().getMusicVolume(); }
+
     public void playSound(Sound sound) {
-        if (game.settings.isSfxOn && sound != null) {
-            sound.play();
+        if (isSfxOn() && sound != null) {
+            sound.play(getSfxVol());
         }
     }
 
@@ -80,7 +99,7 @@ public class AudioManager {
             isFading = true;
             fadeTimer = 0f;
 
-            if (currentMusic != null && game.settings.isMusicOn) {
+            if (currentMusic != null && isMusicOn()) {
                 currentMusic.setLooping(loop);
                 currentMusic.setVolume(0f);
                 currentMusic.play();
@@ -88,9 +107,9 @@ public class AudioManager {
         } else {
             stopMusic();
             currentMusic = music;
-            if (currentMusic != null && game.settings.isMusicOn) {
+            if (currentMusic != null && isMusicOn()) {
                 currentMusic.setLooping(loop);
-                currentMusic.setVolume(game.settings.musicVolume);
+                currentMusic.setVolume(getMusicVol());
                 currentMusic.play();
             }
         }
@@ -106,7 +125,6 @@ public class AudioManager {
             prevBassLayer = currentBassLayer;
 
             currentMusic = null;
-
             currentAtmos = atmos;
             currentMainLayer = main;
             currentBassLayer = bass;
@@ -114,10 +132,10 @@ public class AudioManager {
             isFading = true;
             fadeTimer = 0f;
 
-            if (game.settings.isMusicOn) {
-                if (currentAtmos != null) { currentAtmos.setLooping(true); currentAtmos.setVolume(0f); currentAtmos.play(); }
-                if (currentMainLayer != null) { currentMainLayer.setLooping(true); currentMainLayer.setVolume(0f); currentMainLayer.play(); }
-                if (currentBassLayer != null) { currentBassLayer.setLooping(true); currentBassLayer.setVolume(0f); currentBassLayer.play(); }
+            if (isMusicOn()) {
+                safePlayInit(currentAtmos, 0f);
+                safePlayInit(currentMainLayer, 0f);
+                safePlayInit(currentBassLayer, 0f);
             }
         } else {
             stopMusic();
@@ -125,98 +143,93 @@ public class AudioManager {
             currentMainLayer = main;
             currentBassLayer = bass;
 
-            if (game.settings.isMusicOn) {
-                if (currentAtmos != null) { currentAtmos.setLooping(true); currentAtmos.setVolume(game.settings.musicVolume * 0.8f); currentAtmos.play(); }
-                if (currentMainLayer != null) { currentMainLayer.setLooping(true); currentMainLayer.setVolume(game.settings.musicVolume); currentMainLayer.play(); }
-                if (currentBassLayer != null) { currentBassLayer.setLooping(true); currentBassLayer.setVolume(0f); currentBassLayer.play(); }
+            if (isMusicOn()) {
+                safePlayInit(currentAtmos, getMusicVol() * 0.8f);
+                safePlayInit(currentMainLayer, getMusicVol());
+                safePlayInit(currentBassLayer, 0f);
             }
             currentBassVolume = 0f;
         }
     }
 
+    private void safePlayInit(Music music, float initialVolume) {
+        if (music != null) {
+            music.setLooping(true);
+            music.setVolume(initialVolume);
+            music.play();
+        }
+    }
+
     public void update(float delta) {
-        float targetBassVolume = isInCombat ? game.settings.musicVolume : 0f;
+        float targetBassVolume = isInCombat ? getMusicVol() : 0f;
         float fadeSpeed = 1.0f;
 
-        if (currentBassVolume < targetBassVolume) {
-            currentBassVolume += delta * fadeSpeed;
-            if (currentBassVolume > targetBassVolume) currentBassVolume = targetBassVolume;
-        } else if (currentBassVolume > targetBassVolume) {
-            currentBassVolume -= delta * fadeSpeed;
-            if (currentBassVolume < targetBassVolume) currentBassVolume = targetBassVolume;
+        if (currentBassVolume != targetBassVolume) {
+            if (currentBassVolume < targetBassVolume) {
+                currentBassVolume = Math.min(currentBassVolume + (delta * fadeSpeed), targetBassVolume);
+            } else {
+                currentBassVolume = Math.max(currentBassVolume - (delta * fadeSpeed), targetBassVolume);
+            }
         }
 
         if (isFading) {
             fadeTimer += delta;
             float progress = Math.min(fadeTimer / FADE_DURATION, 1f);
             float inv = 1f - progress;
+            float mVol = getMusicVol();
 
-            if (prevMusic != null) prevMusic.setVolume(game.settings.musicVolume * inv);
-            if (prevAtmos != null) prevAtmos.setVolume(game.settings.musicVolume * 0.8f * inv);
-            if (prevMainLayer != null) prevMainLayer.setVolume(game.settings.musicVolume * inv);
-            if (prevBassLayer != null) prevBassLayer.setVolume(currentBassVolume * inv);
+            safeSetVolume(prevMusic, mVol * inv);
+            safeSetVolume(prevAtmos, mVol * 0.8f * inv);
+            safeSetVolume(prevMainLayer, mVol * inv);
+            safeSetVolume(prevBassLayer, currentBassVolume * inv);
 
-            if (currentMusic != null) currentMusic.setVolume(game.settings.musicVolume * progress);
-            if (currentAtmos != null) currentAtmos.setVolume(game.settings.musicVolume * 0.8f * progress);
-            if (currentMainLayer != null) currentMainLayer.setVolume(game.settings.musicVolume * progress);
-            if (currentBassLayer != null) currentBassLayer.setVolume(currentBassVolume * progress);
+            safeSetVolume(currentMusic, mVol * progress);
+            safeSetVolume(currentAtmos, mVol * 0.8f * progress);
+            safeSetVolume(currentMainLayer, mVol * progress);
+            safeSetVolume(currentBassLayer, currentBassVolume * progress);
 
             if (progress >= 1f) {
                 isFading = false;
-                if (prevMusic != null) { prevMusic.stop(); prevMusic = null; }
-                if (prevAtmos != null) { prevAtmos.stop(); prevAtmos = null; }
-                if (prevMainLayer != null) { prevMainLayer.stop(); prevMainLayer = null; }
-                if (prevBassLayer != null) { prevBassLayer.stop(); prevBassLayer = null; }
+                safeStop(prevMusic, prevAtmos, prevMainLayer, prevBassLayer);
+                prevMusic = prevAtmos = prevMainLayer = prevBassLayer = null;
             }
         } else {
-            if (currentBassLayer != null) {
-                currentBassLayer.setVolume(currentBassVolume);
-            }
+            safeSetVolume(currentBassLayer, currentBassVolume);
         }
     }
 
     public void stopMusic() {
         isFading = false;
-        if (currentMusic != null) { currentMusic.stop(); currentMusic = null; }
-        if (prevMusic != null) { prevMusic.stop(); prevMusic = null; }
-
-        if (currentAtmos != null) { currentAtmos.stop(); currentAtmos = null; }
-        if (currentMainLayer != null) { currentMainLayer.stop(); currentMainLayer = null; }
-        if (currentBassLayer != null) { currentBassLayer.stop(); currentBassLayer = null; }
-
-        if (prevAtmos != null) { prevAtmos.stop(); prevAtmos = null; }
-        if (prevMainLayer != null) { prevMainLayer.stop(); prevMainLayer = null; }
-        if (prevBassLayer != null) { prevBassLayer.stop(); prevBassLayer = null; }
+        safeStop(currentMusic, prevMusic, currentAtmos, currentMainLayer, currentBassLayer, prevAtmos, prevMainLayer, prevBassLayer);
+        currentMusic = currentAtmos = currentMainLayer = currentBassLayer = null;
+        prevMusic = prevAtmos = prevMainLayer = prevBassLayer = null;
     }
 
     public void pauseMusic() {
-        if (currentMusic != null && currentMusic.isPlaying()) currentMusic.pause();
-        if (prevMusic != null && prevMusic.isPlaying()) prevMusic.pause();
-
-        if (currentAtmos != null && currentAtmos.isPlaying()) currentAtmos.pause();
-        if (currentMainLayer != null && currentMainLayer.isPlaying()) currentMainLayer.pause();
-        if (currentBassLayer != null && currentBassLayer.isPlaying()) currentBassLayer.pause();
-
-        if (prevAtmos != null && prevAtmos.isPlaying()) prevAtmos.pause();
-        if (prevMainLayer != null && prevMainLayer.isPlaying()) prevMainLayer.pause();
-        if (prevBassLayer != null && prevBassLayer.isPlaying()) prevBassLayer.pause();
+        safePause(currentMusic, prevMusic, currentAtmos, currentMainLayer, currentBassLayer, prevAtmos, prevMainLayer, prevBassLayer);
     }
 
     public void resumeMusic() {
-        if (!game.settings.isMusicOn) return;
+        if (!isMusicOn()) return;
 
-        if (currentMusic != null) currentMusic.play();
-        if (isFading && prevMusic != null) prevMusic.play();
+        safePlay(currentMusic, currentAtmos, currentMainLayer, currentBassLayer);
+        if (isFading) safePlay(prevMusic, prevAtmos, prevMainLayer, prevBassLayer);
+    }
 
-        if (currentAtmos != null) currentAtmos.play();
-        if (currentMainLayer != null) currentMainLayer.play();
-        if (currentBassLayer != null) currentBassLayer.play();
+    private void safeStop(Music... musics) {
+        for (Music m : musics) if (m != null) m.stop();
+    }
 
-        if (isFading) {
-            if (prevAtmos != null) prevAtmos.play();
-            if (prevMainLayer != null) prevMainLayer.play();
-            if (prevBassLayer != null) prevBassLayer.play();
-        }
+    private void safePause(Music... musics) {
+        for (Music m : musics) if (m != null && m.isPlaying()) m.pause();
+    }
+
+    private void safePlay(Music... musics) {
+        for (Music m : musics) if (m != null) m.play();
+    }
+
+    private void safeSetVolume(Music music, float volume) {
+        if (music != null) music.setVolume(volume);
     }
 
     public void setCombatState(boolean inCombat) {
@@ -225,18 +238,18 @@ public class AudioManager {
 
     public void updateMusicVolume() {
         if (!isFading) {
-            if (currentMusic != null) currentMusic.setVolume(game.settings.musicVolume);
-            if (currentAtmos != null) currentAtmos.setVolume(game.settings.musicVolume * 0.8f);
-            if (currentMainLayer != null) currentMainLayer.setVolume(game.settings.musicVolume);
-            if (currentBassLayer != null) {
-                currentBassVolume = Math.min(currentBassVolume, game.settings.musicVolume);
-                currentBassLayer.setVolume(currentBassVolume);
-            }
+            float vol = getMusicVol();
+            safeSetVolume(currentMusic, vol);
+            safeSetVolume(currentAtmos, vol);
+            safeSetVolume(currentMainLayer, vol);
+
+            currentBassVolume = Math.min(currentBassVolume, vol);
+            safeSetVolume(currentBassLayer, currentBassVolume);
         }
     }
 
     public void playFootsteps(boolean isGrass) {
-        if (!game.settings.isSfxOn) return;
+        if (!isSfxOn()) return;
 
         Sound targetSound = isGrass ? audioLoader.knight_runGrass : audioLoader.knight_runStone;
 
@@ -261,8 +274,7 @@ public class AudioManager {
     }
 
     public void playFallingSound() {
-        if (!game.settings.isSfxOn || isFallingSoundPlaying) return;
-
+        if (!isSfxOn() || isFallingSoundPlaying) return;
         if (audioLoader.Knight_falling != null) {
             fallingSoundId = audioLoader.Knight_falling.loop(0.8f);
             isFallingSoundPlaying = true;
@@ -278,8 +290,7 @@ public class AudioManager {
     }
 
     public void playCharmProximityLoop() {
-        if (!game.settings.isSfxOn || isCharmLoopPlaying) return;
-
+        if (!isSfxOn() || isCharmLoopPlaying) return;
         if (audioLoader.knight_pickUpSpell != null) {
             charmLoopId = audioLoader.knight_pickUpSpell.loop(0.6f);
             isCharmLoopPlaying = true;
@@ -295,8 +306,7 @@ public class AudioManager {
     }
 
     public void playWallSlideLoop() {
-        if (!game.settings.isSfxOn || isWallSlidePlaying) return;
-
+        if (!isSfxOn() || isWallSlidePlaying) return;
         if (audioLoader.knight_slidingWall != null) {
             wallSlideSoundId = audioLoader.knight_slidingWall.loop(0.7f);
             isWallSlidePlaying = true;
@@ -312,7 +322,7 @@ public class AudioManager {
     }
 
     public void playZoteDialogue() {
-        if (!game.settings.isSfxOn) return;
+        if (!isSfxOn()) return;
         if (audioLoader.zoteTalk != null && audioLoader.zoteTalk.length > 0) {
             int index;
             do {
@@ -320,10 +330,7 @@ public class AudioManager {
             } while (index == lastZoteTalkIndex && audioLoader.zoteTalk.length > 1);
 
             lastZoteTalkIndex = index;
-
-            if (audioLoader.zoteTalk[index] != null) {
-                audioLoader.zoteTalk[index].play(0.9f);
-            }
+            if (audioLoader.zoteTalk[index] != null) audioLoader.zoteTalk[index].play(0.9f);
         }
     }
 
@@ -336,7 +343,7 @@ public class AudioManager {
     }
 
     public void playZoteAttackLoop() {
-        if (!game.settings.isSfxOn || isZoteAttackPlaying) return;
+        if (!isSfxOn() || isZoteAttackPlaying) return;
         if (audioLoader.zoteAttackLoop != null) {
             zoteAttackSoundId = audioLoader.zoteAttackLoop.loop(0.8f);
             isZoteAttackPlaying = true;
@@ -352,7 +359,7 @@ public class AudioManager {
     }
 
     public void playFocusChargeLoop() {
-        if (!game.settings.isSfxOn || isFocusChargePlaying) return;
+        if (!isSfxOn() || isFocusChargePlaying) return;
         if (audioLoader.knight_focusCharge != null) {
             focusChargeSoundId = audioLoader.knight_focusCharge.loop(0.9f);
             isFocusChargePlaying = true;
@@ -368,29 +375,23 @@ public class AudioManager {
     }
 
     public void playFalseKnightShout() {
-        if (!game.settings.isSfxOn) return;
+        if (!isSfxOn()) return;
         if (audioLoader.fk_shouts != null && audioLoader.fk_shouts.length > 0) {
-            int index = com.badlogic.gdx.math.MathUtils.random(0, audioLoader.fk_shouts.length - 1);
-            if (audioLoader.fk_shouts[index] != null) {
-                audioLoader.fk_shouts[index].play(0.9f);
-            }
+            int index = MathUtils.random(0, audioLoader.fk_shouts.length - 1);
+            if (audioLoader.fk_shouts[index] != null) audioLoader.fk_shouts[index].play(0.9f);
         }
     }
 
     public void playWallHitSound() {
-        if (!game.settings.isSfxOn) return;
+        if (!isSfxOn()) return;
         Sound[] hits = {audioLoader.wall_hit_1, audioLoader.wall_hit_2};
         int index = MathUtils.random(0, 1);
-        if (hits[index] != null) {
-            hits[index].play(0.8f);
-        }
+        if (hits[index] != null) hits[index].play(0.8f);
     }
 
     public void playWallDeathSound() {
-        if (!game.settings.isSfxOn) return;
-        if (audioLoader.wall_death != null) {
-            audioLoader.wall_death.play(0.9f);
-        }
+        if (!isSfxOn()) return;
+        if (audioLoader.wall_death != null) audioLoader.wall_death.play(0.9f);
     }
 
     public void stopAllSfxLoops() {

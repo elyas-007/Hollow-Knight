@@ -23,6 +23,6 @@ public enum Charm {
     }
 
     public String getDescription() {
-        return LanguageManager.get(this.name() + "_desc");
+        return LanguageManager.getInstance().get(this.name() + "_desc");
     }
 }

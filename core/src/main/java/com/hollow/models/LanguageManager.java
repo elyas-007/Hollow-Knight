@@ -9,11 +9,23 @@ import com.hollow.models.enums.Language;
 import java.util.Locale;
 
 public class LanguageManager {
+    private static LanguageManager instance;
     public static I18NBundle bundle;
 
     private static Array<LanguageObserver> observers = new Array<>();
 
-    public static void addObserver(LanguageObserver observer) {
+    private LanguageManager() {
+        observers = new Array<>();
+    }
+
+
+    public static LanguageManager getInstance() {
+        if (instance == null)
+            instance = new LanguageManager();
+        return instance;
+    }
+
+    public void addObserver(LanguageObserver observer) {
         if (!observers.contains(observer, true)) {
             observers.add(observer);
         }
@@ -23,7 +35,7 @@ public class LanguageManager {
         observers.removeValue(observer, true);
     }
 
-    public static void load(Language lang) {
+    public void load(Language lang) {
         try {
             FileHandle baseFileHandel = Gdx.files.internal("language/strings");
 
@@ -41,7 +53,7 @@ public class LanguageManager {
         }
     }
 
-    public static String get(String key) {
+    public String get(String key) {
         if (bundle != null) {
             try {
                 return bundle.get(key);

@@ -25,10 +25,10 @@ import com.hollow.models.LanguageManager;
 import com.hollow.models.LanguageObserver;
 import com.hollow.models.entities.Knight.Charm;
 
-public class InventoryUI implements LanguageObserver {
+public class InventoryUI implements LanguageObserver, UI {
     public Stage stage;
-    private HollowKnight game;
-    private GameData data;
+    private final HollowKnight game;
+    private final GameData data;
 
     private Table equippedCharmsTable;
     private Table notchesTable;
@@ -50,12 +50,12 @@ public class InventoryUI implements LanguageObserver {
         this.game = game;
         this.data = data;
         stage = new Stage(new FitViewport(game.SCREEN_WIDTH, game.SCREEN_HEIGHT));
-        LanguageManager.addObserver(this);
+        game.languageManager.addObserver(this);
         setupUI();
     }
 
-    @SuppressWarnings("unchecked")
-    private void setupUI() {
+    @Override
+    public void setupUI() {
         rootTable = new Table();
         rootTable.setFillParent(true);
 
@@ -65,7 +65,7 @@ public class InventoryUI implements LanguageObserver {
         Table leftTable = new Table();
 
         LabelStyle style = new LabelStyle(game.assetLoader.font, Color.WHITE);
-        Label equippedLabel = new Label(LanguageManager.get("equipped"), style);
+        Label equippedLabel = new Label(game.languageManager.get("equipped"), style);
         leftTable.add(equippedLabel).left().padBottom(10).row();
 
         equippedCharmsTable = new Table();
@@ -78,7 +78,7 @@ public class InventoryUI implements LanguageObserver {
         }
         leftTable.add(equippedCharmsTable).left().padBottom(20).row();
 
-        Label notchLabel = new Label(LanguageManager.get("notches"), style);
+        Label notchLabel = new Label(game.languageManager.get("notches"), style);
         leftTable.add(notchLabel).left().padBottom(10).row();
 
         notchesTable = new Table();
@@ -103,7 +103,7 @@ public class InventoryUI implements LanguageObserver {
             charmList.add(charm);
             charmSlots.add(slotStack);
 
-            if (data.unlockedCharms.contains(charm, true)) {
+            if (data.getActiveSlot().getUnlockedCharms().contains(charm, true)) {
                 final Image charmImg = new Image(game.assetLoader.charmTextures.get(charm));
                 charmImg.setTouchable(Touchable.enabled);
                 slotStack.add(charmImg);
@@ -147,7 +147,7 @@ public class InventoryUI implements LanguageObserver {
     private void buildMainLayout(Table contentTable) {
         Image tl = new Image(game.assetLoader.overScreen_Top_Left);
         Image top = new Image(game.assetLoader.inventory_top);
-        Label titleL = new Label(LanguageManager.get("charmsTitle"), new LabelStyle(game.assetLoader.font, Color.WHITE));
+        Label titleL = new Label(game.languageManager.get("charmsTitle"), new LabelStyle(game.assetLoader.font, Color.WHITE));
         Image tr = new Image(game.assetLoader.overScreen_Top_Right);
 
         Table title = new Table();
@@ -193,12 +193,12 @@ public class InventoryUI implements LanguageObserver {
 
         Charm charm = charmList.get(index);
 
-        if (data.unlockedCharms.contains(charm, true)) {
+        if (data.getActiveSlot().getUnlockedCharms().contains(charm, true)) {
             charmNameLabel.setText(charm.getTitle());
             charmDescLabel.setText(charm.getDescription());
             charmIconRight.setDrawable(new Image(game.assetLoader.charmTextures.get(charm)).getDrawable());
         } else {
-            charmNameLabel.setText(LanguageManager.get("unknown"));
+            charmNameLabel.setText(game.languageManager.get("unknown"));
             charmDescLabel.setText("");
             charmIconRight.setDrawable(null);
         }
@@ -208,23 +208,23 @@ public class InventoryUI implements LanguageObserver {
         if (index < 0 || index >= charmList.size) return;
 
         Charm charm = charmList.get(index);
-        if (!data.unlockedCharms.contains(charm, true)) return;
+        if (!data.getActiveSlot().getUnlockedCharms().contains(charm, true)) return;
 
         Stack slotStack = charmSlots.get(index);
 
-        if (data.equippedCharms.contains(charm, true)) {
-            data.equippedCharms.removeValue(charm, true);
+        if (data.getActiveSlot().getEquippedCharms().contains(charm, true)) {
+            data.getActiveSlot().getEquippedCharms().removeValue(charm, true);
             updateEquippedAndNotches();
             game.audioManager.playSound(game.audioManager.audioLoader.buttonClick);
-        } else if (data.equippedCharms.size < MAX_NOTCHES) {
+        } else if (data.getActiveSlot().getEquippedCharms().size < MAX_NOTCHES) {
             animateEquip(charm, slotStack);
             game.audioManager.playSound(game.audioManager.audioLoader.buttonClick);
         }
     }
 
     private void animateEquip(final Charm charm, Actor sourceSlot) {
-        final int targetIndex = data.equippedCharms.size;
-        data.equippedCharms.add(charm);
+        final int targetIndex = data.getActiveSlot().getEquippedCharms().size;
+        data.getActiveSlot().getEquippedCharms().add(charm);
 
         updateEquippedAndNotches();
 
@@ -258,13 +258,13 @@ public class InventoryUI implements LanguageObserver {
 
     private void updateEquippedAndNotches() {
         for (int i = 0; i < MAX_NOTCHES; i++) {
-            if (i < data.equippedCharms.size) {
-                final Charm c = data.equippedCharms.get(i);
+            if (i < data.getActiveSlot().getEquippedCharms().size) {
+                final Charm c = data.getActiveSlot().getEquippedCharms().get(i);
                 Image img = new Image(game.assetLoader.charmTextures.get(c));
                 img.addListener(new ClickListener() {
                     @Override
                     public void clicked(InputEvent event, float x, float y) {
-                        data.equippedCharms.removeValue(c, true);
+                        data.getActiveSlot().getEquippedCharms().removeValue(c, true);
                         updateEquippedAndNotches();
                         game.audioManager.playSound(game.audioManager.audioLoader.buttonClick);
                     }
@@ -278,7 +278,7 @@ public class InventoryUI implements LanguageObserver {
         notchesTable.clearChildren();
         for (int i = 0; i < MAX_NOTCHES; i++) {
             Image notch;
-            if (i < data.equippedCharms.size) {
+            if (i < data.getActiveSlot().getEquippedCharms().size) {
                 notch = new Image(game.assetLoader.fullNotch);
             } else {
                 notch = new Image(game.assetLoader.emptyNotch);
@@ -292,7 +292,7 @@ public class InventoryUI implements LanguageObserver {
             Charm charm = charmList.get(i);
             Stack slotStack = charmSlots.get(i);
 
-            if (data.unlockedCharms.contains(charm, true) && slotStack.getChildren().size == 1) {
+            if (data.getActiveSlot().getUnlockedCharms().contains(charm, true) && slotStack.getChildren().size == 1) {
                 final Image charmImg = new Image(game.assetLoader.charmTextures.get(charm));
                 charmImg.setTouchable(Touchable.enabled);
                 slotStack.add(charmImg);
@@ -300,16 +300,24 @@ public class InventoryUI implements LanguageObserver {
         }
     }
 
+    @Override
     public void act(float delta) {
         stage.act(delta);
         if (controller != null)
             controller.update(delta);
     }
 
+    @Override
+    public void resize(int width, int height) {
+        stage.getViewport().update(width, height, true);
+    }
+
+    @Override
     public void draw() {
         stage.draw();
     }
 
+    @Override
     public void dispose() {
         stage.dispose();
     }

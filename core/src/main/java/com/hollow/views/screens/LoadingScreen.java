@@ -15,14 +15,13 @@ import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.utils.Array;
 import com.hollow.HollowKnight;
 import com.hollow.assets.TiledMapHelper;
+import com.hollow.models.SaveManager;
 
 public class LoadingScreen implements Screen {
     private final HollowKnight game;
     private final String nextMap;
     private String actualMapPath;
-
     private SpriteBatch batch;
-    private Texture loadingSheet;
     private Animation<TextureRegion> loadingAnimation;
     private float stateTime;
 
@@ -46,6 +45,9 @@ public class LoadingScreen implements Screen {
         this.game = game;
         this.nextMap = nextMap;
         this.useCustomSpawn = true;
+
+        this.spawnX = spawnX;
+        this.spawnY = spawnY;
         init();
     }
 
@@ -63,11 +65,6 @@ public class LoadingScreen implements Screen {
         assetManager.load(actualMapPath, TiledMap.class);
 
         setupAnimation();
-    }
-
-    @Override
-    public void show() {
-
     }
 
     @Override
@@ -96,7 +93,8 @@ public class LoadingScreen implements Screen {
         if (timer >= MINIMUM_LOAD_TIME && isMapLoaded) {
             TiledMap preloadedMap = assetManager.get(actualMapPath, TiledMap.class);
 
-            game.activeSave.location = nextMap;
+            game.data.getActiveSlot().setLocation(nextMap);
+            SaveManager.save(game.data);
 
             if (useCustomSpawn) {
                 TiledMapHelper helper = new TiledMapHelper();
@@ -114,34 +112,20 @@ public class LoadingScreen implements Screen {
     }
 
     @Override
-    public void resize(int width, int height) {
-
-    }
-
-    @Override
-    public void pause() {
-
-    }
-
-    @Override
-    public void resume() {
-
-    }
-
-    @Override
-    public void hide() {
-
-    }
-
-    @Override
     public void dispose() {
         if (batch != null) batch.dispose();
-
+        if (assetManager != null) assetManager.dispose();
     }
 
 
+    @Override public void show() {}
+    @Override public void resize(int width, int height) {}
+    @Override public void pause() {}
+    @Override public void resume() {}
+    @Override public void hide() {}
+
     private void setupAnimation() {
-        loadingSheet = new Texture(Gdx.files.internal("effect/SpriteAtlasTexture-Load_Icon_Knight-512x256-fmt12.png"));
+        Texture loadingSheet = new Texture(Gdx.files.internal("effect/SpriteAtlasTexture-Load_Icon_Knight-512x256-fmt12.png"));
 
         int frameCols = 4;
         int frameRows = 2;

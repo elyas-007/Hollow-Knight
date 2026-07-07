@@ -18,8 +18,9 @@ import com.hollow.HollowKnight;
 import com.hollow.controllers.ButtonController;
 import com.hollow.models.LanguageManager;
 import com.hollow.models.LanguageObserver;
+import com.hollow.models.SettingData;
 
-public class ControlsUI implements LanguageObserver {
+public class ControlsUI implements LanguageObserver, UI {
     public Stage stage;
     private HollowKnight game;
     private ButtonController controller;
@@ -29,11 +30,12 @@ public class ControlsUI implements LanguageObserver {
         this.game = game;
         this.onClose = onClose;
         stage = new Stage(new FitViewport(game.SCREEN_WIDTH, game.SCREEN_HEIGHT));
-        LanguageManager.addObserver(this);
+        game.languageManager.addObserver(this);
         setupUI();
     }
 
-    private void setupUI() {
+    @Override
+    public void setupUI() {
         TextButtonStyle style = new TextButtonStyle();
         style.font = game.assetLoader.font;
         style.fontColor = Color.WHITE;
@@ -45,7 +47,7 @@ public class ControlsUI implements LanguageObserver {
         Table content = new Table();
 
         Table title = new Table();
-        Label t = new Label(LanguageManager.get("controlsBtn"), titleStyle);
+        Label t = new Label(game.languageManager.get("controlsBtn"), titleStyle);
         t.setFontScale(1.5f);
         title.add(t).row();
         title.add(new Image(game.assetLoader.top_menu));
@@ -53,18 +55,19 @@ public class ControlsUI implements LanguageObserver {
         content.add(title).colspan(3).padTop(20).padBottom(60).row();
 
         Table keysTable = new Table();
-        keysTable.add(createKeyRow(LanguageManager.get("moveLeft"), game.settings.keyLeft, titleStyle, style)).pad(10);
-        keysTable.add(createKeyRow(LanguageManager.get("moveRight"), game.settings.keyRight, titleStyle, style)).pad(10).row();
-        keysTable.add(createKeyRow(LanguageManager.get("lookUp"), game.settings.keyUp, titleStyle, style)).pad(10);
-        keysTable.add(createKeyRow(LanguageManager.get("lookDown"), game.settings.keyDown, titleStyle, style)).pad(10).row();
-        keysTable.add(createKeyRow(LanguageManager.get("jump"), game.settings.keyJump, titleStyle, style)).pad(10);
-        keysTable.add(createKeyRow(LanguageManager.get("dash"), game.settings.keyDash, titleStyle, style)).pad(10).row();
-        keysTable.add(createKeyRow(LanguageManager.get("attack"), game.settings.keyAttack, titleStyle, style)).pad(10);
-        keysTable.add(createKeyRow(LanguageManager.get("focus"), game.settings.keyFocus, titleStyle, style)).pad(10).row();
+        SettingData settings = game.data.getSettings();
+        keysTable.add(createKeyRow(game.languageManager.get("moveLeft"), settings.getKeyLeft(), titleStyle, style)).pad(10);
+        keysTable.add(createKeyRow(game.languageManager.get("moveRight"), settings.getKeyRight(), titleStyle, style)).pad(10).row();
+        keysTable.add(createKeyRow(game.languageManager.get("lookUp"), settings.getKeyUp(), titleStyle, style)).pad(10);
+        keysTable.add(createKeyRow(game.languageManager.get("lookDown"), settings.getKeyDown(), titleStyle, style)).pad(10).row();
+        keysTable.add(createKeyRow(game.languageManager.get("jump"), settings.getKeyJump(), titleStyle, style)).pad(10);
+        keysTable.add(createKeyRow(game.languageManager.get("dash"), settings.getKeyDash(), titleStyle, style)).pad(10).row();
+        keysTable.add(createKeyRow(game.languageManager.get("attack"), settings.getKeyAttack(), titleStyle, style)).pad(10);
+        keysTable.add(createKeyRow(game.languageManager.get("focus"), settings.getKeyFocus(), titleStyle, style)).pad(10).row();
 
         content.add(keysTable).row();
 
-        TextButton backBtn = new TextButton(LanguageManager.get("back"), style);
+        TextButton backBtn = new TextButton(game.languageManager.get("back"), style);
         backBtn.setUserObject((Runnable) () -> onClose.run());
 
         main.add(backBtn).left().pad(20).padLeft(50).row();
@@ -100,12 +103,16 @@ public class ControlsUI implements LanguageObserver {
         return row;
     }
 
+    @Override
     public void act(float delta) {
         stage.act(delta);
         if (controller != null) controller.update(delta);
     }
+    @Override
     public void draw() { stage.draw(); }
+    @Override
     public void resize(int width, int height) { stage.getViewport().update(width, height, true); }
+    @Override
     public void dispose() { if (stage != null) stage.dispose(); }
 
     @Override

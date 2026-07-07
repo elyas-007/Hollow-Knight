@@ -18,7 +18,7 @@ import com.hollow.controllers.ButtonController;
 import com.hollow.models.LanguageManager;
 import com.hollow.models.LanguageObserver;
 
-public class CheatUI implements LanguageObserver {
+public class CheatUI implements LanguageObserver, UI {
     public Stage stage;
     private HollowKnight game;
     private ButtonController controller;
@@ -28,11 +28,12 @@ public class CheatUI implements LanguageObserver {
         this.game = game;
         this.onClose = onClose;
         stage = new Stage(new FitViewport(game.SCREEN_WIDTH, game.SCREEN_HEIGHT));
-        LanguageManager.addObserver(this);
+        game.languageManager.addObserver(this);
         setupUI();
     }
 
-    private void setupUI() {
+    @Override
+    public void setupUI() {
         TextButtonStyle style = new TextButtonStyle();
         style.font = game.assetLoader.font;
         style.fontColor = Color.WHITE;
@@ -45,7 +46,7 @@ public class CheatUI implements LanguageObserver {
         Table content = new Table();
 
         Table title = new Table();
-        Label t = new Label(LanguageManager.get("cheatsTitle"), titleStyle);
+        Label t = new Label(game.languageManager.get("cheatsTitle"), titleStyle);
         t.setFontScale(1.5f);
         title.add(t).row();
         title.add(new Image(game.assetLoader.top_menu));
@@ -53,12 +54,12 @@ public class CheatUI implements LanguageObserver {
         content.add(title).colspan(3).padBottom(60).row();
 
 
-        String s1 = LanguageManager.get("cheat1");
-        String s2 = LanguageManager.get("cheat2");
-        String s3 = LanguageManager.get("cheat3");
-        String s4 = LanguageManager.get("cheat4");
-        String s5 = LanguageManager.get("cheat5");
-        String s6 = LanguageManager.get("cheat6");
+        String s1 = game.languageManager.get("cheat1");
+        String s2 = game.languageManager.get("cheat2");
+        String s3 = game.languageManager.get("cheat3");
+        String s4 = game.languageManager.get("cheat4");
+        String s5 = game.languageManager.get("cheat5");
+        String s6 = game.languageManager.get("cheat6");
         Label cheat1 = new Label(s1, descStyle);
         Label cheat2 = new Label(s2, descStyle);
         Label cheat3 = new Label(s3, descStyle);
@@ -78,7 +79,7 @@ public class CheatUI implements LanguageObserver {
         content.add(cheat5).left().padBottom(15).row();
         content.add(cheat6).left().padBottom(15).row();
 
-        TextButton backBtn = new TextButton(LanguageManager.get("back"), style);
+        TextButton backBtn = new TextButton(game.languageManager.get("back"), style);
         backBtn.setUserObject((Runnable) () -> onClose.run());
 
         main.add(backBtn).left().pad(20).padLeft(50).row();
@@ -100,19 +101,23 @@ public class CheatUI implements LanguageObserver {
         controller = new ButtonController(game, stage, menuButtons);
     }
 
+    @Override
     public void act(float delta) {
         stage.act(delta);
         if (controller != null) controller.update(delta);
     }
 
+    @Override
     public void draw() {
         stage.draw();
     }
 
+    @Override
     public void resize(int width, int height) {
         stage.getViewport().update(width, height, true);
     }
 
+    @Override
     public void dispose() {
         if (stage != null) stage.dispose();
     }

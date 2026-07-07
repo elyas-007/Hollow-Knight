@@ -75,7 +75,7 @@ public class CharmSelectionController {
                 }
 
                 if (newIndex != selectedItem) {
-                    updateSelectionState(newIndex, game.settings.isSfxOn);
+                    updateSelectionState(newIndex, game.data.getSettings().isSfxOn());
                     return true;
                 }
                 return false;
@@ -90,7 +90,7 @@ public class CharmSelectionController {
                 @Override
                 public void enter(InputEvent event, float x, float y, int pointer, Actor fromActor) {
                     if (pointer == -1 && selectedItem != dex) {
-                        updateSelectionState(dex, game.settings.isSfxOn);
+                        updateSelectionState(dex, game.data.getSettings().isSfxOn());
                     }
                 }
 

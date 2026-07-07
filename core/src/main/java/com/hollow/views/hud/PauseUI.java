@@ -15,19 +15,20 @@ import com.hollow.models.LanguageObserver;
 import com.hollow.models.SaveManager;
 import com.hollow.views.screens.*;
 
-public class PauseUI implements LanguageObserver {
+public class PauseUI implements LanguageObserver, UI {
     public Stage stage;
-    private HollowKnight game;
-    private GameScreen gameScreen;
+    private final HollowKnight game;
+    private final GameScreen gameScreen;
     private ButtonController controller;
 
-    public SettingsUI settingsUI;
+    public BaseSettingUI settingsUI;
     public GuideUI guideUI;
     public CheatUI cheatUI;
 
     public boolean isSettingsOpen = false;
     public boolean isGuideOpen = false;
     public boolean isCheatOpen = false;
+
     private InputMultiplexer multiplexer;
 
     public PauseUI(HollowKnight game, GameScreen gameScreen, InputMultiplexer multiplexer) {
@@ -36,17 +37,17 @@ public class PauseUI implements LanguageObserver {
         this.multiplexer = multiplexer;
 
         stage = new Stage(new FitViewport(game.SCREEN_WIDTH, game.SCREEN_HEIGHT));
-        LanguageManager.addObserver(this);
+        game.languageManager.addObserver(this);
         setupSubUIs();
         setupUI();
     }
 
     private void setupSubUIs() {
-        settingsUI = new SettingsUI(game, () -> {
+        settingsUI = new BaseSettingUI(game, () -> {
             isSettingsOpen = false;
             multiplexer.removeProcessor(settingsUI.stage);
             multiplexer.addProcessor(stage);
-        });
+        }, multiplexer);
 
         guideUI = new GuideUI(game, () -> {
             isGuideOpen = false;
@@ -61,7 +62,8 @@ public class PauseUI implements LanguageObserver {
         });
     }
 
-    private void setupUI() {
+    @Override
+    public void setupUI() {
         TextButtonStyle styleBtn = new TextButtonStyle();
         styleBtn.font = game.assetLoader.font;
         styleBtn.fontColor = Color.WHITE;
@@ -72,11 +74,11 @@ public class PauseUI implements LanguageObserver {
 
         root.add(new Image(game.assetLoader.pauseTop)).colspan(2).top().padBottom(30).center().row();
 
-        TextButton continueBtn = new TextButton(LanguageManager.get("continue"), styleBtn);
-        TextButton settingsBtn = new TextButton(LanguageManager.get("settings"), styleBtn);
-        TextButton guideBtn = new TextButton(LanguageManager.get("guide"), styleBtn);
-        TextButton cheatBtn = new TextButton(LanguageManager.get("cheat"), styleBtn);
-        TextButton quitBtn = new TextButton(LanguageManager.get("quitToMenu"), styleBtn);
+        TextButton continueBtn = new TextButton(game.languageManager.get("continue"), styleBtn);
+        TextButton settingsBtn = new TextButton(game.languageManager.get("settings"), styleBtn);
+        TextButton guideBtn = new TextButton(game.languageManager.get("guide"), styleBtn);
+        TextButton cheatBtn = new TextButton(game.languageManager.get("cheat"), styleBtn);
+        TextButton quitBtn = new TextButton(game.languageManager.get("quitToMenu"), styleBtn);
 
         continueBtn.setUserObject((Runnable) () -> gameScreen.togglePause());
 
@@ -115,6 +117,7 @@ public class PauseUI implements LanguageObserver {
         stage.addActor(root);
     }
 
+    @Override
     public void act(float delta) {
         if (isSettingsOpen) settingsUI.act(delta);
         else if (isGuideOpen) guideUI.act(delta);
@@ -125,6 +128,7 @@ public class PauseUI implements LanguageObserver {
         }
     }
 
+    @Override
     public void draw() {
         if (isSettingsOpen) settingsUI.draw();
         else if (isGuideOpen) guideUI.draw();
@@ -132,6 +136,7 @@ public class PauseUI implements LanguageObserver {
         else stage.draw();
     }
 
+    @Override
     public void resize(int width, int height) {
         stage.getViewport().update(width, height, true);
         if (settingsUI != null) settingsUI.resize(width, height);
@@ -139,6 +144,7 @@ public class PauseUI implements LanguageObserver {
         if (cheatUI != null) cheatUI.resize(width, height);
     }
 
+    @Override
     public void dispose() {
         if (stage != null) stage.dispose();
         if (settingsUI != null) settingsUI.dispose();
@@ -147,17 +153,16 @@ public class PauseUI implements LanguageObserver {
         LanguageManager.removeObserver(this);
     }
 
-    public void quitGame() {
-        if (game.activeSave != null) {
-            SaveManager.save(game.activeSave);
-            game.activeSave = null;
-        }
-        game.setScreen(new MainMenuScreen(game));
-    }
-
     @Override
     public void onLanguageChanged() {
         stage.clear();
         setupUI();
+    }
+
+    public void quitGame() {
+        if (game.data != null) {
+            SaveManager.save(game.data);
+        }
+        game.setScreen(new MainMenuScreen(game));
     }
 }

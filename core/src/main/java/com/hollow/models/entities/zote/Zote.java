@@ -107,14 +107,14 @@ public class Zote {
         if (!hasFinishedIntro) {
             hasFinishedIntro = true;
             return new String[]{
-                LanguageManager.get("zoteIntro1"),
-                LanguageManager.get("zoteIntro2"),
-                LanguageManager.get("zoteIntro3"),
-                LanguageManager.get("zoteIntro4")
+                LanguageManager.getInstance().get("zoteIntro1"),
+                LanguageManager.getInstance().get("zoteIntro2"),
+                LanguageManager.getInstance().get("zoteIntro3"),
+                LanguageManager.getInstance().get("zoteIntro4")
             };
         } else {
             int rand = MathUtils.random(1, 10);
-            return new String[]{ LanguageManager.get("zotePrecept" + rand) };
+            return new String[]{ LanguageManager.getInstance().get("zotePrecept" + rand) };
         }
     }
 }

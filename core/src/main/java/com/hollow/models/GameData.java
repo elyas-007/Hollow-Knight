@@ -1,53 +1,43 @@
 package com.hollow.models;
 
 import com.badlogic.gdx.utils.Array;
+import com.badlogic.gdx.utils.IntMap;
 import com.hollow.HollowKnight;
 import com.hollow.models.entities.Knight.Charm;
 
+import java.util.HashMap;
+
 public class GameData {
-    public int slot;
-    public boolean isEmpty = true;
-    public String location = null; //CROSSROAD OR GREENPATH
-    public int mask = 0;
-    public boolean falseKnightDefeated = false;
-    public float falseKnightDeathX = 0f;
-    public float falseKnightDeathY = 0f;
-
-    public Array<Charm> unlockedCharms = new Array<>();
-    public Array<Charm> equippedCharms = new Array<>();
-
-    public Array<String> unlockedAchievements = new Array<>();
-    public Array<String> killedEnemyTypes = new Array<>();
-    public float playTime = 0; // sec
-
+    private SettingData settings;
+    private AchievementData achievements;
+    private final IntMap<SlotData> slots = new IntMap<>();
+    private int activeSlotId;
 
     public GameData() {
-    }
-
-    public GameData(int slot) {
-        this.slot = slot;
-        this.location = "CROSSROAD";
-        this.mask = 5;
-        this.playTime = 0;
-
-        unlockedCharms.addAll(
-            Charm.SOUL_CATCHER, Charm.DASH_MASTER, Charm.UNBREAKABLE_STRENGTH,
-            Charm.QUICK_SLASH, Charm.QUICK_FOCUS, Charm.HEAVY_BLOW,
-            Charm.SHARP_SHADOW
-        );
-    }
-
-    public boolean unlockAchievement(String achievementName) {
-        if (!unlockedAchievements.contains(achievementName, false)) {
-            unlockedAchievements.add(achievementName);
-            return true;
-        }
-        return false;
-    }
-
-    public void registerEnemyKill(String enemyType) {
-        if (!killedEnemyTypes.contains(enemyType, false)) {
-            killedEnemyTypes.add(enemyType);
+        settings = new SettingData();
+        achievements = new AchievementData();
+        for (int i = 1; i <= 4; i++) {
+            slots.put(i, new SlotData(i));
         }
     }
+
+    public void clearSlot(int id) {
+        slots.put(id, new SlotData(id));
+        SaveManager.save(this);
+    }
+
+    public void addSlot(int id, SlotData slotData) {
+        slots.put(id, slotData);
+        SaveManager.save(this);
+    }
+
+
+    public SettingData getSettings() {return settings;}
+    public void setSettings(SettingData settings) {this.settings = settings;}
+    public AchievementData getAchievements() {return achievements;}
+    public void setAchievements(AchievementData achievements) {this.achievements = achievements;}
+    public SlotData getSlot(int id) {return slots.get(id);}
+    public int getActiveSlotId() { return activeSlotId; }
+    public void setActiveSlotId(int activeSlotId) { this.activeSlotId = activeSlotId; }
+    public SlotData getActiveSlot() {return slots.get(activeSlotId);}
 }

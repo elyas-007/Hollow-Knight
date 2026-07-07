@@ -72,16 +72,14 @@ public class Game {
         this.groundRects = groundRects;
         this.spikeRects = spikeRects;
         this.breakableWalls = breakableWalls;
-        keyLeft = game.settings.keyLeft;
-        keyRight = game.settings.keyRight;
-        keyUp = game.settings.keyUp;
-        keyDown = game.settings.keyDown;
-        keyJump = game.settings.keyJump;
-        keyDash = game.settings.keyDash;
-        keyAttack =  game.settings.keyAttack;
-        keyFocus=  game.settings.keyFocus;
-        keyUp = game.settings.keyUp;
-        keyDown = game.settings.keyDown;
+        keyLeft = game.data.getSettings().getKeyLeft();
+        keyRight = game.data.getSettings().getKeyRight();
+        keyUp = game.data.getSettings().getKeyUp();
+        keyDown = game.data.getSettings().getKeyDown();
+        keyAttack = game.data.getSettings().getKeyAttack();
+        keyDash = game.data.getSettings().getKeyDash();
+        keyJump = game.data.getSettings().getKeyJump();
+        keyFocus = game.data.getSettings().getKeyFocus();
 
         this.enemies = enemies;
 
@@ -94,7 +92,7 @@ public class Game {
         this.data = data;
         this.boss = boss;
 
-        this.hasShadowCharm = data.equippedCharms.contains( // void heart
+        this.hasShadowCharm = data.getActiveSlot().getEquippedCharms().contains( // void heart
             Charm.VOID_HEART, true);
     }
 
@@ -108,7 +106,8 @@ public class Game {
     public void update(float delta) {
         updateCombatState();
         if (data != null && !knight.isDead() && !pendingRespawn && !screen.isPaused) {
-            data.playTime += delta;
+            float time = data.getActiveSlot().getPlayTime();
+            data.getActiveSlot().setPlayTime(time + delta);
         }
 
         if (knight.isDead()) {
@@ -142,7 +141,7 @@ public class Game {
         if (knight.castProjectile) {
             knight.castProjectile = false;
 
-            hasShadowCharm = data.equippedCharms.contains(Charm.VOID_HEART, true);
+            hasShadowCharm = data.getActiveSlot().getEquippedCharms().contains(Charm.VOID_HEART, true);
 
             game.audioManager.playSound(game.audioManager.audioLoader.knight_fireball);
 
@@ -266,10 +265,10 @@ public class Game {
 
         if (boss != null) {
             if (boss.currentState == FalseKnight.state.DEATH) {
-                if (!data.falseKnightDefeated) {
-                    data.falseKnightDefeated = true;
-                    data.falseKnightDeathX = boss.position.x;
-                    data.falseKnightDeathY = boss.position.y;
+                if (!data.getActiveSlot().isFalseKnightDefeated()) {
+                    data.getActiveSlot().setFalseKnightDefeated(true);
+                    data.getActiveSlot().setFalseKnightDeathX(boss.position.x);
+                    data.getActiveSlot().setFalseKnightDeathY(boss.position.y);
                     AchievementManager.getInstance().unlockAchievement(Achievement.DEFEAT_FALSE_KNIGHT);
                     SaveManager.save(data);
                 }
@@ -314,7 +313,7 @@ public class Game {
             }
         }
 
-        if (!data.unlockedCharms.contains(Charm.VOID_HEART, true) && voidHeartPos != null) {
+        if (!data.getActiveSlot().getUnlockedCharms().contains(Charm.VOID_HEART, true) && voidHeartPos != null) {
             voidHeartStateTime += delta;
             Rectangle charmHitbox = new Rectangle(voidHeartPos.x, voidHeartPos.y, 1f, 1f);
 
@@ -330,7 +329,7 @@ public class Game {
                 screen.dialogueBox.setPromptVisible(true);
 
                 if (Gdx.input.isKeyJustPressed(Input.Keys.E)) {
-                    data.unlockedCharms.add(Charm.VOID_HEART);
+                    data.getActiveSlot().getUnlockedCharms().add(Charm.VOID_HEART);
                     SaveManager.save(data);
                     screen.hud.showItemPopup("Void Heart Unlocked!");
 
@@ -431,12 +430,12 @@ public class Game {
             if (enemy.state != Enemy.EnemyState.CORPSE && enemy.state != Enemy.EnemyState.DYING_AIR && enemy.state != Enemy.EnemyState.DYING_LAND) {
                 if (knight.getHitbox().overlaps(enemy.hitbox) && !knight.isInvincible() && !knight.noclipMode) {
 
-                    if (knight.isDashing() && data.equippedCharms.contains(Charm.SHARP_SHADOW, true)) {
+                    if (knight.isDashing() && data.getActiveSlot().getEquippedCharms().contains(Charm.SHARP_SHADOW, true)) {
                         boolean hitFromRight = knight.getX() > enemy.position.x;
                         enemy.takeDamage(1, hitFromRight);
                         game.audioManager.playSound(game.audioManager.audioLoader.enemy_hit);
                         checkEnemyKill(enemy);
-                        int soulAmount = data.equippedCharms.contains(Charm.SOUL_CATCHER, true) ? 22 : 11;
+                        int soulAmount = data.getActiveSlot().getEquippedCharms().contains(Charm.SOUL_CATCHER, true) ? 22 : 11;
                         knight.gainSoul(soulAmount);
                     } else {
                         boolean hitFromRight = knight.getX() < enemy.position.x;
@@ -491,6 +490,15 @@ public class Game {
     private void handleInput(float delta) {
         if (pendingRespawn)
             return;
+
+        keyLeft = game.data.getSettings().getKeyLeft();
+        keyRight = game.data.getSettings().getKeyRight();
+        keyUp = game.data.getSettings().getKeyUp();
+        keyDown = game.data.getSettings().getKeyDown();
+        keyAttack = game.data.getSettings().getKeyAttack();
+        keyDash = game.data.getSettings().getKeyDash();
+        keyJump = game.data.getSettings().getKeyJump();
+        keyFocus = game.data.getSettings().getKeyFocus();
 
         boolean ctrlPressed = Gdx.input.isKeyPressed(Input.Keys.CONTROL_LEFT);
 
@@ -711,10 +719,10 @@ public class Game {
         }
 
         boolean hitSomething = false;
-        int nailDamage = data.equippedCharms.contains(Charm.UNBREAKABLE_STRENGTH, true) ? 2 : 1; // unbreakable_strength
+        int nailDamage = data.getActiveSlot().getEquippedCharms().contains(Charm.UNBREAKABLE_STRENGTH, true) ? 2 : 1; // unbreakable_strength
         if (instaKillMode) nailDamage = 9999;
-        int soulAmount = data.equippedCharms.contains(Charm.SOUL_CATCHER, true) ? 22 : 11; // soul catcher
-        boolean hasHeavyBlow = data.equippedCharms.contains(Charm.HEAVY_BLOW, true); // heavy blow
+        int soulAmount = data.getActiveSlot().getEquippedCharms().contains(Charm.SOUL_CATCHER, true) ? 22 : 11; // soul catcher
+        boolean hasHeavyBlow = data.getActiveSlot().getEquippedCharms().contains(Charm.HEAVY_BLOW, true); // heavy blow
 
         for (Enemy enemy : enemies) {
             if (enemy.state != Enemy.EnemyState.CORPSE && enemy.state != Enemy.EnemyState.DYING_AIR && enemy.state != Enemy.EnemyState.DYING_LAND) {
@@ -974,10 +982,11 @@ public class Game {
     private void checkEnemyKill(Enemy enemy) {
         if (enemy.health <= 0) {
             game.audioManager.playSound(game.audioManager.audioLoader.enemy_death);
-            data.registerEnemyKill(enemy.name);
+            data.getActiveSlot().registerEnemyKill(enemy.name);
             SaveManager.save(data);
-            if (data.killedEnemyTypes.size >= 6) {
+            if (data.getActiveSlot().getTotalEnemyKilled() >= 6) {
                 AchievementManager.getInstance().unlockAchievement(Achievement.TRUE_HUNTER);
+                SaveManager.save(data);
             }
         }
     }

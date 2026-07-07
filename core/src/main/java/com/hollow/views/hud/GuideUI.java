@@ -19,7 +19,7 @@ import com.hollow.models.LanguageManager;
 import com.hollow.models.LanguageObserver;
 import com.hollow.models.enums.Language;
 
-public class GuideUI implements LanguageObserver {
+public class GuideUI implements LanguageObserver, UI {
     public Stage stage;
     private HollowKnight game;
     private ButtonController controller;
@@ -39,7 +39,7 @@ public class GuideUI implements LanguageObserver {
         this.onClose = onClose;
         this.multiplexer = multiplexer;
         stage = new Stage(new FitViewport(game.SCREEN_WIDTH, game.SCREEN_HEIGHT));
-        LanguageManager.addObserver(this);
+        game.languageManager.addObserver(this);
 
         setupSubUIs();
         setupUI();
@@ -65,7 +65,8 @@ public class GuideUI implements LanguageObserver {
         });
     }
 
-    private void setupUI() {
+    @Override
+    public void setupUI() {
         TextButtonStyle style = new TextButtonStyle();
         style.font = game.assetLoader.font;
         style.fontColor = Color.WHITE;
@@ -76,13 +77,13 @@ public class GuideUI implements LanguageObserver {
         main.setFillParent(true);
         Table content = new Table();
 
-        Label t = new Label(LanguageManager.get("guideTitle"), titleStyle);
+        Label t = new Label(game.languageManager.get("guideTitle"), titleStyle);
         t.setFontScale(1.5f);
 
         content.add(t).center().padBottom(50).row();
-        TextButton controlsBtn = new TextButton(LanguageManager.get("controlsBtn"), style);
-        TextButton abilitiesBtn = new TextButton(LanguageManager.get("abilitiesBtn"), style);
-        TextButton cheatsBtn = new TextButton(LanguageManager.get("cheatsBtn"), style);
+        TextButton controlsBtn = new TextButton(game.languageManager.get("controlsBtn"), style);
+        TextButton abilitiesBtn = new TextButton(game.languageManager.get("abilitiesBtn"), style);
+        TextButton cheatsBtn = new TextButton(game.languageManager.get("cheatsBtn"), style);
 
         controlsBtn.setUserObject((Runnable) () -> {
             isControlsOpen = true;
@@ -106,7 +107,7 @@ public class GuideUI implements LanguageObserver {
         content.add(abilitiesBtn).padBottom(20).center().row();
         content.add(cheatsBtn).padBottom(20).center().row();
 
-        TextButton backBtn = new TextButton(LanguageManager.get("back"), style);
+        TextButton backBtn = new TextButton(game.languageManager.get("back"), style);
         backBtn.setUserObject((Runnable) () -> onClose.run());
 
         main.add(backBtn).left().pad(20).padLeft(50).row();
@@ -128,6 +129,7 @@ public class GuideUI implements LanguageObserver {
         controller = new ButtonController(game, stage, menuButtons);
     }
 
+    @Override
     public void act(float delta) {
         if (isControlsOpen) controlsUI.act(delta);
         else if (isAbilitiesOpen) abilitiesUI.act(delta);
@@ -138,6 +140,7 @@ public class GuideUI implements LanguageObserver {
         }
     }
 
+    @Override
     public void draw() {
         if (isControlsOpen) controlsUI.draw();
         else if (isAbilitiesOpen) abilitiesUI.draw();
@@ -145,6 +148,7 @@ public class GuideUI implements LanguageObserver {
         else stage.draw();
     }
 
+    @Override
     public void resize(int width, int height) {
         stage.getViewport().update(width, height, true);
         if (controlsUI != null) controlsUI.resize(width, height);
@@ -152,6 +156,7 @@ public class GuideUI implements LanguageObserver {
         if (cheatUI != null) cheatUI.resize(width, height);
     }
 
+    @Override
     public void dispose() {
         if (stage != null) stage.dispose();
         if (controlsUI != null) controlsUI.dispose();

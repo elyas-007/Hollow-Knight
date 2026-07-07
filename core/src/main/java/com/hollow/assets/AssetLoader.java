@@ -20,8 +20,8 @@ import com.hollow.models.entities.Knight.Charm;
 import java.util.HashMap;
 
 public class AssetLoader {
-    public HollowKnight game;
-
+    private static HollowKnight game;
+    private static AssetLoader instance;
     // Texture
     public Texture background;
     public TextureRegion pointerR;
@@ -29,6 +29,7 @@ public class AssetLoader {
     public Texture hollowKnightLogo;
     public Texture titleBottom;
     public Texture settingBottom;
+    public Texture brightness;
 
     public NinePatch saveBackground_greenPath;
     public NinePatch saveBackground_forgotten;
@@ -94,11 +95,23 @@ public class AssetLoader {
     public BitmapFont font;
     public BitmapFont subFont;
 
-    public AssetLoader(HollowKnight hollowKnight) {
-        game = hollowKnight;
+    private AssetLoader() {}
+
+    public static AssetLoader  getInstance() {
+        if (instance == null) {
+            throw new RuntimeException("AssetLoader instance is null! Please init() first!");
+        }
+        return instance;
     }
 
-    public void loadMainMenu() {
+    public static void init(HollowKnight hollowGame) {
+        if (instance == null) {
+            game = hollowGame;
+        }
+        instance = new AssetLoader();
+    }
+
+    public void loadAssets() {
         background = new Texture("ui/mainMenu/background.png");
         Texture pointTexture = new Texture("ui/mainMenu/main_menu_pointer_anim0008.png");
         pointerR = new TextureRegion(pointTexture);
@@ -110,17 +123,24 @@ public class AssetLoader {
         titleBottom = new Texture("ui/mainMenu/titleBottom.png");
         settingBottom = new Texture("ui/mainMenu/settingBottom.png");
 
-        FreeTypeFontGenerator generator = new FreeTypeFontGenerator(Gdx.files.internal("font/primary_font.ttf"));
+        brightness = new Texture("ui/mainMenu/brightness_image.png");
+
+        FreeTypeFontGenerator generator = new FreeTypeFontGenerator(Gdx.files.internal("font/TrajanPro-Bold.otf"));
+        FreeTypeFontGenerator generatorSub = new FreeTypeFontGenerator(Gdx.files.internal("font/primary_font.ttf"));
         FreeTypeFontParameter parameter = new FreeTypeFontParameter();
 
-        parameter.size = 24;
+        String extendedChars = "áéíóúÁÉÍÓÚàèìòùÀÈÌÒÙâêîôûÂÊÎÔÛäëïöüÿÄËÏÖÜŸçÇñÑæÆœŒß¿¡«»‹›“”‘’";
+
+        parameter.characters = FreeTypeFontGenerator.DEFAULT_CHARS + extendedChars;
+
+        parameter.size = 30;
         font = generator.generateFont(parameter);
 
-
-        parameter.size = 16;
-        subFont = generator.generateFont(parameter);
+        parameter.size = 24;
+        subFont = generatorSub.generateFont(parameter);
 
         generator.dispose();
+        generatorSub.dispose();
 
 
 

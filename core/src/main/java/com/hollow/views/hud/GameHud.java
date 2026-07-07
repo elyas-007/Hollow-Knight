@@ -18,6 +18,7 @@ import com.hollow.models.*;
 import com.hollow.models.entities.Knight.Knight;
 
 public class GameHud implements Disposable, AchievementObserver, LanguageObserver {
+    private final HollowKnight game;
     public Stage stage;
     private final Viewport viewport;
 
@@ -35,9 +36,10 @@ public class GameHud implements Disposable, AchievementObserver, LanguageObserve
     private int lastMasks;
 
     public GameHud(HollowKnight game, Knight knight) {
+        this.game = game;
         viewport = new FitViewport(game.SCREEN_WIDTH, game.SCREEN_HEIGHT, new OrthographicCamera());
         stage = new Stage(viewport, game.batch);
-        LanguageManager.addObserver(this);
+        game.languageManager.addObserver(this);
 
         Table root = new Table();
         root.setFillParent(true);
@@ -97,7 +99,7 @@ public class GameHud implements Disposable, AchievementObserver, LanguageObserve
     public void showCheatPopup(String cheatName, boolean isEnabled) {
         cheatLabel.clearActions();
 
-        String status = isEnabled ? LanguageManager.get("enabled") : LanguageManager.get("disabled");
+        String status = isEnabled ? game.languageManager.get("enabled") : game.languageManager.get("disabled");
         cheatLabel.setText(cheatName + ": " + status);
 
         cheatLabel.setColor(isEnabled ? Color.GREEN : Color.RED);
@@ -137,7 +139,7 @@ public class GameHud implements Disposable, AchievementObserver, LanguageObserve
         popupTable.setTransform(true);
         popupTable.setOrigin(Align.center);
 
-        achievementUnlockedLabel = new Label(LanguageManager.get("achievementUnlocked"), new LabelStyle(game.assetLoader.font, Color.GOLD));
+        achievementUnlockedLabel = new Label(game.languageManager.get("achievementUnlocked"), new LabelStyle(game.assetLoader.font, Color.GOLD));
         popupTable.add(achievementUnlockedLabel).padBottom(5).row();
         popupTable.add(achievementTitleLabel).padBottom(5).row();
         popupTable.add(achievementDescLabel).row();
@@ -210,7 +212,7 @@ public class GameHud implements Disposable, AchievementObserver, LanguageObserve
     @Override
     public void onLanguageChanged() {
         if (achievementUnlockedLabel != null) {
-            achievementUnlockedLabel.setText(LanguageManager.get("achievementUnlocked"));
+            achievementUnlockedLabel.setText(game.languageManager.get("achievementUnlocked"));
         }
     }
 }

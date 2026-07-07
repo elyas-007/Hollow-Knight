@@ -15,19 +15,16 @@ import com.hollow.HollowKnight;
 import com.hollow.controllers.ButtonController;
 import com.hollow.models.LanguageManager;
 import com.hollow.models.LanguageObserver;
-import com.hollow.views.hud.AchievementsUI;
-import com.hollow.views.hud.GuideUI;
-import com.hollow.views.hud.SettingsUI;
-import com.hollow.views.hud.StartGameUI;
+import com.hollow.views.hud.*;
 
 public class MainMenuScreen implements Screen, LanguageObserver {
     private final HollowKnight game;
     private Stage stage;
     private FitViewport viewport;
     private ButtonController controller;
-
     private InputMultiplexer multiplexer;
-    private SettingsUI settingsUI;
+
+    private BaseSettingUI settingsUI;
     private GuideUI guideUI;
     private AchievementsUI achievementsUI;
     private StartGameUI startGameUI;
@@ -39,7 +36,7 @@ public class MainMenuScreen implements Screen, LanguageObserver {
 
     public MainMenuScreen(HollowKnight game) {
         this.game = game;
-        LanguageManager.addObserver(this);
+        game.languageManager.addObserver(this);
     }
 
     @Override
@@ -56,11 +53,11 @@ public class MainMenuScreen implements Screen, LanguageObserver {
             multiplexer.addProcessor(stage);
         });
 
-        settingsUI = new SettingsUI(game, () -> {
+        settingsUI = new BaseSettingUI(game, () -> {
             isSettingsOpen = false;
             multiplexer.removeProcessor(settingsUI.stage);
             multiplexer.addProcessor(stage);
-        });
+        }, multiplexer);
 
         guideUI = new GuideUI(game, () -> {
             isGuideOpen = false;
@@ -78,7 +75,7 @@ public class MainMenuScreen implements Screen, LanguageObserver {
         game.audioManager.playMusic(game.audioManager.audioLoader.titleTheme, true, false);
     }
 
-    private void setupUI() {
+    public void setupUI() {
         TextButtonStyle styleBtn = new TextButtonStyle();
         styleBtn.font = game.assetLoader.font;
         styleBtn.fontColor = Color.WHITE;
@@ -89,11 +86,11 @@ public class MainMenuScreen implements Screen, LanguageObserver {
 
         Image gameLogo = new Image(game.assetLoader.hollowKnightLogo);
 
-        TextButton startBtn = new TextButton(LanguageManager.get("startGame"), styleBtn);
-        TextButton settingsBtn = new TextButton(LanguageManager.get("settings"), styleBtn);
-        TextButton guideBtn = new TextButton(LanguageManager.get("guide"), styleBtn);
-        TextButton achievementsBtn = new TextButton(LanguageManager.get("achievements"), styleBtn);
-        TextButton quitBtn = new TextButton(LanguageManager.get("quitGame"), styleBtn);
+        TextButton startBtn = new TextButton(game.languageManager.get("startGame"), styleBtn);
+        TextButton settingsBtn = new TextButton(game.languageManager.get("settings"), styleBtn);
+        TextButton guideBtn = new TextButton(game.languageManager.get("guide"), styleBtn);
+        TextButton achievementsBtn = new TextButton(game.languageManager.get("achievements"), styleBtn);
+        TextButton quitBtn = new TextButton(game.languageManager.get("quitGame"), styleBtn);
 
         startBtn.setUserObject((Runnable) () -> {
             isStartGameOpen = true;
@@ -129,12 +126,6 @@ public class MainMenuScreen implements Screen, LanguageObserver {
     }
 
     @Override
-    public void onLanguageChanged() {
-        stage.clear();
-        setupUI();
-    }
-
-    @Override
     public void render(float delta) {
         Gdx.gl.glClearColor(0f, 0f, 0f, 1f);
         Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT);
@@ -143,7 +134,7 @@ public class MainMenuScreen implements Screen, LanguageObserver {
 
         game.batch.setProjectionMatrix(stage.getCamera().combined);
         game.batch.begin();
-        game.menuBackground.updateAndDraw(game.batch, delta, game.settings.brightness, showLight);
+        game.menuBackground.updateAndDraw(game.batch, delta, game.data.getSettings().getBrightness(), showLight);
         game.batch.end();
 
         if (isStartGameOpen) {
@@ -168,19 +159,10 @@ public class MainMenuScreen implements Screen, LanguageObserver {
     @Override
     public void resize(int width, int height) {
         viewport.update(width, height, true);
+        if (startGameUI != null) startGameUI.resize(width, height);
         if (settingsUI != null) settingsUI.resize(width, height);
         if (guideUI != null) guideUI.resize(width, height);
         if (achievementsUI != null) achievementsUI.resize(width, height);
-    }
-
-    @Override
-    public void pause() {
-
-    }
-
-    @Override
-    public void resume() {
-
     }
 
     @Override
@@ -194,8 +176,18 @@ public class MainMenuScreen implements Screen, LanguageObserver {
         LanguageManager.removeObserver(this);
 
         if (stage != null) stage.dispose();
+        if (startGameUI != null) startGameUI.dispose();
         if (settingsUI != null) settingsUI.dispose();
         if (guideUI != null) guideUI.dispose();
         if (achievementsUI != null) achievementsUI.dispose();
+    }
+
+    @Override public void pause() {}
+    @Override public void resume() {}
+
+    @Override
+    public void onLanguageChanged() {
+        stage.clear();
+        setupUI();
     }
 }
