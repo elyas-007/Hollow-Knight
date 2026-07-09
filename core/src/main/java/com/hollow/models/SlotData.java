@@ -13,8 +13,8 @@ public class SlotData {
     private float falseKnightDeathY = 0f;
     private final Array<Charm> unlockedCharms = new Array<>();
     private final Array<Charm> equippedCharms = new Array<>();
-    private final Array<String> killedEnemyTypes = new Array<>();
     private float playTime = 0; // sec
+    private int deathCount = 0;
 
 
     public SlotData() {}
@@ -44,12 +44,6 @@ public class SlotData {
         equippedCharms.removeValue(charm, true);
     }
 
-    public void registerEnemyKill(String enemyType) {
-        if (!killedEnemyTypes.contains(enemyType, false)) {
-            killedEnemyTypes.add(enemyType);
-        }
-    }
-
     public int getId() {return id;}
     public boolean isEmpty() {return isEmpty;}
     public void setEmpty(boolean empty) {isEmpty = empty;}
@@ -65,8 +59,8 @@ public class SlotData {
     public void setFalseKnightDeathY(float falseKnightDeathY) {this.falseKnightDeathY = falseKnightDeathY;}
     public Array<Charm> getUnlockedCharms() {return unlockedCharms;}
     public Array<Charm> getEquippedCharms() {return equippedCharms;}
-    public int getTotalEnemyKilled() {return killedEnemyTypes.size;}
-    public Array<String> getKilledEnemyTypes() {return killedEnemyTypes;}
     public float getPlayTime() {return playTime;}
     public void setPlayTime(float playTime) {this.playTime = playTime;}
+    public int getDeathCount() { return deathCount; }
+    public void setDeathCount(int deathCount) { this.deathCount = deathCount; }
 }

@@ -324,6 +324,10 @@ public class Game {
                     data.getActiveSlot().setFalseKnightDeathY(boss.position.y);
                     AchievementManager.getInstance().unlockAchievement(Achievement.DEFEAT_FALSE_KNIGHT);
                     SaveManager.save(data);
+
+                    if (!screen.isEndingSequence) {
+                        screen.startEndingSequence();
+                    }
                 }
 
                 if (screen.bossFightActive) {
@@ -427,6 +431,12 @@ public class Game {
         }
 
         checkMapTransitions();
+
+        if (screen.speedrunRect != null && knight.getHitbox().overlaps(screen.speedrunRect)) {
+            if (data.getActiveSlot().getPlayTime() <= 300f) {
+                AchievementManager.getInstance().unlockAchievement(Achievement.SPEEDRUN);
+            }
+        }
     }
 
     private void checkMapTransitions() {
@@ -435,8 +445,6 @@ public class Game {
             knight.stopMovingHorizontally();
             screen.startTransition(transitionZones.targetMap);
         }
-
-        //TODO : check speedrun and eng game
     }
 
     private void updateEnemies(float delta) {
@@ -590,6 +598,49 @@ public class Game {
             if (Gdx.input.isKeyPressed(keyRight)) knight.getVelocity().x = noclipSpeed;
             if (Gdx.input.isKeyPressed(keyUp)) knight.getVelocity().y = noclipSpeed;
             if (Gdx.input.isKeyPressed(keyDown)) knight.getVelocity().y = -noclipSpeed;
+            return;
+        }
+
+        if (screen.isEndingSequence) {
+            boolean isMovingLeft = Gdx.input.isKeyPressed(keyLeft);
+            boolean isMovingRight = Gdx.input.isKeyPressed(keyRight);
+
+            if (isMovingLeft && !isMovingRight) {
+                knight.movingHorizontally(-1f);
+            } else if (isMovingRight && !isMovingLeft) {
+                knight.movingHorizontally(1f);
+            } else {
+                knight.stopMovingHorizontally();
+            }
+
+            if (screen.endingStatueRect != null && knight.getX() > (screen.endingStatueRect.x - 20f)) {
+                AchievementManager.getInstance().unlockAchievement(Achievement.COMPLETION);
+            }
+
+            if (Gdx.input.isKeyJustPressed(keyJump)) {
+                knight.jumping();
+            }
+
+            if (!Gdx.input.isKeyPressed(keyJump) && knight.getVelocity().y > 0) {
+                knight.littleJumping();
+            }
+
+            if (screen.endingStatueRect != null && knight.getHitbox().overlaps(screen.endingStatueRect)) {
+                if (!screen.endingUI.isVisible) {
+                    screen.dialogueBox.setPromptVisible(true);
+                }
+
+                if (Gdx.input.isKeyJustPressed(Input.Keys.E) && knight.isOnGround() && !screen.endingUI.isVisible) {
+                    knight.stopMovingHorizontally();
+                    screen.dialogueBox.setPromptVisible(false);
+
+                    screen.endingUI.showUI(screen.multiplexer);
+                }
+            } else {
+                if (screen.zote == null || !knight.getHitbox().overlaps(screen.zote.interactionBox)) {
+                    screen.dialogueBox.setPromptVisible(false);
+                }
+            }
             return;
         }
 
@@ -974,6 +1025,10 @@ public class Game {
 
 
     private void handleDeath() {
+
+        data.getActiveSlot().setDeathCount(data.getActiveSlot().getDeathCount() + 1);
+        SaveManager.save(data);
+
         Vector2 initialPos = screen.findSpawnPoint();
         knight.fullRespawn(initialPos.x, initialPos.y);
 
@@ -1040,9 +1095,9 @@ public class Game {
     private void checkEnemyKill(Enemy enemy) {
         if (enemy.health <= 0) {
             game.audioManager.playSound(game.audioManager.audioLoader.enemy_death);
-            data.getActiveSlot().registerEnemyKill(enemy.name);
+            data.registerEnemyKill(enemy.name);
             SaveManager.save(data);
-            if (data.getActiveSlot().getTotalEnemyKilled() >= 6) {
+            if (data.getTotalEnemyKilled() >= 6) {
                 AchievementManager.getInstance().unlockAchievement(Achievement.TRUE_HUNTER);
                 SaveManager.save(data);
             }

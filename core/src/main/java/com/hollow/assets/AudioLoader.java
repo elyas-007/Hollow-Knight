@@ -13,6 +13,8 @@ public class AudioLoader {
     public Music greenpathMain;
     public Music greenpathBass;
 
+    public Music victoryTheme;
+
     public Music crossroadsMain;
     public Music crossroadsBass;
 
@@ -78,6 +80,8 @@ public class AudioLoader {
         greenpathAtmos = Gdx.audio.newMusic(Gdx.files.internal("audio/bgm/greenpathAtmos.wav"));
         greenpathMain = Gdx.audio.newMusic(Gdx.files.internal("audio/bgm/greenpathMain.wav"));
         greenpathBass = Gdx.audio.newMusic(Gdx.files.internal("audio/bgm/greenpathBass.wav"));
+
+        victoryTheme = Gdx.audio.newMusic(Gdx.files.internal("audio/bgm/Lana Del Rey - Arcadia.mp3"));
 
         crossroadsMain = Gdx.audio.newMusic(Gdx.files.internal("audio/bgm/crossroadsMain.wav"));
         crossroadsBass = Gdx.audio.newMusic(Gdx.files.internal("audio/bgm/crossroadsBass.wav"));

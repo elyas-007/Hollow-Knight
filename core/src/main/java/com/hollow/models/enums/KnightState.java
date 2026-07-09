@@ -11,6 +11,7 @@ public enum KnightState {
     LANDING,
     WALL_SLIDE,
     WALL_JUMP,
+    RUN_START,
     RUNNING,
     JUMPING,
     FALLING,

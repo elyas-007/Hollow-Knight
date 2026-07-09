@@ -11,6 +11,7 @@ public class GameData {
     private SettingData settings;
     private AchievementData achievements;
     private final IntMap<SlotData> slots = new IntMap<>();
+    private final Array<String> killedEnemyTypes = new Array<>();
     private int activeSlotId;
 
     public GameData() {
@@ -31,6 +32,12 @@ public class GameData {
         SaveManager.save(this);
     }
 
+    public void registerEnemyKill(String enemyType) {
+        if (!killedEnemyTypes.contains(enemyType, false)) {
+            killedEnemyTypes.add(enemyType);
+        }
+    }
+
 
     public SettingData getSettings() {return settings;}
     public void setSettings(SettingData settings) {this.settings = settings;}
@@ -40,4 +47,6 @@ public class GameData {
     public int getActiveSlotId() { return activeSlotId; }
     public void setActiveSlotId(int activeSlotId) { this.activeSlotId = activeSlotId; }
     public SlotData getActiveSlot() {return slots.get(activeSlotId);}
+    public int getTotalEnemyKilled() {return killedEnemyTypes.size;}
+    public Array<String> getKilledEnemyTypes() {return killedEnemyTypes;}
 }

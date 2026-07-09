@@ -108,7 +108,7 @@ public class SaveManager {
                             psCharm.addBatch();
                         }
 
-                        for (String enemy : slot.getKilledEnemyTypes()) {
+                        for (String enemy : data.getKilledEnemyTypes()) {
                             psEnemy.setInt(1, slot.getId());
                             psEnemy.setString(2, enemy);
                             psEnemy.addBatch();
@@ -169,7 +169,7 @@ public class SaveManager {
                     if (slot != null) {
                         slot.getUnlockedCharms().clear();
                         slot.getEquippedCharms().clear();
-                        slot.getKilledEnemyTypes().clear();
+                        data.getKilledEnemyTypes().clear();
 
                         slot.setEmpty(rs.getInt("isEmpty") == 1);
                         slot.setLocation(rs.getString("location"));
@@ -205,7 +205,7 @@ public class SaveManager {
 
                     SlotData slot = data.getSlot(slotId);
                     if (slot != null) {
-                        slot.registerEnemyKill(enemy);
+                        data.registerEnemyKill(enemy);
                     }
                 }
             }

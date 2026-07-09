@@ -38,11 +38,20 @@
         "Fung_FG_Silhouettes_0004_fv5.tsx": {
             "scaleInDock": 1
         },
+        "Gemini_Generated_Image_8iiek38iiek38iie.tsx": {
+            "scaleInDock": 1.5,
+            "scaleInEditor": 1
+        },
+        "Gemini_Generated_Image_9liy7q9liy7q9liy.tsx": {
+            "scaleInDock": 1,
+            "scaleInEditor": 1
+        },
         "Gemini_Generated_Image_kbw21kbw21kbw21k.tsx": {
             "scaleInDock": 1,
             "scaleInEditor": 1
         },
         "Gemini_Generated_Image_m5wajem5wajem5wa (1).tsx": {
+            "scaleInDock": 1,
             "scaleInEditor": 1
         },
         "Gemini_Generated_Image_m5wajem5wajem5wa.tsx": {
@@ -82,18 +91,23 @@
             "scaleInDock": 1
         },
         "White_Palace__0000_wp_glow_door_orb_2.tsx": {
+            "scaleInDock": 1,
             "scaleInEditor": 1
         },
         "_0046_white_02.tsx": {
+            "scaleInDock": 1,
             "scaleInEditor": 1
         },
         "_0059_white.tsx": {
+            "scaleInDock": 1,
             "scaleInEditor": 1
         },
         "_0062_white_arch_02.tsx": {
+            "scaleInDock": 1,
             "scaleInEditor": 1
         },
         "_0064_white #34712.tsx": {
+            "scaleInDock": 1,
             "scaleInEditor": 1
         },
         "big_lamp.tsx": {
@@ -136,12 +150,18 @@
             "scaleInDock": 1
         },
         "core_extras_0003_wp.tsx": {
+            "scaleInDock": 1,
             "scaleInEditor": 1
         },
         "core_extras_0008_wp_02.tsx": {
             "scaleInDock": 1
         },
+        "core_extras_0013_wp.tsx": {
+            "scaleInDock": 1,
+            "scaleInEditor": 1
+        },
         "core_extras_0023_wp.tsx": {
+            "scaleInDock": 1,
             "scaleInEditor": 1
         },
         "cr10_break_wall.tsx": {
@@ -155,16 +175,20 @@
                 5,
                 11,
                 10,
-                13
+                13,
+                23
             ],
-            "scale": 0.75,
-            "selectedLayer": 5,
+            "scale": 0.0625,
+            "selectedLayer": 15,
             "viewCenter": {
-                "x": 12395.333333333332,
-                "y": 12676.666666666666
+                "x": -8840,
+                "y": 232
             }
         },
         "cross_road.tmx#Lance_object": {
+            "scaleInDock": 1
+        },
+        "cross_road.tmx#l": {
             "scaleInDock": 1
         },
         "crumble_floor_fungus.tsx": {
@@ -266,6 +290,7 @@
             "scaleInDock": 1
         },
         "fungd_wall_side_01.tsx": {
+            "scaleInDock": 1,
             "scaleInEditor": 1
         },
         "fungus_stone_short_wall.tsx": {
@@ -285,13 +310,14 @@
                 7
             ],
             "scale": 1,
-            "selectedLayer": 14,
+            "selectedLayer": 12,
             "viewCenter": {
-                "x": 11684.5,
-                "y": 7836.5
+                "x": 10341.5,
+                "y": 3846.5
             }
         },
         "green_path_butterfly_particle.tsx": {
+            "scaleInDock": 1,
             "scaleInEditor": 1
         },
         "grimm_particle_flame.tsx": {
@@ -333,6 +359,14 @@
         },
         "nailsmith_rag.tsx": {
             "scaleInDock": 1
+        },
+        "photo_2026-07-09_17-40-05.tsx": {
+            "scaleInDock": 1,
+            "scaleInEditor": 1
+        },
+        "photo_2026-07-09_17-50-18.tsx": {
+            "scaleInDock": 1,
+            "scaleInEditor": 1
         },
         "plat_float_02.tsx": {
             "scaleInDock": 1
@@ -446,18 +480,23 @@
             "scaleInDock": 1
         },
         "white_palace_station_window.tsx": {
+            "scaleInDock": 1,
             "scaleInEditor": 1
         },
         "white_spikes0001.tsx": {
+            "scaleInDock": 1,
             "scaleInEditor": 1
         },
         "wp_collapser.tsx": {
+            "scaleInDock": 1,
             "scaleInEditor": 1
         },
         "wp_windoe_0000_wp_4.tsx": {
+            "scaleInDock": 1,
             "scaleInEditor": 1
         },
         "wp_windoe_0001_wp_3.tsx": {
+            "scaleInDock": 1,
             "scaleInEditor": 1
         }
     },
@@ -468,24 +507,24 @@
     "map.tileWidth": 8,
     "map.width": 3000,
     "openFiles": [
-        "green_path.tmx",
-        "cross_road.tmx"
+        "cross_road.tmx",
+        "green_path.tmx"
     ],
     "project": "green_path.tiled-project",
     "property.type": "bool",
     "recentFiles": [
+        "cross_road.tmx",
+        "green_path.tmx",
+        "photo_2026-07-09_17-50-18.tsx",
+        "photo_2026-07-09_17-40-05.tsx",
+        "Gemini_Generated_Image_8iiek38iiek38iie.tsx",
+        "core_extras_0013_wp.tsx",
+        "Gemini_Generated_Image_9liy7q9liy7q9liy.tsx",
         "Gemini_Generated_Image_m5wajem5wajem5wa (1).tsx",
         "Gemini_Generated_Image_m5wajem5wajem5wa.tsx",
         "fungd_wall_side_01.tsx",
         "spritesheet (1).tsx",
-        "white_palace_station_window.tsx",
-        "l.tsx",
-        "SpriteAtlasTexture-WP_hanging_lamp-512x512-fmt12.tsx",
-        "green_path_butterfly_particle.tsx",
-        "White_Palace__0000_wp_glow_door_orb_2.tsx",
-        "core_extras_0023_wp.tsx",
-        "_0059_white.tsx",
-        "core_extras_0003_wp.tsx"
+        "white_palace_station_window.tsx"
     ],
     "tileset.lastUsedFormat": "tsx",
     "tileset.tileSize": {

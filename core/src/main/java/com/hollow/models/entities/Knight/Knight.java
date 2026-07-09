@@ -74,6 +74,7 @@ public class Knight {
 
     public Animation<TextureRegion> idleAnim;
     public Animation<TextureRegion> idleHurtAnim;
+    public Animation<TextureRegion> runStartAnim;
     public Animation<TextureRegion> runAnim;
     public Animation<TextureRegion> airborneAnim;
     public Animation<TextureRegion> doubleJumpAnim;
@@ -111,6 +112,8 @@ public class Knight {
 
     private AudioManager audioManager;
     public boolean isGrassTerrain = false;
+
+    public boolean isEndingMode = false;
 
     public Knight(float startX, float startY, GameData data, AudioManager audioManager) {
         position.set(startX, startY);
@@ -296,7 +299,13 @@ public class Knight {
             state = KnightState.AIRBORNE;
             lookTimer = 0f;
         } else if (velocity.x != 0) {
-            state = KnightState.RUNNING;
+            if (state != KnightState.RUN_START && state != KnightState.RUNNING) {
+                state = KnightState.RUN_START;
+                stateTimer = 0f;
+                stateLockTimer = animDuration(runStartAnim);
+            } else if (state == KnightState.RUN_START && stateLockTimer <= 0) {
+                state = KnightState.RUNNING;
+            }
             lookTimer = 0f;
         } else {
             if (lookDirection != 0) {
@@ -347,6 +356,7 @@ public class Knight {
 
     private Animation<TextureRegion> getAnimationForState() {
         return switch (state) {
+            case RUN_START -> runStartAnim;
             case RUNNING -> runAnim;
             case AIRBORNE -> airborneAnim;
             case DOUBLE_JUMPING -> doubleJumpAnim;
@@ -385,7 +395,9 @@ public class Knight {
             moveDirection = 0f;
             return;
         }
-        velocity.x = direction * MOVE_SPEED;
+        float speed = isEndingMode ? MOVE_SPEED * 0.35f : MOVE_SPEED;
+
+        velocity.x = direction * speed;
         isFacingRight = direction > 0;
         moveDirection = direction;
     }

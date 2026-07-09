@@ -29,10 +29,7 @@ import com.hollow.models.entities.Knight.Projectile;
 import com.hollow.models.entities.Knight.WraithEffect;
 import com.hollow.models.entities.zote.Zote;
 import com.hollow.models.enums.KnightState;
-import com.hollow.views.hud.DialogueBox;
-import com.hollow.views.hud.GameHud;
-import com.hollow.views.hud.InventoryUI;
-import com.hollow.views.hud.PauseUI;
+import com.hollow.views.hud.*;
 import com.hollow.views.render.BossRenderer;
 
 public class GameScreen implements Screen {
@@ -42,9 +39,10 @@ public class GameScreen implements Screen {
     private static final float CAM_LERP = 0.08f;
 
     private final HollowKnight game;
-    private Knight knight;
+    public Knight knight;
     private Game controller;
     public GameHud hud;
+    public EndingUI endingUI;
 
     private OrthographicCamera camera;
     private FitViewport viewport;
@@ -91,12 +89,22 @@ public class GameScreen implements Screen {
     private boolean isInventoryOpen = false;
     public boolean isPaused = false;
 
-    private InputMultiplexer multiplexer;
+    public InputMultiplexer multiplexer;
 
     private Array<AmbientObject> ambientObjects;
 
     private boolean isTransition;
     private boolean passedInstaKill = false;
+
+
+    public boolean isEndingSequence = false;
+    private boolean isWhiteFadingOut = false;
+    private boolean isWhiteFadingIn = false;
+    private float whiteFadeAlpha = 0f;
+
+    public Vector2 endingSpawnPoint;
+    public Rectangle endingStatueRect;
+    public Rectangle speedrunRect;
 
     public GameScreen(HollowKnight game, String mapPath, float spawnX, float spawnY, TiledMap preloadedMap, Knight existingKnight, boolean instaKill) {
         this.game = game;
@@ -243,9 +251,15 @@ public class GameScreen implements Screen {
         inventoryUI = new InventoryUI(game, game.data);
         multiplexer = new InputMultiplexer();
         pauseUI = new PauseUI(game, this, multiplexer);
+        endingUI = new EndingUI(game, this, multiplexer);
         Gdx.input.setInputProcessor(multiplexer);
 
         ambientObjects = helper.getAmbientObjects(map, UNIT_SCALE, game.assetLoader);
+
+        endingSpawnPoint = helper.getEndPointSpawn(map, UNIT_SCALE);
+        endingStatueRect = helper.getEndingRoom(map, UNIT_SCALE);
+        speedrunRect = helper.getSpeedrunRect(map, UNIT_SCALE);
+
 
 
         if (mapPath.equals("map/cross_road.tmx")) {
@@ -331,6 +345,18 @@ public class GameScreen implements Screen {
 
         dialogueBox.draw();
 
+        if (endingUI.isVisible) {
+            Gdx.gl.glEnable(GL20.GL_BLEND);
+            shapeRenderer.begin(ShapeRenderer.ShapeType.Filled);
+            shapeRenderer.setColor(0, 0, 0, 0.6f);
+            shapeRenderer.rect(0, 0, Gdx.graphics.getWidth(), Gdx.graphics.getHeight());
+            shapeRenderer.end();
+            Gdx.gl.glDisable(GL20.GL_BLEND);
+
+            endingUI.act(delta);
+            endingUI.draw();
+        }
+
         if (isInventoryOpen || isPaused) {
             Gdx.gl.glEnable(GL20.GL_BLEND);
             shapeRenderer.begin(ShapeRenderer.ShapeType.Filled);
@@ -349,6 +375,7 @@ public class GameScreen implements Screen {
         }
 
         handleFadeEffect(delta);
+        handleWhiteFadeEffect(delta);
     }
 
     @Override
@@ -760,6 +787,51 @@ public class GameScreen implements Screen {
         Gdx.gl.glDisable(GL20.GL_BLEND);
     }
 
+    public void startEndingSequence() {
+        game.audioManager.stopAllSfxLoops();
+        game.audioManager.stopMusic();
+        isWhiteFadingOut = true;
+        isEndingSequence = true;
+        game.audioManager.playDynamicMusic(null, game.audioManager.audioLoader.victoryTheme, null, true);
+    }
+
+    private void handleWhiteFadeEffect(float delta) {
+        if (!isWhiteFadingOut && !isWhiteFadingIn) return;
+
+        Gdx.gl.glEnable(GL20.GL_BLEND);
+        Gdx.gl.glBlendFunc(GL20.GL_SRC_ALPHA, GL20.GL_ONE_MINUS_SRC_ALPHA);
+
+        shapeRenderer.begin(ShapeRenderer.ShapeType.Filled);
+
+        if (isWhiteFadingOut) {
+            whiteFadeAlpha += delta * 0.8f;
+            if (whiteFadeAlpha >= 1f) {
+                whiteFadeAlpha = 1f;
+                isWhiteFadingOut = false;
+
+                if (endingSpawnPoint != null) {
+                    knight.getPosition().set(endingSpawnPoint.x, endingSpawnPoint.y);
+                    knight.getHitbox().setPosition(endingSpawnPoint.x, endingSpawnPoint.y);
+                    knight.getVelocity().setZero();
+                    knight.isEndingMode = true;
+                }
+                isWhiteFadingIn = true;
+            }
+        } else if (isWhiteFadingIn) {
+            whiteFadeAlpha -= delta * 0.8f;
+            if (whiteFadeAlpha <= 0f) {
+                whiteFadeAlpha = 0f;
+                isWhiteFadingIn = false;
+            }
+        }
+
+        shapeRenderer.setColor(new Color(1f, 1f, 1f, whiteFadeAlpha));
+        shapeRenderer.rect(0, 0, Gdx.graphics.getWidth(), Gdx.graphics.getHeight());
+        shapeRenderer.end();
+
+        Gdx.gl.glDisable(GL20.GL_BLEND);
+    }
+
     public Vector2 findBossSpawnPoint() {
         MapLayer layer = map.getLayers().get("enemies");
         MapObject spawnPoint = layer.getObjects().get("boss");
@@ -787,7 +859,23 @@ public class GameScreen implements Screen {
         float targetY;
         float targetZoom = 1f;
 
-        if (bossFightActive && controller.boss != null && controller.boss.currentState != FalseKnight.state.DEATH) {
+        if (isEndingSequence) {
+            float knightX = knight.getX() + knight.getWidth() / 2f;
+            float knightY = knight.getY() + knight.getHeight() / 2f;
+
+            targetX = knightX;
+            targetY = knightY + 3.0f;
+            targetZoom = 1.35f;
+
+            float halfW = (VIEWPORT_WIDTH * targetZoom) / 2f;
+            float halfH = (VIEWPORT_HEIGHT * targetZoom) / 2f;
+            float minCamX = halfW;
+            float maxCamX = mapPixelWidth - halfW;
+
+            targetX = Math.max(minCamX, Math.min(maxCamX, targetX));
+            targetY = Math.max(halfH, Math.min(mapPixelHeight - halfH, targetY));
+
+        } else if (bossFightActive && controller.boss != null && controller.boss.currentState != FalseKnight.state.DEATH) {
 
             targetX = arenaMinX + (arenaMaxX - arenaMinX) / 2f;
             targetY = arenaY + (arenaHeight) / 2f;
@@ -953,6 +1041,10 @@ public class GameScreen implements Screen {
     }
 
     public void stopBossMusic() {
+        if (isEndingSequence) {
+            return;
+        }
+
         if (mapPath.equals("map/cross_road.tmx")) {
             game.audioManager.playDynamicMusic(
                 null,

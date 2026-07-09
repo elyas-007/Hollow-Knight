@@ -260,4 +260,46 @@ public class TiledMapHelper {
         return new Vector2(x, y);
     }
 
+    public Vector2 getEndPointSpawn(TiledMap map, float unitScale) {
+        MapLayer layer = map.getLayers().get("ending");
+
+        if (layer == null)
+            return null;
+        MapObject spawnPoint = layer.getObjects().get("ending_spawn");
+
+        float x = spawnPoint.getProperties().get("x", Float.class) * unitScale;
+        float y = spawnPoint.getProperties().get("y", Float.class) * unitScale;
+
+        return new Vector2(x, y);
+    }
+
+    public Rectangle getEndingRoom(TiledMap map, float unitScale) {
+        MapLayer layer = map.getLayers().get("ending");
+
+        if (layer == null) return null;
+
+        for (MapObject object : layer.getObjects()) {
+            if (object instanceof RectangleMapObject) {
+                Rectangle rect = ((RectangleMapObject) object).getRectangle();
+
+                return new Rectangle(rect.x * unitScale, rect.y * unitScale, rect.width * unitScale, rect.height * unitScale);
+            }
+        }
+        return null;
+    }
+
+    public Rectangle getSpeedrunRect(TiledMap map, float unitScale) {
+        MapLayer layer = map.getLayers().get("end");
+
+        if (layer == null) return null;
+
+        for (MapObject object : layer.getObjects()) {
+            if (object instanceof RectangleMapObject) {
+                Rectangle rect = ((RectangleMapObject) object).getRectangle();
+
+                return new Rectangle(rect.x * unitScale, rect.y * unitScale, rect.width * unitScale, rect.height * unitScale);
+            }
+        }
+        return null;
+    }
 }

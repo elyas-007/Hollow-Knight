@@ -3,6 +3,7 @@ package com.hollow.assets;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.Animation;
+import com.badlogic.gdx.graphics.g2d.TextureAtlas;
 import com.badlogic.gdx.graphics.g2d.TextureRegion;
 import com.badlogic.gdx.utils.Array;
 import com.hollow.models.entities.Knight.Knight;
@@ -48,6 +49,12 @@ public class KnightAnimationLoader {
 
         knight.soulScreamAnim = loadAnimation("animation/knight/SoulScream.png", 13, 0.05f, Animation.PlayMode.NORMAL);
         knight.shadowScreamAnim = loadAnimation("animation/knight/ShadowScream.png", 14, 0.05f, Animation.PlayMode.NORMAL);
+
+        TextureAtlas startRunAtlas = new TextureAtlas(Gdx.files.internal("animation/knight/startRun.atlas"));
+        knight.runStartAnim = new Animation<>(0.05f, startRunAtlas.findRegions("Run"));
+
+        TextureAtlas runAtlas = new TextureAtlas(Gdx.files.internal("animation/knight/Run.atlas"));
+        knight.runAnim = new Animation<>(0.08f, runAtlas.findRegions("Run"));
     }
 
     public static Animation<TextureRegion> loadAnimation(String fileName, int frameCount, float frameDuration, Animation.PlayMode mode) {

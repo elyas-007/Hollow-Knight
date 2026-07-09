@@ -36,6 +36,9 @@ public class EnemyAnimationLoader {
         husk.attackLungeAnim = loadAnimation("animation/enemy/husk_hornhead/Attack Lunge.png", 12, 0.05f, Animation.PlayMode.NORMAL);
         husk.deathLandAnim = loadAnimation("animation/enemy/husk_hornhead/Death Land.png", 8, 0.1f, Animation.PlayMode.NORMAL);
 
+        TextureRegion firstDeathFrame = husk.deathLandAnim.getKeyFrames()[0];
+        husk.deathAirAnim = new Animation<>(0.1f, firstDeathFrame);
+
         husk.corpseFrame = husk.deathLandAnim.getKeyFrames()[7];
     }
 
