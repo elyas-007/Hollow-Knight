@@ -66,6 +66,8 @@ public class AudioLoader {
     public Sound wall_death;
     public Sound hit_metal;
 
+    public Sound[] soulPickups = new Sound[7];
+
 
 
     public void load() {
@@ -140,6 +142,10 @@ public class AudioLoader {
         wall_hit_2 = Gdx.audio.newSound(Gdx.files.internal("audio/sound-effect/breakable_wall_hit_2.wav"));
         wall_death = Gdx.audio.newSound(Gdx.files.internal("audio/sound-effect/breakable_wall_death.wav"));
         hit_metal = Gdx.audio.newSound(Gdx.files.internal("audio/sound-effect/sword_hit_reject.wav"));
+
+        for (int i = 0; i < 7; i++) {
+            soulPickups[i] = Gdx.audio.newSound(Gdx.files.internal("audio/sound-effect/soul_pickup_" + (i + 1) + ".wav"));
+        }
     }
 
     public void dispose() {

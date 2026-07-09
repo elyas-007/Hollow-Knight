@@ -5,7 +5,10 @@ import com.badlogic.gdx.InputMultiplexer;
 import com.badlogic.gdx.Screen;
 import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.GL20;
+import com.badlogic.gdx.scenes.scene2d.Actor;
+import com.badlogic.gdx.scenes.scene2d.InputEvent;
 import com.badlogic.gdx.scenes.scene2d.Stage;
+import com.badlogic.gdx.scenes.scene2d.actions.Actions;
 import com.badlogic.gdx.scenes.scene2d.ui.Image;
 import com.badlogic.gdx.scenes.scene2d.ui.Table;
 import com.badlogic.gdx.scenes.scene2d.ui.TextButton;
@@ -91,6 +94,42 @@ public class MainMenuScreen implements Screen, LanguageObserver {
         TextButton guideBtn = new TextButton(game.languageManager.get("guide"), styleBtn);
         TextButton achievementsBtn = new TextButton(game.languageManager.get("achievements"), styleBtn);
         TextButton quitBtn = new TextButton(game.languageManager.get("quitGame"), styleBtn);
+
+        Image changeBgBtn = new Image(game.assetLoader.changeBgIcon);
+
+        changeBgBtn.setColor(0.7f, 0.7f, 0.7f, 1f);
+
+        changeBgBtn.addListener(new com.badlogic.gdx.scenes.scene2d.utils.ClickListener() {
+            @Override
+            public void clicked(InputEvent event, float x, float y) {
+                game.menuBackground.changeBackground();
+            }
+
+            @Override
+            public void enter(InputEvent event, float x, float y, int pointer, Actor fromActor) {
+                super.enter(event, x, y, pointer, fromActor);
+                if (pointer == -1) {
+                    changeBgBtn.clearActions();
+                    changeBgBtn.addAction(Actions.color(Color.WHITE, 0.15f));
+                }
+            }
+
+            @Override
+            public void exit(InputEvent event, float x, float y, int pointer, Actor toActor) {
+                super.exit(event, x, y, pointer, toActor);
+                if (pointer == -1) {
+                    changeBgBtn.clearActions();
+                    changeBgBtn.addAction(Actions.color(new Color(0.7f, 0.7f, 0.7f, 1f), 0.15f));
+                }
+            }
+        });
+
+        Table leftTable = new Table();
+        leftTable.setFillParent(true);
+        leftTable.left().bottom().padLeft(60).padBottom(60);
+
+        leftTable.add(changeBgBtn).width(80).height(80);
+        stage.addActor(leftTable);
 
         startBtn.setUserObject((Runnable) () -> {
             isStartGameOpen = true;

@@ -9,6 +9,7 @@ import com.hollow.models.AudioManager;
 import com.hollow.models.Effect;
 import com.hollow.models.GameData;
 import com.hollow.models.enums.KnightState;
+import com.hollow.views.screens.GameScreen;
 
 public class Knight {
     // constants
@@ -55,6 +56,7 @@ public class Knight {
     private float dashDuration = 0f;
     private float dashCooldown = 0f;
     private float dashDirection = 1f;  //left -> -1 right -> 1
+    public boolean castWraiths = false;
 
     private float moveDirection = 0f; // -1, 0, +1
     private int touchingWallSide = 0; //+1 -> right -1 -> left 0 -> nothing
@@ -92,7 +94,8 @@ public class Knight {
     public Animation<TextureRegion> lookDownAnim;
     public Animation<TextureRegion> hurtAnim;
     public Animation<TextureRegion> deathAnim;
-
+    public Animation<TextureRegion> soulScreamAnim;
+    public Animation<TextureRegion> shadowScreamAnim;
     public Animation<TextureRegion> soulBallAnim;
     public Animation<TextureRegion> shadowBallAnim;
     public Animation<TextureRegion> blast;
@@ -263,9 +266,10 @@ public class Knight {
         if (stateLockTimer > 0) {
             stateLockTimer -= delta;
 
-            if (state == KnightState.CASTING) {
+            if (state == KnightState.CASTING || state == KnightState.UP_CASTING) {
                 if (!hasCastFired && stateTimer >= animDuration(castAnim) * 0.4f) {
-                    castProjectile = true;
+                    if (state == KnightState.CASTING) castProjectile = true;
+                    else castWraiths = true;
                     hasCastFired = true;
                 }
 
@@ -362,6 +366,7 @@ public class Knight {
             case DEAD -> deathAnim;
             case LOOK_UP -> lookUpAnim;
             case LOOK_DOWN -> lookDownAnim;
+            case UP_CASTING -> lookUpAnim;
             case IDLE -> (currentMasks == 1) ? idleHurtAnim : idleAnim;
             default -> idleAnim;
         };
@@ -536,6 +541,7 @@ public class Knight {
         if (godMode || invincibleTimer > 0 || state == KnightState.DEAD) return;
 
         currentMasks -= damage;
+        GameScreen.triggerShake(0.2f, 0.1f);
         invincibleTimer = INVINCIBLE_DURATION;
         healing = false;
         isDashing = false;
@@ -611,7 +617,11 @@ public class Knight {
 
 
     public void gainSoul(int amount) {
-        currentSoul = Math.min(99, currentSoul + amount);
+        if (currentSoul >= maxSoul) return;
+
+        currentSoul = Math.min(maxSoul, currentSoul + amount);
+
+        audioManager.playSoulPickupSound(currentSoul);
     }
 
     public void startFocusing() {
@@ -657,6 +667,20 @@ public class Knight {
         return false;
     }
 
+    public void startUpCasting() {
+        if (isLocked()) return;
+        state = KnightState.UP_CASTING;
+        stateTimer = 0f;
+        stateLockTimer = animDuration(castAnim);
+        castWraiths = false;
+        hasCastFired = false;
+
+        velocity.x = 0;
+        if (!isGrounded) {
+            velocity.y = Math.max(0, velocity.y);
+        }
+    }
+
     public void fullRespawn(float startX, float startY) {
         position.set(startX, startY);
         lastPosition.set(startX, startY);
@@ -675,7 +699,7 @@ public class Knight {
     }
 
     public void refillSoulCheat() {
-        currentSoul = maxSoul;
+        gainSoul(99);
     }
 
     public void emergencyHealCheat() {

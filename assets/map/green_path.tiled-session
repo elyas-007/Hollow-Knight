@@ -10,6 +10,10 @@
         "BG_bone_06.tsx": {
             "scaleInDock": 1
         },
+        "BG_bush_set.tsx": {
+            "scaleInDock": 1,
+            "scaleInEditor": 1
+        },
         "BG_egg_07_0000_Layer-1.tsx": {
             "scaleInDock": 1
         },
@@ -34,17 +38,63 @@
         "Fung_FG_Silhouettes_0004_fv5.tsx": {
             "scaleInDock": 1
         },
+        "Gemini_Generated_Image_kbw21kbw21kbw21k.tsx": {
+            "scaleInDock": 1,
+            "scaleInEditor": 1
+        },
+        "Gemini_Generated_Image_m5wajem5wajem5wa (1).tsx": {
+            "scaleInEditor": 1
+        },
+        "Gemini_Generated_Image_m5wajem5wajem5wa.tsx": {
+            "scaleInDock": 1,
+            "scaleInEditor": 1
+        },
+        "Gemini_Generated_Image_s6mg1ys6mg1ys6mg.tsx": {
+            "scaleInDock": 1,
+            "scaleInEditor": 1
+        },
+        "Gemini_Generated_Image_th03chth03chth03.tsx": {
+            "scaleInDock": 1,
+            "scaleInEditor": 1
+        },
+        "No_eyes_temple_0005_1.tsx": {
+            "scaleInDock": 1,
+            "scaleInEditor": 1
+        },
         "Path of Pain plaque - wp_plaque_new.tsx": {
             "scaleInDock": 1
         },
         "Shaman_Hut_Ruin.tsx": {
             "scaleInDock": 1
         },
+        "Slug_Shrine_0003_a.tsx": {
+            "scaleInDock": 1,
+            "scaleInEditor": 1
+        },
+        "SpriteAtlasTexture-WP_hanging_lamp-512x512-fmt12.tsx": {
+            "scaleInDock": 1,
+            "scaleInEditor": 1
+        },
         "The Pale King Path of Pain scene - tall_side0003.tsx": {
             "scaleInDock": 1
         },
         "Void Heart - charm_black.tsx": {
             "scaleInDock": 1
+        },
+        "White_Palace__0000_wp_glow_door_orb_2.tsx": {
+            "scaleInEditor": 1
+        },
+        "_0046_white_02.tsx": {
+            "scaleInEditor": 1
+        },
+        "_0059_white.tsx": {
+            "scaleInEditor": 1
+        },
+        "_0062_white_arch_02.tsx": {
+            "scaleInEditor": 1
+        },
+        "_0064_white #34712.tsx": {
+            "scaleInEditor": 1
         },
         "big_lamp.tsx": {
             "scaleInDock": 1
@@ -85,8 +135,14 @@
         "collapser_long.tsx": {
             "scaleInDock": 1
         },
+        "core_extras_0003_wp.tsx": {
+            "scaleInEditor": 1
+        },
         "core_extras_0008_wp_02.tsx": {
             "scaleInDock": 1
+        },
+        "core_extras_0023_wp.tsx": {
+            "scaleInEditor": 1
         },
         "cr10_break_wall.tsx": {
             "scaleInDock": 1
@@ -96,20 +152,24 @@
         },
         "cross_road.tmx": {
             "expandedObjectLayers": [
-                10,
+                5,
                 11,
-                13,
-                5
+                10,
+                13
             ],
-            "scale": 1,
-            "selectedLayer": 10,
+            "scale": 0.75,
+            "selectedLayer": 5,
             "viewCenter": {
-                "x": 11856,
-                "y": 8000.5
+                "x": 12395.333333333332,
+                "y": 12676.666666666666
             }
         },
         "cross_road.tmx#Lance_object": {
             "scaleInDock": 1
+        },
+        "crumble_floor_fungus.tsx": {
+            "scaleInDock": 1,
+            "scaleInEditor": 1
         },
         "direction_sign_breakable_0003_bank.tsx": {
             "scaleInDock": 1
@@ -141,10 +201,26 @@
         "floor_stone_02.tsx": {
             "scaleInDock": 1
         },
+        "fung_bench_pole.tsx": {
+            "scaleInDock": 1,
+            "scaleInEditor": 1
+        },
+        "fung_mid_bush.tsx": {
+            "scaleInDock": 1,
+            "scaleInEditor": 1
+        },
         "fung_mush_01.tsx": {
             "scaleInDock": 1
         },
         "fung_new_0022_Layer-326.tsx": {
+            "scaleInDock": 1,
+            "scaleInEditor": 1
+        },
+        "fung_new_0128_01.tsx": {
+            "scaleInDock": 1,
+            "scaleInEditor": 1
+        },
+        "fung_new_0130_Layer-239.tsx": {
             "scaleInDock": 1,
             "scaleInEditor": 1
         },
@@ -166,8 +242,31 @@
         "fungd_mush_08_0004_a.tsx": {
             "scaleInDock": 1
         },
+        "fungd_spikes_02.tsx": {
+            "scaleInDock": 1,
+            "scaleInEditor": 1
+        },
+        "fungd_spikes_04.tsx": {
+            "scaleInDock": 1,
+            "scaleInEditor": 1
+        },
+        "fungd_spikes_07.tsx": {
+            "scaleInDock": 1,
+            "scaleInEditor": 1
+        },
+        "fungd_spikes_08.tsx": {
+            "scaleInDock": 1,
+            "scaleInEditor": 1
+        },
+        "fungd_spikes_0_0003_b.tsx": {
+            "scaleInDock": 1,
+            "scaleInEditor": 1
+        },
         "fungd_wall_rock_03_0002_a.tsx": {
             "scaleInDock": 1
+        },
+        "fungd_wall_side_01.tsx": {
+            "scaleInEditor": 1
         },
         "fungus_stone_short_wall.tsx": {
             "scaleInDock": 1
@@ -180,21 +279,30 @@
         },
         "green_path.tmx": {
             "expandedObjectLayers": [
+                6,
                 8,
+                17,
                 7
             ],
-            "scale": 0.75,
-            "selectedLayer": 5,
+            "scale": 1,
+            "selectedLayer": 14,
             "viewCenter": {
-                "x": 12990,
-                "y": 6247.333333333333
+                "x": 11684.5,
+                "y": 7836.5
             }
+        },
+        "green_path_butterfly_particle.tsx": {
+            "scaleInEditor": 1
         },
         "grimm_particle_flame.tsx": {
             "scaleInDock": 1
         },
         "guard_table_02.tsx": {
             "scaleInDock": 1
+        },
+        "l.tsx": {
+            "scaleInDock": 1,
+            "scaleInEditor": 1
         },
         "lamp_cave_01.tsx": {
             "scaleInDock": 1
@@ -205,8 +313,16 @@
         "mantis_detail_0007_a.tsx": {
             "scaleInDock": 1
         },
+        "mid_mush__giraffe_back.tsx": {
+            "scaleInDock": 1,
+            "scaleInEditor": 1
+        },
         "mid_wall.tsx": {
             "scaleInDock": 1
+        },
+        "nailmaster_benches_0002_2.tsx": {
+            "scaleInDock": 1,
+            "scaleInEditor": 1
         },
         "nailmaster_hut_01_0002_glow.tsx": {
             "scaleInDock": 1,
@@ -260,11 +376,19 @@
         "sliding_wall0009.tsx": {
             "scaleInDock": 1
         },
+        "slug_shrine_bench.tsx": {
+            "scaleInDock": 1,
+            "scaleInEditor": 1
+        },
         "small_floor.tsx": {
             "scaleInDock": 1
         },
         "spikes0001.tsx": {
             "scaleInDock": 1
+        },
+        "spritesheet (1).tsx": {
+            "scaleInDock": 1,
+            "scaleInEditor": 1
         },
         "station_FG_tunnel_02.tsx": {
             "scaleInDock": 1
@@ -278,11 +402,23 @@
         "temple_ext_01.tsx": {
             "scaleInDock": 1
         },
+        "thorn_mid_back_02.tsx": {
+            "scaleInDock": 1,
+            "scaleInEditor": 1
+        },
+        "thorn_plinth.tsx": {
+            "scaleInDock": 1,
+            "scaleInEditor": 1
+        },
         "vil_floor_01.tsx": {
             "scaleInDock": 1
         },
         "vil_lamp_02.tsx": {
             "scaleInDock": 1
+        },
+        "vine_platform_0005_vine_platform_bit_01.tsx": {
+            "scaleInDock": 1,
+            "scaleInEditor": 1
         },
         "vine_platform_01.tsx": {
             "scaleInDock": 1,
@@ -308,9 +444,24 @@
         },
         "wd_skull_03_r.tsx": {
             "scaleInDock": 1
+        },
+        "white_palace_station_window.tsx": {
+            "scaleInEditor": 1
+        },
+        "white_spikes0001.tsx": {
+            "scaleInEditor": 1
+        },
+        "wp_collapser.tsx": {
+            "scaleInEditor": 1
+        },
+        "wp_windoe_0000_wp_4.tsx": {
+            "scaleInEditor": 1
+        },
+        "wp_windoe_0001_wp_3.tsx": {
+            "scaleInEditor": 1
         }
     },
-    "last.imagePath": "P:/Project/HollowKnight/assets/map/source/Area specfic architecture/Greenpath",
+    "last.imagePath": "P:/Project/HollowKnight/assets/map/source",
     "map.height": 2000,
     "map.lastUsedFormat": "tmx",
     "map.tileHeight": 8,
@@ -321,12 +472,20 @@
         "cross_road.tmx"
     ],
     "project": "green_path.tiled-project",
+    "property.type": "bool",
     "recentFiles": [
-        "cross_road.tmx",
-        "green_path.tmx",
-        "nailmaster_hut_01_0002_glow.tsx",
-        "fung_new_0022_Layer-326.tsx",
-        "vine_platform_01.tsx"
+        "Gemini_Generated_Image_m5wajem5wajem5wa (1).tsx",
+        "Gemini_Generated_Image_m5wajem5wajem5wa.tsx",
+        "fungd_wall_side_01.tsx",
+        "spritesheet (1).tsx",
+        "white_palace_station_window.tsx",
+        "l.tsx",
+        "SpriteAtlasTexture-WP_hanging_lamp-512x512-fmt12.tsx",
+        "green_path_butterfly_particle.tsx",
+        "White_Palace__0000_wp_glow_door_orb_2.tsx",
+        "core_extras_0023_wp.tsx",
+        "_0059_white.tsx",
+        "core_extras_0003_wp.tsx"
     ],
     "tileset.lastUsedFormat": "tsx",
     "tileset.tileSize": {

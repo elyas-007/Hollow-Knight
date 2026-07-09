@@ -394,6 +394,20 @@ public class AudioManager {
         if (audioLoader.wall_death != null) audioLoader.wall_death.play(0.9f);
     }
 
+    public void playSoulPickupSound(int currentSoul) {
+        if (!isSfxOn()) return;
+
+        if (audioLoader.soulPickups != null && audioLoader.soulPickups.length == 7) {
+            int index = (int) (((float) currentSoul / 99f) * 6f);
+
+            index = Math.max(0, Math.min(6, index));
+
+            if (audioLoader.soulPickups[index] != null) {
+                audioLoader.soulPickups[index].play(getSfxVol() * 0.8f);
+            }
+        }
+    }
+
     public void stopAllSfxLoops() {
         stopFootsteps();
         stopFallingSound();

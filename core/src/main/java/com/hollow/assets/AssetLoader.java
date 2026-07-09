@@ -24,12 +24,16 @@ public class AssetLoader {
     private static AssetLoader instance;
     // Texture
     public Texture background;
+    public Texture infection;
+    public Texture blue;
+    public Texture vheart_beam;
     public TextureRegion pointerR;
     public TextureRegion pointerL;
     public Texture hollowKnightLogo;
     public Texture titleBottom;
     public Texture settingBottom;
     public Texture brightness;
+    public Texture changeBgIcon;
 
     public NinePatch saveBackground_greenPath;
     public NinePatch saveBackground_forgotten;
@@ -112,7 +116,6 @@ public class AssetLoader {
     }
 
     public void loadAssets() {
-        background = new Texture("ui/mainMenu/background.png");
         Texture pointTexture = new Texture("ui/mainMenu/main_menu_pointer_anim0008.png");
         pointerR = new TextureRegion(pointTexture);
         pointerL = new TextureRegion(pointTexture);
@@ -124,6 +127,12 @@ public class AssetLoader {
         settingBottom = new Texture("ui/mainMenu/settingBottom.png");
 
         brightness = new Texture("ui/mainMenu/brightness_image.png");
+        changeBgIcon = new Texture("ui/mainMenu/distant villager - _0002_s_royal_02_skull.png");
+
+        background = new Texture("background/background.png");
+        vheart_beam = new Texture("background/vheart_beam.png");
+        infection = new Texture("background/infection.png");
+        blue = new Texture("background/blue.png");
 
         FreeTypeFontGenerator generator = new FreeTypeFontGenerator(Gdx.files.internal("font/TrajanPro-Bold.otf"));
         FreeTypeFontGenerator generatorSub = new FreeTypeFontGenerator(Gdx.files.internal("font/primary_font.ttf"));

@@ -16,6 +16,7 @@ import com.badlogic.gdx.utils.Array;
 import com.hollow.HollowKnight;
 import com.hollow.assets.TiledMapHelper;
 import com.hollow.models.SaveManager;
+import com.hollow.models.entities.Knight.Knight;
 
 public class LoadingScreen implements Screen {
     private final HollowKnight game;
@@ -26,6 +27,9 @@ public class LoadingScreen implements Screen {
     private float stateTime;
 
     private AssetManager assetManager;
+
+    private Knight existingKnight;
+    private boolean existingInstaKill;
 
     private float timer = 0f;
     private final float MINIMUM_LOAD_TIME = 1.5f;
@@ -38,16 +42,24 @@ public class LoadingScreen implements Screen {
         this.game = game;
         this.nextMap = nextMap;
         this.useCustomSpawn = false;
+        this.existingKnight = null;
+        this.existingInstaKill = false;
         init();
     }
 
-    public LoadingScreen(HollowKnight game, String nextMap, float spawnX, float spawnY) {
+    public LoadingScreen(HollowKnight game, String nextMap,
+                         float spawnX, float spawnY,
+                         Knight knight, boolean instaKill) {
         this.game = game;
         this.nextMap = nextMap;
         this.useCustomSpawn = true;
 
         this.spawnX = spawnX;
         this.spawnY = spawnY;
+
+        this.existingKnight = knight;
+        this.existingInstaKill = instaKill;
+
         init();
     }
 
@@ -101,12 +113,12 @@ public class LoadingScreen implements Screen {
                 Vector2 newSpawn = helper.findCustomSpawnPoint(preloadedMap, 1f / 64f);
 
                 if (newSpawn != null) {
-                    game.setScreen(new GameScreen(game, actualMapPath, newSpawn.x, newSpawn.y, preloadedMap));
+                    game.setScreen(new GameScreen(game, actualMapPath, newSpawn.x, newSpawn.y, preloadedMap, existingKnight, existingInstaKill));
                 } else {
-                    game.setScreen(new GameScreen(game, actualMapPath, spawnX, spawnY, preloadedMap));
+                    game.setScreen(new GameScreen(game, actualMapPath, spawnX, spawnY, preloadedMap, existingKnight, existingInstaKill));
                 }
             } else {
-                game.setScreen(new GameScreen(game, nextMap, preloadedMap));
+                game.setScreen(new GameScreen(game, nextMap, preloadedMap, existingKnight, existingInstaKill));
             }
         }
     }

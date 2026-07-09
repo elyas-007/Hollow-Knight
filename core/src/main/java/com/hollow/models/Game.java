@@ -14,6 +14,7 @@ import com.hollow.models.entities.FalseKnightBoss.Shockwave;
 import com.hollow.models.entities.Knight.Charm;
 import com.hollow.models.entities.Knight.Knight;
 import com.hollow.models.entities.Knight.Projectile;
+import com.hollow.models.entities.Knight.WraithEffect;
 import com.hollow.models.entities.zote.Zote;
 import com.hollow.models.enums.KnightState;
 import com.hollow.views.screens.GameScreen;
@@ -55,6 +56,7 @@ public class Game {
 
     public Array<Projectile> activeProjectiles = new Array<>();
     public Array<Effect> activeEffects = new Array<>();
+    public Array<WraithEffect> activeWraiths = new Array<>();
     public Array<InstantLaser> activeInstantLasers = new Array<>();
     public boolean hasShadowCharm;
 
@@ -141,6 +143,8 @@ public class Game {
         if (knight.castProjectile) {
             knight.castProjectile = false;
 
+            GameScreen.triggerShake(0.12f, 0.5f);
+
             hasShadowCharm = data.getActiveSlot().getEquippedCharms().contains(Charm.VOID_HEART, true);
 
             game.audioManager.playSound(game.audioManager.audioLoader.knight_fireball);
@@ -171,6 +175,55 @@ public class Game {
 
             if (hasShadowCharm) {
                 AchievementManager.getInstance().unlockAchievement(Achievement.SHADOW_MASTER);
+            }
+        }
+
+        if (knight.castWraiths) {
+            knight.castWraiths = false;
+            GameScreen.triggerShake(0.3f, 0.4f);
+
+            hasShadowCharm = data.getActiveSlot().getEquippedCharms().contains(Charm.VOID_HEART, true);
+            game.audioManager.playSound(game.audioManager.audioLoader.knight_fireball);
+
+            float effectWidth = 7.0f;
+            float effectHeight = 8.0f;
+            float effectX = knight.getX() + (knight.getWidth() / 2f) - (effectWidth / 2f);
+            float effectY = knight.getY() + knight.getHeight() - 0.5f;
+
+            activeWraiths.add(new WraithEffect(effectX, effectY, effectWidth, effectHeight, hasShadowCharm, 0.7f));
+        }
+
+        for (int i = activeWraiths.size - 1; i >= 0; i--) {
+            WraithEffect w = activeWraiths.get(i);
+            w.stateTime += delta;
+
+            int expectedTicks = (int) (w.stateTime / w.tickInterval);
+            if (expectedTicks > w.ticksDone && w.ticksDone < 3) {
+                w.ticksDone++;
+
+                for (Enemy enemy : enemies) {
+                    if (enemy.state != Enemy.EnemyState.CORPSE && w.hitbox.overlaps(enemy.hitbox)) {
+                        int damage = w.isShadow ? 15 : 8;
+                        if (instaKillMode) damage = 9999;
+                        enemy.takeDamage(damage, enemy.position.x > w.x + w.width / 2f);
+                        game.audioManager.playSound(game.audioManager.audioLoader.enemy_hit);
+                        checkEnemyKill(enemy);
+                    }
+                }
+
+                if (boss != null && boss.currentState != FalseKnight.state.DEATH) {
+                    Rectangle targetBox = (boss.currentState == FalseKnight.state.STUNNED) ? boss.vulnerabilityBox : boss.hitbox;
+                    if (w.hitbox.overlaps(targetBox)) {
+                        int damage = w.isShadow ? 15 : 8;
+                        if (instaKillMode) damage = 9999;
+                        boss.takeDamage(damage);
+                        game.audioManager.playSound(game.audioManager.audioLoader.fk_armourHit);
+                    }
+                }
+            }
+
+            if (w.stateTime >= w.maxTime) {
+                activeWraiths.removeIndex(i);
             }
         }
 
@@ -627,14 +680,19 @@ public class Game {
         }
 
         if (Gdx.input.isKeyJustPressed(Input.Keys.Q)) {
-            if (knight.getState() != KnightState.CASTING && !knight.isBusy() && knight.getSoul() >= 33) {
+            if (knight.getState() != KnightState.CASTING && knight.getState() != KnightState.UP_CASTING && !knight.isBusy() && knight.getSoul() >= 33) {
                 knight.consumeSoul(33);
-                knight.startCasting();
+
+                if (Gdx.input.isKeyPressed(keyUp)) {
+                    knight.startUpCasting();
+                } else {
+                    knight.startCasting();
+                }
             }
         }
 
         if (Gdx.input.isKeyPressed(keyUp) && knight.isOnGround() && knight.getVelocity().x == 0) {
-            knight.setLookDirection(1);
+                knight.setLookDirection(1);
         } else if (Gdx.input.isKeyPressed(keyDown) && knight.isOnGround() && knight.getVelocity().x == 0) {
             knight.setLookDirection(-1);
         } else {

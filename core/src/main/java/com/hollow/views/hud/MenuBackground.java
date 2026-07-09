@@ -1,5 +1,6 @@
 package com.hollow.views.hud;
 
+import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.GL20;
 import com.badlogic.gdx.graphics.Pixmap;
@@ -18,9 +19,34 @@ public class MenuBackground {
     private Texture lightTexture;
     private Array<DustParticle> particles;
 
+    private Texture[] backgrounds;
+    private int currentBackgroundIndex = 0;
+    private int previousBackgroundIndex = 0;
+
+    private Color[] themeColors = {
+        new Color(0.8f, 0.9f, 1.0f, 1f),
+        new Color(0.2f, 0.4f, 0.8f, 1f),
+        new Color(1.0f, 0.4f, 0.0f, 1f),
+    };
+    private int currentThemeIndex = 0;
+    private int previousThemeIndex = 0;
+
+    private boolean isTransitioning = false;
+    private float transitionTime = 0f;
+    private final float TRANSITION_DURATION = 1.0f;
+    private Color activeThemeColor;
+
     public MenuBackground(AssetLoader assetLoader, HollowKnight game) {
         this.background = assetLoader.background;
         this.game = game;
+
+        this.backgrounds = new Texture[] {
+            assetLoader.background,
+            assetLoader.blue,
+            assetLoader.infection,
+        };
+
+        activeThemeColor = new Color(themeColors[0]);
 
         Pixmap lightPixmap = new Pixmap(256, 256, Pixmap.Format.RGBA8888);
         for (int x = 0; x < 256; x++) {
@@ -48,8 +74,45 @@ public class MenuBackground {
         }
     }
 
+    public void changeBackground() {
+        previousBackgroundIndex = currentBackgroundIndex;
+        previousThemeIndex = currentThemeIndex;
+
+        currentBackgroundIndex = (currentBackgroundIndex + 1) % backgrounds.length;
+        currentThemeIndex = (currentThemeIndex + 1) % themeColors.length;
+
+        isTransitioning = true;
+        transitionTime = 0f;
+    }
+
     public void updateAndDraw(SpriteBatch batch, float delta, float brightness, boolean drawLight) {
+        float alpha = 1f;
+
+        if (isTransitioning) {
+            transitionTime += delta;
+            alpha = MathUtils.clamp(transitionTime / TRANSITION_DURATION, 0f, 1f);
+
+            activeThemeColor.set(themeColors[previousThemeIndex]).lerp(themeColors[currentThemeIndex], alpha);
+
+            if (alpha >= 1f) {
+                isTransitioning = false;
+            }
+        } else {
+            activeThemeColor.set(themeColors[currentThemeIndex]);
+        }
+
+        batch.setBlendFunction(GL20.GL_SRC_ALPHA, GL20.GL_ONE_MINUS_SRC_ALPHA);
+
+        if (isTransitioning) {
+            batch.setColor(brightness, brightness, brightness, 1f);
+            drawBackgroundCropped(batch, backgrounds[previousBackgroundIndex]);
+        }
+
+        batch.setColor(brightness, brightness, brightness, isTransitioning ? alpha : 1f);
+        drawBackgroundCropped(batch, backgrounds[currentBackgroundIndex]);
+
         batch.setBlendFunction(GL20.GL_SRC_ALPHA, GL20.GL_ONE);
+
         if (drawLight) {
             float lightWidth = 1500f;
             float lightHeight = 500f;
@@ -57,22 +120,39 @@ public class MenuBackground {
             float lightY = 1080f - 600f;
 
             float pulse = 0.85f + 0.15f * MathUtils.sin(particles.get(0).stateTime * 1.5f);
-            batch.setColor(brightness, brightness, brightness, pulse);
+            batch.setColor(brightness * activeThemeColor.r, brightness * activeThemeColor.g, brightness * activeThemeColor.b, pulse);
 
             batch.draw(lightTexture, lightX, lightY, lightWidth / 2f, lightHeight / 2f,
                 lightWidth, lightHeight, 1f, 1f, 15f, 0, 0, 256, 256, false, false);
         }
 
-
-        for (DustParticle p :  particles) {
+        for (DustParticle p : particles) {
             p.update(delta);
 
             float findAlpha = p.alpha * brightness;
-            batch.setColor(1f, 1f, 1f, findAlpha);
+            batch.setColor(activeThemeColor.r, activeThemeColor.g, activeThemeColor.b, findAlpha);
             batch.draw(particleTexture, p.x, p.y, p.size, p.size);
         }
+
         batch.setBlendFunction(GL20.GL_SRC_ALPHA, GL20.GL_ONE_MINUS_SRC_ALPHA);
         batch.setColor(Color.WHITE);
+    }
+
+    private void drawBackgroundCropped(SpriteBatch batch, Texture bg) {
+        float bgWidth = bg.getWidth();
+        float bgHeight = bg.getHeight();
+
+        float scaleX = game.SCREEN_WIDTH / bgWidth;
+        float scaleY = game.SCREEN_HEIGHT / bgHeight;
+        float scale = Math.max(scaleX, scaleY);
+
+        float finalWidth = bgWidth * scale;
+        float finalHeight = bgHeight * scale;
+
+        float x = (1920f - finalWidth) / 2f;
+        float y = (1080f - finalHeight) / 2f;
+
+        batch.draw(bg, x, y, finalWidth, finalHeight);
     }
 
     public void dispose() {

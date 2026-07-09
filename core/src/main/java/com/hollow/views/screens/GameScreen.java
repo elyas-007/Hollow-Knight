@@ -26,6 +26,7 @@ import com.hollow.models.entities.Knight.Knight;
 import com.badlogic.gdx.math.Rectangle;
 import com.badlogic.gdx.graphics.Color;
 import com.hollow.models.entities.Knight.Projectile;
+import com.hollow.models.entities.Knight.WraithEffect;
 import com.hollow.models.entities.zote.Zote;
 import com.hollow.models.enums.KnightState;
 import com.hollow.views.hud.DialogueBox;
@@ -79,6 +80,7 @@ public class GameScreen implements Screen {
 
     private static float shakeTimer = 0f;
     private static float shakeIntensity = 0f;
+    private float smoothShakeTime = 0f;
 
     public DialogueBox dialogueBox;
     public Zote zote;
@@ -94,22 +96,27 @@ public class GameScreen implements Screen {
     private Array<AmbientObject> ambientObjects;
 
     private boolean isTransition;
+    private boolean passedInstaKill = false;
 
-    public GameScreen(HollowKnight game, String mapPath, float spawnX, float spawnY, TiledMap preloadedMap) {
+    public GameScreen(HollowKnight game, String mapPath, float spawnX, float spawnY, TiledMap preloadedMap, Knight existingKnight, boolean instaKill) {
         this.game = game;
         this.mapPath = mapPath;
         this.customSpawn = new Vector2(spawnX, spawnY);
         this.map = preloadedMap;
         this.isTransition = true;
+        this.knight = existingKnight;
+        this.passedInstaKill = instaKill;
     }
 
-    public GameScreen(HollowKnight game, String mapPath, TiledMap preloadedMap) {
+    public GameScreen(HollowKnight game, String mapPath, TiledMap preloadedMap, Knight existingKnight, boolean instaKill) {
         this.game = game;
         if (mapPath.equals("CROSSROAD")) this.mapPath = "map/cross_road.tmx";
         else this.mapPath = "map/green_path.tmx";
         this.customSpawn = null;
         this.map = preloadedMap;
         this.isTransition = false;
+        this.knight = existingKnight;
+        this.passedInstaKill = instaKill;
     }
 
 
@@ -138,7 +145,17 @@ public class GameScreen implements Screen {
         } else {
             spawnPoint = findSpawnPoint();
         }
-        knight = new Knight(spawnPoint.x, spawnPoint.y, game.data, game.audioManager);
+        if (this.knight == null) {
+            knight = new Knight(spawnPoint.x, spawnPoint.y, game.data, game.audioManager);
+            KnightAnimationLoader.loadAllAnimations(knight);
+        } else {
+            knight.getPosition().set(spawnPoint.x, spawnPoint.y);
+            knight.getHitbox().setPosition(spawnPoint.x, spawnPoint.y);
+            knight.getVelocity().set(0, 0);
+            knight.setOnGround(false);
+            knight.state = KnightState.AIRBORNE;
+            knight.activeEffects.clear();
+        }
 
         knight.isGrassTerrain = mapPath.equals("map/green_path.tmx");
 
@@ -219,6 +236,7 @@ public class GameScreen implements Screen {
         controller = new Game(game, knight, groundRecs, spikeRecs, mapEnemies, transitionZone, this,
             game.data, falseKnight, breakableWalls);
 
+        controller.instaKillMode = this.passedInstaKill;
         controller.voidHeartPos = helper.getVoidHeartPos(map, UNIT_SCALE);
 
 
@@ -396,6 +414,7 @@ public class GameScreen implements Screen {
         }
         renderProjectiles();
         renderEffects();
+        renderWraiths();
         renderWorldEffects(Gdx.graphics.getDeltaTime());
         renderInstantLasers();
         renderCollectibles();
@@ -658,6 +677,25 @@ public class GameScreen implements Screen {
         }
     }
 
+    private void renderWraiths() {
+        if (controller.activeWraiths == null) return;
+
+        for (WraithEffect w : controller.activeWraiths) {
+            TextureRegion frame;
+            if (w.isShadow && knight.shadowScreamAnim != null) {
+                frame = knight.shadowScreamAnim.getKeyFrame(w.stateTime, false);
+            } else if (!w.isShadow && knight.soulScreamAnim != null) {
+                frame = knight.soulScreamAnim.getKeyFrame(w.stateTime, false);
+            } else {
+                continue;
+            }
+
+            game.batch.setBlendFunction(GL20.GL_SRC_ALPHA, GL20.GL_ONE);
+            game.batch.draw(frame, w.x, w.y, w.width, w.height);
+            game.batch.setBlendFunction(GL20.GL_SRC_ALPHA, GL20.GL_ONE_MINUS_SRC_ALPHA);
+        }
+    }
+
     private void renderProjectiles() {
         if (controller.activeProjectiles == null) return;
 
@@ -711,7 +749,7 @@ public class GameScreen implements Screen {
             fadeAlpha += delta * 1.5f;
             if (fadeAlpha >= 1f) {
                 fadeAlpha = 1f;
-                game.setScreen(new LoadingScreen(game, nextMap, 0, 0));
+                game.setScreen(new LoadingScreen(game, nextMap, 0, 0, knight, controller.instaKillMode));
             }
         }
 
@@ -764,7 +802,7 @@ public class GameScreen implements Screen {
             float knightY = knight.getY() + knight.getHeight() / 2f;
 
             float cameraOffsetY = 0f;
-            if (knight.getState() == KnightState.LOOK_UP) {
+            if (knight.getState() == KnightState.LOOK_UP || knight.getState() == KnightState.UP_CASTING) {
                 cameraOffsetY = 4f;
             } else if (knight.getState() == KnightState.LOOK_DOWN) {
                 cameraOffsetY = -4f;
@@ -781,12 +819,18 @@ public class GameScreen implements Screen {
 
             targetX = Math.max(minCamX, Math.min(maxCamX, targetX));
             targetY = Math.max(halfH, Math.min(mapPixelHeight - halfH, targetY));
+
+            if (knight.getState() == KnightState.FOCUSING ||
+                knight.getState() == KnightState.FOCUSING_START ||
+                knight.getState() == KnightState.FOCUSING_GET) {
+                targetZoom = 0.88f;
+            }
         }
 
         camera.position.x += (targetX - camera.position.x) * CAM_LERP;
         camera.position.y += (targetY - camera.position.y) * CAM_LERP;
 
-        camera.zoom += (targetZoom - camera.zoom) * CAM_LERP;
+        camera.zoom += (targetZoom - camera.zoom) * (CAM_LERP * 0.6f);
 
         camera.update();
 
@@ -800,6 +844,18 @@ public class GameScreen implements Screen {
     }
 
     private void applyCameraShake(float delta) {
+        if (knight.getState() == KnightState.FOCUSING ||
+            knight.getState() == KnightState.FOCUSING_START ||
+            knight.getState() == KnightState.FOCUSING_GET) {
+
+            smoothShakeTime += delta * 20f;
+            float offsetX = (float) Math.sin(smoothShakeTime) * 0.03f;
+            float offsetY = (float) Math.cos(smoothShakeTime * 1.2f) * 0.03f;
+
+            camera.position.add(offsetX, offsetY, 0);
+            camera.update();
+        }
+
         if (shakeTimer > 0) {
             shakeTimer -= delta;
 

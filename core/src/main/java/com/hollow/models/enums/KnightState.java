@@ -23,5 +23,6 @@ public enum KnightState {
     FOCUSING_START,
     FOCUSING_GET,
     FOCUSING_END,
-    CASTING
+    CASTING,
+    UP_CASTING
 }
