@@ -1,0 +1,10 @@
+{
+  "com.badlogic.gdx.scenes.scene2d.ui.Slider$SliderStyle": {
+    "menuSlider": {
+      "background": "slider_white",
+      "knob": "slider_arrow",
+      "knobOver": "slider_arrow",
+      "knobDown": "slider_arrow"
+    }
+  }
+}

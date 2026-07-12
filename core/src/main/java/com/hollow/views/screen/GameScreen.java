@@ -263,7 +263,7 @@ public class GameScreen implements Screen {
         }
 
         drawWorld();
-        renderDebugHitboxes();
+//        renderDebugHitboxes();
 
         hud.update(knight, delta);
         if (!isInventoryOpen) hud.draw();
@@ -339,43 +339,43 @@ public class GameScreen implements Screen {
         game.batch.end();
     }
 
-    private void renderDebugHitboxes() {
-        shapeRenderer.setProjectionMatrix(camera.combined);
-        shapeRenderer.begin(ShapeRenderer.ShapeType.Line);
-        shapeRenderer.setColor(Color.GREEN);
-
-        if (knight != null) shapeRenderer.rect(knight.getHitbox().x, knight.getHitbox().y,
-            knight.getHitbox().width, knight.getHitbox().height);
-
-        if (controller.getEnemies() != null) {
-            for (Enemy enemy : controller.getEnemies()) {
-                shapeRenderer.rect(enemy.hitbox.x, enemy.hitbox.y, enemy.hitbox.width, enemy.hitbox.height);
-            }
-        }
-
-        if (groundRecs != null) {
-            for (SolidBlock ground : groundRecs) {
-                if (!ground.isDeadly) shapeRenderer.rect(ground.bounds.x, ground.bounds.y,
-                    ground.bounds.width, ground.bounds.height);
-            }
-        }
-
-        if (spikeRecs != null) {
-            shapeRenderer.setColor(Color.RED);
-            for (SolidBlock spike : spikeRecs) {
-                if (spike.isDeadly) shapeRenderer.rect(spike.bounds.x, spike.bounds.y,
-                    spike.bounds.width, spike.bounds.height);
-            }
-        }
-
-        if (controller.boss != null) {
-            shapeRenderer.setColor(Color.MAGENTA);
-            shapeRenderer.rect(controller.boss.hitbox.x, controller.boss.hitbox.y,
-                controller.boss.hitbox.width, controller.boss.hitbox.height);
-        }
-
-        shapeRenderer.end();
-    }
+//    private void renderDebugHitboxes() {
+//        shapeRenderer.setProjectionMatrix(camera.combined);
+//        shapeRenderer.begin(ShapeRenderer.ShapeType.Line);
+//        shapeRenderer.setColor(Color.GREEN);
+//
+//        if (knight != null) shapeRenderer.rect(knight.getHitbox().x, knight.getHitbox().y,
+//            knight.getHitbox().width, knight.getHitbox().height);
+//
+//        if (controller.getEnemies() != null) {
+//            for (Enemy enemy : controller.getEnemies()) {
+//                shapeRenderer.rect(enemy.hitbox.x, enemy.hitbox.y, enemy.hitbox.width, enemy.hitbox.height);
+//            }
+//        }
+//
+//        if (groundRecs != null) {
+//            for (SolidBlock ground : groundRecs) {
+//                if (!ground.isDeadly) shapeRenderer.rect(ground.bounds.x, ground.bounds.y,
+//                    ground.bounds.width, ground.bounds.height);
+//            }
+//        }
+//
+//        if (spikeRecs != null) {
+//            shapeRenderer.setColor(Color.RED);
+//            for (SolidBlock spike : spikeRecs) {
+//                if (spike.isDeadly) shapeRenderer.rect(spike.bounds.x, spike.bounds.y,
+//                    spike.bounds.width, spike.bounds.height);
+//            }
+//        }
+//
+//        if (controller.boss != null) {
+//            shapeRenderer.setColor(Color.MAGENTA);
+//            shapeRenderer.rect(controller.boss.hitbox.x, controller.boss.hitbox.y,
+//                controller.boss.hitbox.width, controller.boss.hitbox.height);
+//        }
+//
+//        shapeRenderer.end();
+//    }
 
     private void updateCamera() {
         float targetX, targetY, targetZoom = 1f;

@@ -35,7 +35,7 @@ public class AssetLoader {
     public TextureRegion crystalLaserTex, rockTexture;
 
     public NinePatch saveBackground_greenPath, saveBackground_forgotten;
-    public Skin sliderSkin, scrollerSkin;
+    public Skin sliderSkin;
     public Animation<TextureRegion> maskShatterAnim, maskRefillAnim, maskShineAnim;
     public Animation<TextureRegion> soulIdleAnim, butterflyAnim;
     public ShaderProgram liquidShader;
@@ -123,8 +123,7 @@ public class AssetLoader {
         mask = new Texture("ui/startGameMenu/select_game_HUD_0001_health.png");
         profile_fleur = new Texture("ui/startGameMenu/profile_fleur0012.png");
         profilePointer = new Texture("ui/startGameMenu/main_menu_pointer_anim0010.png");
-        scrollerSkin = new Skin(Gdx.files.internal("ui/VerticalScroller/VerticalScroller.json"));
-        sliderSkin = new Skin(Gdx.files.internal("ui/Slider/slider.json"));
+        sliderSkin = new Skin(Gdx.files.internal("ui/slider/slider.json"));
     }
 
     private void loadHudAssets() {
@@ -157,11 +156,11 @@ public class AssetLoader {
     }
 
     private void loadInventoryAssets() {
-        emptyNotch = new Texture("ui/inventory and charms/charm_cost.png");
-        fullNotch = new Texture("ui/inventory and charms/charm_UI__0000_charm_cost_02_lit.png");
-        charm_place = new Texture("ui/inventory and charms/charm_backboard.png");
+        emptyNotch = new Texture("ui/inventory_and_charms/charm_cost.png");
+        fullNotch = new Texture("ui/inventory_and_charms/charm_UI__0000_charm_cost_02_lit.png");
+        charm_place = new Texture("ui/inventory_and_charms/charm_backboard.png");
 
-        Texture corner = new Texture("ui/inventory and charms/overscan_corner_fleur009.png");
+        Texture corner = new Texture("ui/inventory_and_charms/overscan_corner_fleur009.png");
         overScreen_Top_Left = new TextureRegion(corner);
         overScreen_Top_Right = new TextureRegion(corner);
         overScreen_Bottom_Left = new TextureRegion(corner);
@@ -170,7 +169,7 @@ public class AssetLoader {
         overScreen_Bottom_Left.flip(false, true);
         overScreen_Bottom_Right.flip(true, true);
 
-        Texture charm_selector = new Texture("ui/inventory and charms/Inv_0014_selection_cursor.png");
+        Texture charm_selector = new Texture("ui/inventory_and_charms/Inv_0014_selection_cursor.png");
         charm_selector_Top_Left = new TextureRegion(charm_selector);
         charm_selector_Top_Right = new TextureRegion(charm_selector);
         charm_selector_Bottom_Left = new TextureRegion(charm_selector);
@@ -179,27 +178,27 @@ public class AssetLoader {
         charm_selector_Bottom_Right.flip(true, true);
         charm_selector_Bottom_Left.flip(false, true);
 
-        inventory_divider = new Texture("ui/inventory and charms/Inv_0017_divider.png");
-        inventory_top = new Texture("ui/inventory and charms/game_over_fleur.png");
-        inventory_bottom = new Texture("ui/inventory and charms/bottom_fleur0003.png");
+        inventory_divider = new Texture("ui/inventory_and_charms/Inv_0017_divider.png");
+        inventory_top = new Texture("ui/inventory_and_charms/game_over_fleur.png");
+        inventory_bottom = new Texture("ui/inventory_and_charms/bottom_fleur0003.png");
 
         charmTextures = new HashMap<>();
         charmTextures.put(Charm.SOUL_CATCHER, new Texture(
-            "ui/inventory and charms/Soul Catcher - _0001_charm_more_soul.png"));
+            "ui/inventory_and_charms/Soul Catcher - _0001_charm_more_soul.png"));
         charmTextures.put(Charm.DASH_MASTER, new Texture(
-            "ui/inventory and charms/Dashmaster - _0011_charm_generic_03.png"));
+            "ui/inventory_and_charms/Dashmaster - _0011_charm_generic_03.png"));
         charmTextures.put(Charm.UNBREAKABLE_STRENGTH, new Texture(
-            "ui/inventory and charms/Unbreakable Strength_0002_charm_glass_attack_up_full.png"));
+            "ui/inventory_and_charms/Unbreakable Strength_0002_charm_glass_attack_up_full.png"));
         charmTextures.put(Charm.QUICK_SLASH, new Texture(
-            "ui/inventory and charms/Quick Slash - _0003_charm_nail_slash_speed_up.png"));
+            "ui/inventory_and_charms/Quick Slash - _0003_charm_nail_slash_speed_up.png"));
         charmTextures.put(Charm.QUICK_FOCUS, new Texture(
-            "ui/inventory and charms/Quick Focus - _0005_charm_fast_focus.png"));
+            "ui/inventory_and_charms/Quick Focus - _0005_charm_fast_focus.png"));
         charmTextures.put(Charm.HEAVY_BLOW, new Texture(
-            "ui/inventory and charms/Heavy Blow - _0008_charm_nail_damage_up.png"));
+            "ui/inventory_and_charms/Heavy Blow - _0008_charm_nail_damage_up.png"));
         charmTextures.put(Charm.SHARP_SHADOW, new Texture(
-            "ui/inventory and charms/Sharp Shadow - charm_shade_impact.png"));
+            "ui/inventory_and_charms/Sharp Shadow - charm_shade_impact.png"));
         charmTextures.put(Charm.VOID_HEART, new Texture(
-            "ui/inventory and charms/Void Heart - charm_black.png"));
+            "ui/inventory_and_charms/Void Heart - charm_black.png"));
     }
 
     private void loadAchievementAssets() {

@@ -1,5 +1,5 @@
 {
-    "activeFile": "green_path.tmx",
+    "activeFile": "cross_road.tmx",
     "expandedProjectPaths": [
     ],
     "file.lastUsedOpenFilter": "All Files (*)",
@@ -172,17 +172,20 @@
         },
         "cross_road.tmx": {
             "expandedObjectLayers": [
-                11,
-                13,
                 10,
+                19,
+                11,
+                12,
                 5,
-                23
+                16,
+                23,
+                13
             ],
-            "scale": 0.125,
+            "scale": 0.5,
             "selectedLayer": 17,
             "viewCenter": {
-                "x": 11504,
-                "y": 8404
+                "x": 11986,
+                "y": 8707
             }
         },
         "cross_road.tmx#Lance_object": {
@@ -306,14 +309,14 @@
             "expandedObjectLayers": [
                 17,
                 7,
-                6,
-                8
+                8,
+                6
             ],
             "scale": 1,
             "selectedLayer": 15,
             "viewCenter": {
-                "x": 10311,
-                "y": 3600.5
+                "x": 12000,
+                "y": 8000.5
             }
         },
         "green_path_butterfly_particle.tsx": {
@@ -325,6 +328,10 @@
         },
         "guard_table_02.tsx": {
             "scaleInDock": 1
+        },
+        "hot_spring_layers_0036_Layer-8.tsx": {
+            "scaleInDock": 1,
+            "scaleInEditor": 1
         },
         "l.tsx": {
             "scaleInDock": 1,
@@ -394,6 +401,10 @@
         },
         "ruind_bridge_roof_02spikes.tsx": {
             "scaleInDock": 1
+        },
+        "ruins_resting_extra_bits_0037_Layer-139.tsx": {
+            "scaleInDock": 1,
+            "scaleInEditor": 1
         },
         "ruins_resting_extra_bits_0039_Layer-141.tsx": {
             "scaleInDock": 1
@@ -508,13 +519,17 @@
     "map.width": 3000,
     "openFiles": [
         "cross_road.tmx",
-        "green_path.tmx"
+        "green_path.tmx",
+        "hot_spring_layers_0036_Layer-8.tsx",
+        "ruins_resting_extra_bits_0037_Layer-139.tsx"
     ],
     "project": "green_path.tiled-project",
     "property.type": "bool",
     "recentFiles": [
-        "cross_road.tmx",
+        "ruins_resting_extra_bits_0037_Layer-139.tsx",
+        "hot_spring_layers_0036_Layer-8.tsx",
         "green_path.tmx",
+        "cross_road.tmx",
         "photo_2026-07-09_17-50-18.tsx",
         "photo_2026-07-09_17-40-05.tsx",
         "Gemini_Generated_Image_8iiek38iiek38iie.tsx",
@@ -522,9 +537,7 @@
         "Gemini_Generated_Image_9liy7q9liy7q9liy.tsx",
         "Gemini_Generated_Image_m5wajem5wajem5wa (1).tsx",
         "Gemini_Generated_Image_m5wajem5wajem5wa.tsx",
-        "fungd_wall_side_01.tsx",
-        "spritesheet (1).tsx",
-        "white_palace_station_window.tsx"
+        "fungd_wall_side_01.tsx"
     ],
     "tileset.lastUsedFormat": "tsx",
     "tileset.tileSize": {

@@ -93,7 +93,7 @@ public class HollowKnight extends Game {
    }
 
    private void setCursor() {
-       Pixmap pixmap = new Pixmap(Gdx.files.internal("icon and cursor/cursor_new_resized.png"));
+       Pixmap pixmap = new Pixmap(Gdx.files.internal("icon_and_cursor/cursor_new_resized.png"));
 
        int xHotspot = 0;
        int yHotspot = 0;
