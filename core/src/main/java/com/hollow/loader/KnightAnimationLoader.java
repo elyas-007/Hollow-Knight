@@ -1,0 +1,68 @@
+package com.hollow.loader;
+
+import com.badlogic.gdx.Gdx;
+import com.badlogic.gdx.graphics.Texture;
+import com.badlogic.gdx.graphics.g2d.Animation;
+import com.badlogic.gdx.graphics.g2d.TextureAtlas;
+import com.badlogic.gdx.graphics.g2d.TextureRegion;
+import com.hollow.models.entities.knight.Knight;
+
+public class KnightAnimationLoader {
+
+    public static void loadAllAnimations(Knight knight) {
+        knight.airborneAnim = loadAnimation("animation/knight/Airborne.png", 12, 0.1f, Animation.PlayMode.LOOP);
+        knight.dashAnim = loadAnimation("animation/knight/Dash.png", 12, 0.05f, Animation.PlayMode.LOOP);
+        knight.deathAnim = loadAnimation("animation/knight/Death.png", 18, 0.1f, Animation.PlayMode.LOOP);
+        knight.doubleJumpAnim = loadAnimation("animation/knight/Double Jump.png", 8, 0.08f, Animation.PlayMode.LOOP);
+        knight.downSlashAnim = loadAnimation("animation/knight/DownSlash.png", 5, 0.05f, Animation.PlayMode.LOOP);
+        knight.focusAnim = loadAnimation("animation/knight/Focus.png", 4, 0.1f, Animation.PlayMode.LOOP);
+        knight.landingAnim = loadAnimation("animation/knight/Landing.png", 4, 0.08f, Animation.PlayMode.LOOP);
+        knight.lookDownAnim = loadAnimation("animation/knight/LookDown.png", 6, 0.1f, Animation.PlayMode.LOOP);
+        knight.lookUpAnim = loadAnimation("animation/knight/LookUp.png", 6, 0.1f, Animation.PlayMode.LOOP);
+        knight.runAnim = loadAnimation("animation/knight/Run.png", 13, 0.05f, Animation.PlayMode.LOOP);
+        knight.slashAnim = loadAnimation("animation/knight/Slash.png", 5, 0.1f, Animation.PlayMode.LOOP);
+        knight.slashAltAnim = loadAnimation("animation/knight/SlashAlt.png", 5, 0.1f, Animation.PlayMode.LOOP);
+        knight.upSlashAnim = loadAnimation("animation/knight/UpSlash.png", 5, 0.1f, Animation.PlayMode.LOOP);
+        knight.wallSlideAnim = loadAnimation("animation/knight/Wall Slide.png", 4, 0.1f, Animation.PlayMode.LOOP);
+        knight.wallJumpAnim = loadAnimation("animation/knight/Walljump.png", 9, 0.1f, Animation.PlayMode.LOOP);
+        knight.idleAnim = loadAnimation("animation/knight/Idle.png", 9, 0.1f, Animation.PlayMode.LOOP);
+        knight.focusGetAnim = loadAnimation("animation/knight/Focus Get.png", 6, 0.1f, Animation.PlayMode.NORMAL);
+        knight.focusEndAnim = loadAnimation("animation/knight/Focus End.png", 3, 0.1f, Animation.PlayMode.NORMAL);
+        knight.focusStartAnim = loadAnimation("animation/knight/Focus Start.png", 3, 0.1f, Animation.PlayMode.NORMAL);
+        knight.castAnim = loadAnimation("animation/knight/Fireball Cast.png", 9, 0.1f, Animation.PlayMode.NORMAL);
+        knight.idleHurtAnim = loadAnimation("animation/knight/Idle Hurt.png", 12, 0.1f, Animation.PlayMode.LOOP);
+
+        knight.dashEffectAnim = loadAnimation("effect/Dash Effect.png", 8, 0.05f, Animation.PlayMode.NORMAL);
+        knight.slashEffectAnim = loadAnimation("effect/SlashEffect.png", 5, 0.05f, Animation.PlayMode.NORMAL);
+        knight.upSlashEffectAnim = loadAnimation("effect/UpSlashEffect.png", 5, 0.05f, Animation.PlayMode.NORMAL);
+        knight.downSlashEffectAnim = loadAnimation("effect/DownSlashEffect.png", 5, 0.05f, Animation.PlayMode.NORMAL);
+
+        knight.soulBallAnim = loadAnimation("animation/knight/SoulBall.png", 4, 0.1f, Animation.PlayMode.NORMAL);
+        knight.shadowBallAnim = loadAnimation("animation/knight/ShadowBall.png", 6, 0.1f, Animation.PlayMode.NORMAL);
+        knight.blast = loadAnimation("animation/knight/BlastSoul.png", 8, 0.05f, Animation.PlayMode.NORMAL);
+
+        knight.soulScreamAnim = loadAnimation("animation/knight/SoulScream.png",
+            13, 0.05f, Animation.PlayMode.NORMAL);
+        knight.shadowScreamAnim = loadAnimation("animation/knight/ShadowScream.png",
+            14, 0.05f, Animation.PlayMode.NORMAL);
+
+        TextureAtlas startRunAtlas = new TextureAtlas(Gdx.files.internal("animation/knight/startRun.atlas"));
+        knight.runStartAnim = new Animation<>(0.05f, startRunAtlas.findRegions("Run"));
+
+        TextureAtlas runAtlas = new TextureAtlas(Gdx.files.internal("animation/knight/Run.atlas"));
+        knight.runAnim = new Animation<>(0.08f, runAtlas.findRegions("Run"));
+    }
+
+    public static Animation<TextureRegion> loadAnimation(String fileName, int frameCount,
+                                                         float frameDuration, Animation.PlayMode mode) {
+        Texture texture = new Texture(Gdx.files.internal(fileName));
+        int frameWidth = texture.getWidth() / frameCount;
+        int frameHeight = texture.getHeight();
+
+        TextureRegion[][] tmp = TextureRegion.split(texture, frameWidth, frameHeight);
+
+        Animation<TextureRegion> animation = new Animation<>(frameDuration, tmp[0]);
+        animation.setPlayMode(mode);
+        return animation;
+    }
+}

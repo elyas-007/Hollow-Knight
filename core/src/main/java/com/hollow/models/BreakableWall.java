@@ -11,7 +11,6 @@ public class BreakableWall extends SolidBlock {
     private float shakeIntensity = 0f;
     private final Rectangle originalBounds;
 
-
     public BreakableWall(float x, float y, float width, float height) {
         this.hp = 3;
         this.originalBounds = new Rectangle(x, y, width, height);
@@ -27,9 +26,7 @@ public class BreakableWall extends SolidBlock {
 
             this.bounds.setPosition(originalBounds.x + randomX, originalBounds.y + randomY);
 
-            if (shakeTimer <= 0) {
-                this.bounds.setPosition(originalBounds.x, originalBounds.y);
-            }
+            if (shakeTimer <= 0) this.bounds.setPosition(originalBounds.x, originalBounds.y);
         }
     }
 
@@ -37,7 +34,6 @@ public class BreakableWall extends SolidBlock {
     public void takeDamage(int damage) {
         if (isDestroyed) return;
         hp -= damage;
-
         triggerShake(0.1f, 0.05f);
     }
 

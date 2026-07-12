@@ -11,10 +11,10 @@ import com.badlogic.gdx.scenes.scene2d.ui.Table;
 import com.badlogic.gdx.scenes.scene2d.utils.ClickListener;
 import com.badlogic.gdx.utils.Array;
 import com.hollow.HollowKnight;
-import com.hollow.views.hud.InventoryUI;
+import com.hollow.views.ui.hud.InventoryUI;
 
 public class CharmSelectionController {
-    private final HollowKnight  game;
+    private final HollowKnight game;
     private final Stage stage;
     private final Array<Stack> charmSlots;
     private final Table selectorTable;
@@ -107,18 +107,14 @@ public class CharmSelectionController {
 
     private void updateSelectionState(int newIndex, boolean playSound) {
         this.selectedItem = newIndex;
-
         inventoryUI.highlightSlot(selectedItem);
-
         game.audioManager.playSound(game.audioManager.audioLoader.buttonHover);
     }
 
     public void update(float delta) {
-        if (charmSlots.size == 0)
-            return;
+        if (charmSlots.size == 0) return;
 
         stateTime += delta;
-
         float offset = (float) Math.sin(stateTime * 8f) * 4f;
 
         Stack activeSlot = charmSlots.get(selectedItem);
@@ -126,13 +122,14 @@ public class CharmSelectionController {
         activeSlot.localToStageCoordinates(vec);
 
         selectorTable.setPosition(vec.x - 5 - offset, vec.y - 5 - offset);
-        selectorTable.setSize(activeSlot.getWidth() + 10 + (offset * 2), activeSlot.getHeight() + 10 + (offset * 2));
+
+        float w = activeSlot.getWidth() + 10 + (offset * 2);
+        float h = activeSlot.getHeight() + 10 + (offset * 2);
+        selectorTable.setSize(w, h);
         selectorTable.setVisible(true);
     }
 
     public void triggerSelection() {
         inventoryUI.toggleEquipSlot(selectedItem);
     }
-
-    public int getSelectedItem() {return  selectedItem;}
 }

@@ -7,10 +7,14 @@ import com.badlogic.gdx.graphics.GL20;
 import com.badlogic.gdx.graphics.Pixmap;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
-import com.hollow.assets.AssetLoader;
-import com.hollow.models.*;
-import com.hollow.views.hud.MenuBackground;
-import com.hollow.views.screens.MainMenuScreen;
+import com.hollow.loader.AssetLoader;
+import com.hollow.controllers.manager.AchievementManager;
+import com.hollow.controllers.manager.AudioManager;
+import com.hollow.controllers.manager.LanguageManager;
+import com.hollow.controllers.manager.SaveManager;
+import com.hollow.models.data.GameData;
+import com.hollow.views.ui.menu.MenuBackground;
+import com.hollow.views.screen.MainMenuScreen;
 
 public class HollowKnight extends Game {
     public SpriteBatch batch;
@@ -19,10 +23,10 @@ public class HollowKnight extends Game {
     public AchievementManager achievementManager;
     public LanguageManager languageManager;
     public GameData data;
-    public final int SCREEN_WIDTH = 1920;
-    public final int SCREEN_HEIGHT = 1080;
-    public MenuBackground menuBackground;
+    public static final int SCREEN_WIDTH = 1920;
+    public static final int SCREEN_HEIGHT = 1080;
 
+    public MenuBackground menuBackground;
     public ShapeRenderer shapeRenderer;
 
     @Override

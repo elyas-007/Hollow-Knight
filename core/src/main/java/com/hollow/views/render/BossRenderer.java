@@ -3,7 +3,7 @@ package com.hollow.views.render;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.graphics.g2d.TextureRegion;
 import com.hollow.HollowKnight;
-import com.hollow.models.entities.FalseKnightBoss.FalseKnight;
+import com.hollow.models.entities.boss.FalseKnight;
 
 public class BossRenderer {
     private final HollowKnight game;
@@ -47,7 +47,7 @@ public class BossRenderer {
         }
 
         if (boss.shockwaveAnim != null) {
-            for (com.hollow.models.entities.FalseKnightBoss.Shockwave wave : boss.activeShockwaves) {
+            for (com.hollow.models.entities.boss.Shockwave wave : boss.activeShockwaves) {
                 TextureRegion waveFrame = boss.shockwaveAnim.getKeyFrame(wave.stateTime);
 
                 float waveDrawW = wave.hitbox.width * 2.5f;

@@ -44,7 +44,6 @@ public class ButtonController {
 
         setupInputHandling();
         setupMouseHoverListeners();
-
         updateSelectionState(0, false);
     }
 
@@ -56,12 +55,10 @@ public class ButtonController {
                     process(-1);
                     return true;
                 }
-
                 if (keycode == Input.Keys.DOWN || keycode == Input.Keys.S) {
                     process(1);
                     return true;
                 }
-
                 if (keycode == Input.Keys.ENTER || keycode == Input.Keys.NUMPAD_ENTER) {
                     triggerSelection();
                     return true;
@@ -77,8 +74,9 @@ public class ButtonController {
             menuItems[i].addListener(new ClickListener() {
                 @Override
                 public void enter(InputEvent event, float x, float y, int pointer, Actor fromActor) {
-                    if (pointer == -1 && selectedItem != index)
+                    if (pointer == -1 && selectedItem != index) {
                         updateSelectionState(index, game.data.getSettings().isSfxOn());
+                    }
                 }
 
                 @Override
@@ -99,9 +97,7 @@ public class ButtonController {
 
     private void updateSelectionState(int newIndex, boolean playSound) {
         this.selectedItem = newIndex;
-
         game.audioManager.playSound(game.audioManager.audioLoader.buttonHover);
-
         stage.setKeyboardFocus(menuItems[selectedItem]);
     }
 
@@ -112,7 +108,6 @@ public class ButtonController {
         float offset = (float) Math.sin(stateTime * 8f) * 6f;
 
         TextButton activeItem = menuItems[selectedItem];
-
         vec.set(0, 0);
         activeItem.localToStageCoordinates(vec);
 
@@ -137,9 +132,5 @@ public class ButtonController {
         if (menuItems[selectedItem].getUserObject() != null) {
             ((Runnable) menuItems[selectedItem].getUserObject()).run();
         }
-    }
-
-    public int getSelectedIndex() {
-        return selectedItem;
     }
 }

@@ -29,14 +29,12 @@ public class AmbientObject {
         this.height = height;
         this.animation = animation;
         this.isMoving = isMoving;
-
         this.stateTime = MathUtils.random(0f, 10f);
 
         if (isMoving) {
             this.rangeX = MathUtils.random(2.0f, 4.0f);
             this.rangeY = MathUtils.random(1.5f, 3.0f);
             this.speed = MathUtils.random(1.5f, 4.0f);
-
             setNewTarget();
         }
     }
@@ -44,7 +42,6 @@ public class AmbientObject {
     private void setNewTarget() {
         targetX = baseX + MathUtils.random(-rangeX, rangeX);
         targetY = baseY + MathUtils.random(-rangeY, rangeY);
-
         changeInterval = MathUtils.random(0.2f, 1.2f);
         moveTimer = 0f;
     }
@@ -55,9 +52,8 @@ public class AmbientObject {
         if (isMoving) {
             moveTimer += delta;
 
-            if (moveTimer >= changeInterval) {
-                setNewTarget();
-            }
+            if (moveTimer >= changeInterval) setNewTarget();
+
             x = MathUtils.lerp(x, targetX, speed * delta);
             y = MathUtils.lerp(y, targetY, speed * delta);
 
@@ -69,9 +65,7 @@ public class AmbientObject {
     }
 
     public TextureRegion getCurrentFrame() {
-        if (animation != null) {
-            return animation.getKeyFrame(stateTime, true);
-        }
+        if (animation != null) return animation.getKeyFrame(stateTime, true);
         return null;
     }
 }

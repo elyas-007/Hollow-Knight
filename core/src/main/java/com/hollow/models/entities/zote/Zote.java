@@ -5,7 +5,7 @@ import com.badlogic.gdx.graphics.g2d.TextureRegion;
 import com.badlogic.gdx.math.MathUtils;
 import com.badlogic.gdx.math.Rectangle;
 import com.badlogic.gdx.math.Vector2;
-import com.hollow.models.LanguageManager;
+import com.hollow.controllers.manager.LanguageManager;
 
 public class Zote {
     public enum State { IDLE, TALKING, ANGRY, FALLING, GETTING_UP, ROLLING, TURNING, SLEEPING }
@@ -29,8 +29,8 @@ public class Zote {
     public Animation<TextureRegion> turnAnim;
 
     private float stateTime = 0f;
-
     public float angryTimer = 0f;
+
     public final float ANGRY_DURATION = 3.0f;
 
     public Zote(float x, float y) {
@@ -48,8 +48,7 @@ public class Zote {
     }
 
     public void changeState(State newState) {
-        if (currentState == newState)
-            return;
+        if (currentState == newState) return;
 
         currentState = newState;
         stateTime = 0f;
@@ -65,36 +64,30 @@ public class Zote {
             case TALKING -> {
                 if (talkAnim != null) return talkAnim.getKeyFrame(stateTime, true);
             }
-
             case ANGRY -> {
                 if (attackAnim != null) return attackAnim.getKeyFrame(stateTime, true);
             }
-
             case ROLLING -> {
                 if (rollAnim != null) return rollAnim.getKeyFrame(stateTime, true);
             }
-
             case FALLING -> {
                 if (fallAnim != null) {
                     if (fallAnim.isAnimationFinished(stateTime)) changeState(State.GETTING_UP);
                     return fallAnim.getKeyFrame(stateTime, false);
                 }
             }
-
             case GETTING_UP -> {
                 if (getUpAnim != null) {
                     if (getUpAnim.isAnimationFinished(stateTime)) changeState(State.IDLE);
                     return getUpAnim.getKeyFrame(stateTime, false);
                 }
             }
-
             case TURNING -> {
                 if (turnAnim != null) {
                     if (turnAnim.isAnimationFinished(stateTime)) changeState(State.IDLE);
                     return turnAnim.getKeyFrame(stateTime, false);
                 }
             }
-
             default -> {
                 if (idleAnim != null)
                     return idleAnim.getKeyFrame(stateTime, true);
